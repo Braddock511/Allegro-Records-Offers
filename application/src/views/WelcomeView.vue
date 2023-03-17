@@ -3,7 +3,7 @@
     <main>
         <div id="info">
             <span v-if="!isCookieSet">
-                <p>The "Allegro Records Offers" application is a tool designed to help users effectively manage their CD offers on Allegro, one of the largest online marketplaces in Poland. Thanks to this application, users can easily list their products on Allegro and edit existing offers.</p>
+                <p>The "Allegro Records Offers" application is a tool designed to help users effectively manage their records offers on Allegro, one of the largest online marketplaces in Poland. Thanks to this application, users can easily list their products on Allegro and edit existing offers.</p>
                 <p>The application features a user-friendly interface that allows you to quickly and easily upload your products to the Allegro platform. Users can add product photos, descriptions, prices, and other important details to create engaging and informative listings that will appeal to potential buyers. </p>
                 <p>In addition, the user can clear the background of the image and view the statistics of the offers</p>                    
             </span>
