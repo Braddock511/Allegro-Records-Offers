@@ -1,8 +1,12 @@
-azure_storage==0.37.0
+azure-cognitiveservices-vision-computervision==0.9.0
+azure-common==1.1.28
+azure-core==1.26.3
 fastapi==0.94.1
 imagekitio==3.0.1
 msrest==0.7.1
 requests==2.26.0
+uvicorn==0.20.0
 SQLAlchemy==2.0.4
+psycopg2-binary==2.9.5
 starlette==0.26.1
 urllib3==1.26.7
