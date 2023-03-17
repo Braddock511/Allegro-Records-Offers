@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, patch
 from application.model.preprocessing_data import search_data, preprocess_data
 from application.model.imageKit_api import upload_file_imageKit
 from application.model.discogs_api import get_vinyl, get_cd, get_price, get_tracklist
+from application.api.database import post_credentials, get_credentials, post_data_image, get_data_image
+from sqlalchemy.orm import Session
 
 class Test(unittest.TestCase):
     
@@ -187,6 +189,127 @@ class Test(unittest.TestCase):
 
         output = get_tracklist(id, discogs_token)
         self.assertEqual(output, expected_output)
+
+    @patch('application.api.database.create_engine')
+    @patch('application.api.database.sessionmaker')
+    def test_post_credentials(self, mock_sessionmaker, mock_create_engine):
+        # Mock database session
+        mock_session = MagicMock(spec=Session)
+        mock_sessionmaker.return_value = mock_session
+        
+        # Mock SQLAlchemy engine
+        mock_engine = MagicMock()
+        mock_create_engine.return_value = mock_engine
+        
+        allegro_id = 'test_allegro_id'
+        allegro_secret = 'test_allegro_secret'
+        allegro_token = 'test_allegro_token'
+        post_credentials(allegro_id, allegro_secret, allegro_token)
+        
+        # Assert that SQLAlchemy engine is created with the correct URL
+        mock_create_engine.assert_called_once_with("postgresql://postgres:admin@localhost:5432/postgres")
+        
+        # Assert that SQLAlchemy session is created and used correctly
+        mock_sessionmaker.assert_called_once_with(bind=mock_engine)
+        mock_session.add.assert_called_once()
+        mock_session.commit.assert_called_once()
+        mock_session.close.assert_called_once()
+
+    @patch('application.api.database.create_engine')
+    @patch('application.api.database.sessionmaker')
+    def test_get_credentials(self, mock_sessionmaker, mock_create_engine):
+        # Create a mock session
+        mock_session = MagicMock(spec=Session)
+        mock_session.return_value.query.return_value.order_by.return_value.limit.return_value.first.return_value = {
+            "api_imagekit_id": "test_api_imagekit_id",
+            "api_imagekit_secret": "test_api_imagekit_secret",
+            "api_imagekit_endpoint": "test_api_imagekit_endpoint",
+            "api_azure_subscription_key": "test_api_azure_subscription_key",
+            "api_azure_endpoint": "test_api_azure_endpoint",
+            "api_discogs_id": "test_api_discogs_id",
+            "api_discogs_secret": "test_api_discogs_secret",
+            "api_discogs_token": "test_api_discogs_token",
+            "api_allegro_id": "test_api_allegro_id",
+            "api_allegro_secret": "test_api_allegro_secret",
+            "api_allegro_token": "test_api_allegro_token"
+        }
+
+        # Configure the mocks
+        mock_sessionmaker.return_value = mock_session
+        mock_create_engine.return_value = MagicMock()
+
+        result = get_credentials()
+
+        self.assertEqual(result, [
+            "test_api_imagekit_id",
+            "test_api_imagekit_secret",
+            "test_api_imagekit_endpoint",
+            "test_api_azure_subscription_key",
+            "test_api_azure_endpoint",
+            "test_api_discogs_id",
+            "test_api_discogs_secret",
+            "test_api_discogs_token",
+            "test_api_allegro_id",
+            "test_api_allegro_secret",
+            "test_api_allegro_token"
+        ])
+
+    @patch('application.api.database.create_engine')
+    @patch('application.api.database.sessionmaker')
+    def test_post_data_image(self, mock_sessionmaker, mock_create_engine):
+        data = [
+            {'data': 'image_data_1', 'url': 'https://www.example.com/image_1.jpg'},
+            {'data': 'image_data_2', 'url': 'https://www.example.com/image_2.jpg'},
+            {'data': 'image_data_3', 'url': 'https://www.example.com/image_3.jpg'},
+        ]
+        
+        # Mock the database dependencies
+        mock_engine = mock_create_engine.return_value
+        mock_session = mock_sessionmaker.return_value
+        
+        # Call the function
+        post_data_image(data)
+        
+        # Assert the data has been added to the table
+        mock_session.assert_called_once_with(bind=mock_engine)
+        mock_session.return_value.add_all.assert_called_once_with([
+            {"data":'image_data_1', "url":'https://www.example.com/image_1.jpg'},
+            {"data":'image_data_2', "url":'https://www.example.com/image_2.jpg'},
+            {"data":'image_data_3', "url":'https://www.example.com/image_3.jpg'},
+        ])
+        mock_session.return_value.commit.assert_called_once_with()
+        mock_session.return_value.close.assert_called_once_with()
+        
+        # Clean up the database
+        mock_session.return_value.query.return_value.delete.assert_called_once_with()
+        mock_session.return_value.commit.assert_called_once_with()
+        mock_session.return_value.close.assert_called_once_with()
+
+    @patch('application.api.database.create_engine')
+    @patch('application.api.database.sessionmaker')
+    def test_get_data_image(self, mock_sessionmaker, mock_create_engine):
+        #        # Create a mock session
+        mock_session = MagicMock(spec=Session)
+        mock_session.query.return_value.all.return_value = [{
+            'data': ['data1', 'data2'],
+            'url': ['url1', 'url2']
+        }]
+
+        # Configure the mocks
+        mock_sessionmaker.return_value = mock_session
+        mock_create_engine.return_value = MagicMock()
+
+        expected_output = {
+            'data': ['data1', 'data2'],
+            'url': ['url1', 'url2']
+        }
+        
+        result = get_data_image()
+
+        self.assertEqual(result, expected_output)
+        mock_session.execute.assert_called_with('TRUNCATE data_image')
+        mock_session.commit.assert_called_once()
+        mock_session.close.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()
