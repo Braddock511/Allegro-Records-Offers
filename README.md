@@ -11,9 +11,10 @@ The "Allegro Records Offers" application is a tool designed to help users effect
 # Used tools
 
 - Docker 20.10.16
-- Model OCR from Azure API
-- ImageKit API
-- Discogs API 
-- FastAPI to own API
-- PostgreSQL database
-- Vue.js to create interface
+- Allegro API - communication with Allegro
+- Azure API - model OCR and clear background image
+- ImageKit API - image upload 
+- Discogs API  - get records data
+- FastAPI - own API
+- PostgreSQL - database
+- Vue.js - interface
