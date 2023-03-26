@@ -1,9 +1,11 @@
 <template>
-    <span v-if="!cartoonFlag" id="cartoon"><h1>Enter cartoon:</h1> <input type="text" name="cartoon" v-model="cartoon" style="width: 15%; padding: 7.5px;"> <button class="blue-button" @click="confirmCartoon" style="width: 15%;">Confirm</button></span>
-    <div id="data" v-if="img && !loading && cartoonFlag">
-        <TheSlider :images="img"></TheSlider>
-
-        <table>
+    <span v-if="!cartonFlag" id="carton"><h1>Enter carton:</h1> <input type="text" name="carton" v-model="carton" style="width: 15%; padding: 7.5px;"> <button class="blue-button" @click="confirmCarton" style="width: 15%;">Confirm</button></span>
+    <div class="data" v-if="img && cartonFlag && !waitFlag">
+        <TheSlider :images="img" ></TheSlider>
+        <table v-if="imgFlag">
+            <tr>
+                <td colspan="7" style="border: none;"><a @click="next" style="width: 50%;">Next</a></td>
+            </tr>
             <tr>
                 <td><h2>Title</h2></td>
                 <td><h2>Label</h2></td>
@@ -22,8 +24,47 @@
                 </td>
                 <td><h2>Listing offer</h2></td>
             </tr>
-
-            <tbody  v-if="imageData.data[currentIndex].information.data.length > 0">
+            <tr>
+                <td>Enter title: <br><input type="text" name="title" class="custom" v-model="title"></td>
+                <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
+                <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
+                <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
+                <td>                    
+                    <select v-model="genre" style="width: 85%;">
+                        <option value="ballad">Ballada, Poezja śpiewana</option>
+                        <option value="blues">Blues, Rhythm'n'Blues</option>
+                        <option value="country">Country</option>
+                        <option value="dance">Dance</option>
+                        <option value="disco">Disco polo, biesiadna, karaoke</option>
+                        <option value="kids">Dla dzieci</option>
+                        <option value="ethno">Ethno, Folk, World music</option>
+                        <option value="jazz">Jazz, Swing</option>
+                        <option value="carols">Kolędy</option>
+                        <option value="metal">Metal</option>
+                        <option value="alternative">Muzyka alternatywna</option>
+                        <option value="electronic">Muzyka elektroniczna</option>
+                        <option value="film">Muzyka filmowa</option>
+                        <option value="classical">Muzyka klasyczna</option>
+                        <option value="religious">Muzyka religijna, oazowa</option>
+                        <option value="new">Nowe brzmienia</option>
+                        <option value="opera">Opera, Operetka</option>
+                        <option value="pop">Pop</option>
+                        <option value="rap">Rap, Hip-Hop</option>
+                        <option value="reggae">Reggae, Ska</option>
+                        <option value="rock">Rock</option>
+                        <option value="rock'n'roll">Rock'n'roll</option>
+                        <option value="single">Single</option>
+                        <option value="compilations">Składanki</option>
+                        <option value="soul">Soul, Funk</option>
+                        <option value="synth-po">Synth-pop</option>
+                        <option value="other">Pozostałe</option>
+                        <option value="sets">Zestawy, pakiety</option>
+                    </select>
+                </td>
+                <td>Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
+                <td><a @click="listingOffer">Send</a></td>
+            </tr>
+            <tbody>
             <tr v-for="data in imageData.data[currentIndex].information.data">
                 <td>{{ data.title }}</td>
                 <td>{{ data.label }}</td>
@@ -35,19 +76,8 @@
                 <td><a @click="listingOffer(data)">Send</a></td>
             </tr>
             </tbody>
-
-            <tr>
-                <td>Enter title: <br><input type="text" name="title" class="custom" v-model="title"></td>
-                <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
-                <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
-                <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
-                <td>-</td>
-                <td>Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
-                <td><a @click="listingOffer">Send</a></td>
-            </tr>
         </table>
     </div>
-
     <div id="loading" v-if="loading">
         <img src="../assets/spinner.gif" alt="loading">
     </div>
@@ -56,29 +86,37 @@
 <script>
     import TheSlider from '@/components/TheSlider.vue'
     import axios from 'axios'
-
     export default {
         data(){
             return{
                 condition: "Near Mint (NM or M-)",
-                cartoon: "",
-                cartoonFlag: false,
-                currentIndex: 0,
-                visible: false,
-                loading: false,
-                img: [],
+                carton: "",
                 title: "",
                 label: "",
                 country: "",
                 year: "",
+                genre: "rock",
                 price: "",
-                priceEnter: 'Enter price: <input type="number" name="price" class="custom" v-model="price">'
+                priceEnter: 'Enter price: <input type="number" name="price" class="custom" v-model="price">',
+                currentIndex: 0,
+                img: [],
+                cartonFlag: false,
+                visible: false,
+                imgFlag: false,
+                waitFlag: false,
+                loading: false,
             }
         },
-
         methods:{
             async listingOffer(data) {
                 let selectedData = []
+                let barcode = ""
+                let input_data = this.imageData.data.slice(this.currentIndex-1, this.currentIndex+2)
+                if (input_data.length > 0){
+                    for (let i = 0; i<3; i++){
+                        barcode += input_data[i].input_data
+                    }
+                }
                 // Listing offer
                 try{
                     selectedData = [{
@@ -88,7 +126,8 @@
                         country: data.country,
                         year: data.year,
                         genre: data.genre,
-                        price: Object.keys(data.price).length != 0 && data.price.hasOwnProperty(this.condition) ? this.roundedPrice(data.price[this.condition].value) : this.price
+                        price: Object.keys(data.price).length != 0 && data.price.hasOwnProperty(this.condition) ? this.roundedPrice(data.price[this.condition].value) : this.price,
+                        barcode: barcode
                     }]
                 }
                 catch{
@@ -98,87 +137,90 @@
                         label: this.label ? this.label : "-",
                         country: this.country ? this.country : "-",
                         year: this.year ? this.year : "-",
-                        genre: "",
-                        price: this.price
+                        genre: this.genre,
+                        price: this.price,
+                        barcode: barcode
                     }]
                 }
-                
-
                 if (selectedData[0].title != "" && selectedData[0].price != ""){
                     this.loading = true
-
-                    await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, cartoon: this.cartoon, images: [this.img[2], this.img[1], this.img[0]]}, { headers: { 'Content-Type': 'application/json' } })
-
+                    this.waitFlag = true
+                    await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: [this.img[2], this.img[1], this.img[0]], type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
                     this.title = "",
                     this.label = "",
                     this.country = "",
                     this.year = "",
                     this.price = ""
-
-                    // Change images
-
-                    this.currentIndex += 3
-
-                    if (this.currentIndex == this.imageData.data.length) {
-                        this.loading = true
-                        setTimeout(() => {this.$router.push('/')}, 1000)
-                        this.loading = false
-                        return ""
-                    }
-
-                    else{
-                        this.img = []
-                        let data = this.imageData.data.slice(this.currentIndex, this.currentIndex+3)
-                        for (let i = 0; i < data.length; i++) {
-                            this.img.push(data[i].url)
-                        }
-                        setTimeout(() => { this.loading = false }, 3500)
-                        this.loading = false
-                    }
+                    
                 }
                 else{
                     alert("Complete title and price")
                 }
+                // Change images
+                this.next()
             },
 
+            next(){
+                this.loading = true
+                this.currentIndex += 3
+                if (this.currentIndex >= this.imageData.data.length) {
+                    this.$router.push('/')
+                    this.cartonFlag = false
+                    this.imgFlag = false
+                    this.loading = false
+                    return ""
+                }
+                else{
+                    this.img = []
+                    let data = this.imageData.data.slice(this.currentIndex, this.currentIndex+3)
+                    for (let i = 0; i < data.length; i++) {
+                        this.img.push(data[i].url)
+                    }
+                    setTimeout(() => { this.imgFlag = true; this.loading = false; this.waitFlag = false }, 2500)
+                }
+            },
             roundedPrice(price) {
                 const roundedValue = Math.round((price * 3) / 10) * 10 - 0.01
                 const finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
                 return finalValue
             },
-
-            confirmCartoon(){
+            confirmCarton(){
                 this.loading = true
-                this.cartoonFlag = true
-                setTimeout(() => { this.loading = false }, 1500)
+                this.cartonFlag = true
+                setTimeout(() => { this.imgFlag = true; this.loading = false }, 2500)
             },
-
             showImage() {
                 this.show()
             },
-
             show() {
                 this.visible = true
             },
-
             handleHide() {
                 this.visible = false
             }
         },
-
         beforeMount() {
             this.loading =  true
             let data = this.imageData.data.slice(0, 3)
             for (let i = 0; i < data.length; i++) {
                 this.img.push(data[i].url)
             }
+            if (this.type == "CD"){
+                this.currentIndex = 1
+            }
             this.loading =  false
         },
-
-        props: [
-            'imageData'
-        ],
-
+        props: {
+            imageData: {
+                required: true
+            },
+            type:{
+                required: true
+            },
+            clear:{
+                required: true
+            }
+        },
         components:{
             TheSlider
         }
@@ -186,7 +228,7 @@
 </script>
   
 <style lang="scss" scoped>
-    #cartoon{
+    #carton{
         display: flex;
         justify-content: center;
         align-items: center;
@@ -194,110 +236,4 @@
         gap: 10px;
         margin-top: 10px;
     }
-
-    #data{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px;
-        gap: 10px;
-
-        #imgs{
-            display: flex;
-            gap: 10px;
-
-            img{
-                width: 33%;
-                height: 33%;
-            }
-            
-            #vinyl-image{
-                cursor: pointer;
-
-                &:hover{
-                    opacity: 0.9;
-                }
-            }
-            
-        }
-            
-        table {
-            border-collapse: collapse;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-bottom: 50px;
-            width: 100%;
-            
-            td {
-                border: 1px solid #ddd;
-                padding: 15px;
-                font-size: 18px;
-
-                .custom{
-                    text-align: center;
-                }
-            }
-
-            a {
-                display: inline-block;
-                width: 100%;
-                padding: 5px 10px;
-                border-radius: 4px;
-                text-decoration: none;
-                cursor: pointer;
-                background-color: #4CAF50;
-                transition: background-color 0.3s ease;
-
-                &:hover{
-                    background-color: #3e8e41;
-                }
-            }
-        }
-
-    }
-
-    @media only screen and (max-width: 1100px){
-        .image-data {
-            table{
-                margin: 0px 10px 0px 10px;
-            }
-        }
-    }
-
-    @media only screen and (max-width: 800px){
-        .image-data {
-            table{
-                td{
-                    font-size: 14px;
-                }
-
-                h2{
-                    font-size: 16px;
-                }
-            }
-        }
-    }
-
-    @media only screen and (max-width: 600px){
-        .image-data {
-            margin-top: 20px;
-        }
-    }
-
-    @media only screen and (max-width: 600px){
-        .image-data {
-            table{
-                td{
-                    font-size: 10px;
-                }
-
-                h2{
-                    font-size: 12px;
-                }
-            }
-        }
-    }
- 
 </style>
-  

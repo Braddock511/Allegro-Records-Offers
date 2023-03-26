@@ -17,7 +17,7 @@ if not user:
     port = "5432"
     db = "postgres"
 
-# define the database URL
+# Define the database URL
 SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
 def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -> None:
@@ -47,7 +47,7 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
         api_allegro_secret = Column(String)
         api_allegro_token = Column(String)
 
-    # create the table if it does not exist
+    # Create the table if it does not exist
     Base.metadata.create_all(engine)
     
     data_to_insert = {
@@ -98,23 +98,21 @@ def get_credentials() -> list:
     
     # Get credentials from database
     row = session.query(Credentials).order_by(Credentials.id.desc()).limit(1).first()
-    credentials = []
-
-    credentials.append(row.api_imagekit_id)
-    credentials.append(row.api_imagekit_secret)
-    credentials.append(row.api_imagekit_endpoint)
-
-    credentials.append(row.api_azure_subscription_key)
-    credentials.append(row.api_azure_endpoint)
-
-    credentials.append(row.api_discogs_id)
-    credentials.append(row.api_discogs_secret)
-    credentials.append(row.api_discogs_token)
-
-    credentials.append(row.api_allegro_id)
-    credentials.append(row.api_allegro_secret)
-    credentials.append(row.api_allegro_token)
     
+    credentials = {
+        "api_imagekit_id": row.api_imagekit_id,
+        "api_imagekit_secret": row.api_imagekit_secret,
+        "api_imagekit_endpoint": row.api_imagekit_endpoint,
+        "api_azure_subscription_key": row.api_azure_subscription_key,
+        "api_azure_endpoint": row.api_azure_endpoint,
+        "api_discogs_id": row.api_discogs_id,
+        "api_discogs_secret": row.api_discogs_secret,
+        "api_discogs_token": row.api_discogs_token,
+        "api_allegro_id": row.api_allegro_id,
+        "api_allegro_secret": row.api_allegro_secret,
+        "api_allegro_token": row.api_allegro_token
+    }  
+
     return credentials
 
 def post_data_image(data: dict) -> None:
@@ -130,10 +128,10 @@ def post_data_image(data: dict) -> None:
         data = Column(String)
         url = Column(String)
 
-    # create the table if it does not exist
+    # Create the table if it does not exist
     Base.metadata.create_all(engine)
 
-    # create a dictionary of the data to be inserted into the data_image
+    # Create a dictionary of the data to be inserted into the data_image
     for data_item in data:
         session.add(Data_Image(data=data_item['data'], url=data_item['url']))
 
@@ -154,7 +152,7 @@ def get_data_image() -> dict:
         data = Column(String)
         url = Column(String)
 
-    # get all rows from the data_image table
+    # Get all rows from the data_image table
     data_images = session.query(Data_Image).all()
 
     output = {"data": [], "url": []}

@@ -1,10 +1,15 @@
 import re
 import base64
+import requests
+import numpy as np
+from PIL import Image
+from pyzbar import pyzbar
+from io import BytesIO
 from azure_api import clear_image
 from discogs_api import get_vinyl, get_cd, get_price
 from imageKit_api import upload_file_imageKit
 
-def search_data(data: str, discogs_token: str, type_record: str, image_data: bool) -> list[dict]: 
+def search_data(data: list, discogs_token: str, type_record: str, image_data: bool) -> list[dict]: 
     output_data = []
     punctuation = "<"'"'"'@:^`!#$%&*();?'\'[]{}=+,>"
     remove_punctuation = r"^[a-zA-Z {}]*$".format(re.escape(punctuation))
@@ -22,11 +27,11 @@ def search_data(data: str, discogs_token: str, type_record: str, image_data: boo
                     if image_data:
                         code = code.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
                         
-                    if type_record == "vinyl":
+                    if type_record == "Vinyl":
                         discogs_data = get_vinyl(code, discogs_token)
-                    elif type_record == "cd":
+                    elif type_record == "CD":
                         discogs_data = get_cd(code, discogs_token)
-                    
+
                     if 'results' in discogs_data.keys():
                         for disc_data in discogs_data['results']:
                             if image_data:
@@ -40,9 +45,9 @@ def search_data(data: str, discogs_token: str, type_record: str, image_data: boo
     return output_data
         
 
-def preprocess_data(data: str|list, credentials: list, type_record: str = "vinyl", url: str = "", image_data: bool = True) -> dict:
+def preprocess_data(data: str|list, credentials: dict, type_record: str, url: str = "", image_data: bool = True) -> dict:
     # Get the Discogs API token from the credentials list
-    discogs_token = credentials[7]
+    discogs_token = credentials["api_discogs_token"]
 
     # Clean up the input string
     if isinstance(data, str):
@@ -59,6 +64,7 @@ def preprocess_data(data: str|list, credentials: list, type_record: str = "vinyl
     genre = '-'
     title = '-'
     price = '-'
+    barcode = '-'
 
     # Reshape list to 1
     if isinstance(data, list):
@@ -69,7 +75,7 @@ def preprocess_data(data: str|list, credentials: list, type_record: str = "vinyl
     output = {"url": url, "data": []}
 
     for _ in range(len(data)):
-        information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price}
+        information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
 
         for result in results:
             if isinstance(result, dict):
@@ -77,6 +83,7 @@ def preprocess_data(data: str|list, credentials: list, type_record: str = "vinyl
                 price = get_price(id, discogs_token)
                 uri = result['uri']
                 genre = result['genre'][0]
+                barcode = result['catno']
                 title = result['title']
                 title = title.replace("*", "").replace("•", "").replace("†", " ").replace("º", " ").replace("—", " ")
 
@@ -89,18 +96,18 @@ def preprocess_data(data: str|list, credentials: list, type_record: str = "vinyl
                 except KeyError:
                     pass
                 try:
-                    label = result['label'][0] + " " + result['catno']
+                    label = result['label'][0] + " | " + result['catno']
                 except KeyError:
                     pass
 
 
-            information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price}
+            information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
             output['data'].append(information)
 
     return output
 
 
-def remove_background(image_url: str, credentials: list) -> str:
+def remove_background(image_url: str, credentials: dict) -> str:
     # Clear the image background
     encoded_image = base64.b64encode(clear_image(image_url, credentials)).decode()
     
@@ -109,3 +116,18 @@ def remove_background(image_url: str, credentials: list) -> str:
     clear_image_url = upload_image['url']
 
     return clear_image_url
+
+def get_cd_barcode(image: str, credentials: dict):
+    upload_image = upload_file_imageKit(image, credentials)
+    image_url = upload_image['url']
+    response = requests.get(image_url).content
+
+    image = np.array(Image.open(BytesIO(response)).convert('RGB'))
+    barcodes = pyzbar.decode(image)
+
+    for barcode in barcodes:
+        data = barcode.data.decode("utf-8")
+        if data:
+            return data, image_url
+    
+    return "", image_url

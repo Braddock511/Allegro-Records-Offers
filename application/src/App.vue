@@ -12,7 +12,9 @@
       components:{VueCookies},
       
       created() {
-        VueCookies.set('allegro-cred', false, { expires: 0, path: '/' })
+        if (!VueCookies.get('allegro-cred')) {
+          VueCookies.set('allegro-cred', false, "12h")
+        }
       }
       
   }

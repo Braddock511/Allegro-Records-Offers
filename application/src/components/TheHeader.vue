@@ -13,7 +13,6 @@
         background-color: rgb(34, 36, 35);
         padding: 25px;
         font-size: 22px;
-
         #home{
             display: block;
             width: 225px;
@@ -21,19 +20,16 @@
                 opacity: 0.8;
             }
         }
-        
         #github{
             position: absolute;
             top: 0;
             left: 0;
             padding: 20px;
-
             &:hover{
                 opacity: 0.8;
             }
         }
     }
-
     @media only screen and (max-width: 500px){
         header{
             width: 500px;

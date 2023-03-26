@@ -9,41 +9,54 @@
         @hide="visible = false">
     </vue-easy-lightbox>
     <div class="slider">
-      <div class="arrow-left" @click="prevImage">&#8249;</div>
+      <div class="arrow-left" @click="prevImage" v-if="waitFlag">&#8249;</div>
       <div class="image-container">
         <img :src="images[currentIndex]" alt="Slider Image" @click="visible = true">
-
       </div>
-      <div class="arrow-right" @click="nextImage">&#8250;</div>
+      <div class="arrow-right" @click="nextImage" v-if="waitFlag">&#8250;</div>
     </div>
 </template>
   
 <script>
     import VueEasyLightbox from 'vue-easy-lightbox'
-
     export default {
         data() {
             return {
                 currentIndex: 0,
                 visible: false,
+                waitFlag: false
             }
         },
-
         methods: {
             prevImage() {
                 if (this.currentIndex > 0) {
-                    this.currentIndex--
+                    this.currentIndex -= 1
                 } else {
                     this.currentIndex = this.images.length - 1
                 }
             },
             nextImage() {
                 if (this.currentIndex < this.images.length - 1) {
-                    this.currentIndex++
+                    this.currentIndex += 1
                 } else {
                     this.currentIndex = 0
                 }
             }
+        },
+
+        mounted(){
+            const images = this.images
+            const promises = images.map(imgSrc => {
+                return new Promise(resolve => {
+                    const img = new Image()
+                    img.onload = resolve
+                    img.src = imgSrc
+                })
+            })
+
+            Promise.all(promises).then(() => {
+                this.waitFlag = true
+            })
         },
 
         props: {
@@ -52,7 +65,6 @@
                 required: true
             }
         },
-
         components: {
             VueEasyLightbox
         }
@@ -61,11 +73,10 @@
 
 <style lang="scss" scoped>
 .slider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 750px;
-
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 750px;
     .arrow-left, .arrow-right {
         position: absolute;
         z-index: 3;
@@ -81,32 +92,33 @@
         align-items: center;
         cursor: pointer;
     }
-
     .arrow-left {
         left: 10px;
     }
-
     .arrow-right {
         right: 10px;
     }
-
     .image-container {
         flex: 1;
         height: 100%;
         display: flex;
         justify-content: center;
-        align-items: center;
-        
+        align-items: center;   
         img {
             max-width: 100%;
-            max-height: 100%;
+            height: 560px;
             object-fit: contain;
             cursor: pointer;
-
             &:hover{
                 opacity: 0.9;
             }
         }
+    }
+}
+
+@media only screen and (max-width: 820px) {
+    .slider{
+        width: 500px;
     }
 }
 </style>
