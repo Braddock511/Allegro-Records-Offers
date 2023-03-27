@@ -172,9 +172,9 @@ async def edit_offer(request: Request):
         images = response['images']
         new_data = response['data'][0]
 
-        t = allegro.edit_description(credentials, offer_id, images, new_data)
+        result = allegro.edit_description(credentials, offer_id, images, new_data)
 
-        return {"success": t}
+        return result
         
     except Exception as e:
         return {"error": f"Exception in edit_offer: {str(e)}"}
@@ -186,9 +186,9 @@ async def edit_image(request: Request):
         response = loads((await request.body()).decode('utf-8'))
         offer_id = response['offerID']
         images = response['images']
-        allegro.edit_images(credentials, offer_id, images)
+        result = allegro.edit_images(credentials, offer_id, images)
         
-        return {"succes": 200}
+        return result
 
     except Exception as e:
         return {"error": f"Exception in edit-image: {str(e)}"}
@@ -205,9 +205,9 @@ async def allegro_listing(request: Request):
         clear = response['clear']
         credentials = db.get_credentials()
 
-        allegro.create_offer(credentials, data, carton, condition, images, type, clear)
+        result = allegro.create_offer(credentials, data, carton, condition, images, type, clear)
 
-        return {"success": 200}
+        return result
     except Exception as e:
         return {"error": f"Exception in allegro_listing: {str(e)}"}
 

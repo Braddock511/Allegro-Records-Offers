@@ -59,8 +59,8 @@
                     </select>
                 </div>
                 <span style="display:flex; justify-content: center; gap: 10px;">
-                    <button type="submit" class="blue-button" @click="getData('desc')">Edit description</button>
-                    <button type="submit" class="blue-button" @click="getData('images')">Edit images</button>
+                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getData('desc')">Edit description</button>
+                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getData('images')">Edit images</button>
                 </span>
             </form>
         </section>

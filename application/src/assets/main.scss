@@ -1,3 +1,10 @@
+@import "~bootstrap/scss/bootstrap";
+
+.btn-primary {
+  --bs-btn-bg: #0f61dd;
+  --bs-btn-hover-bg: #0955c7;
+}
+
 *,
 *:after,
 *:before {
@@ -8,7 +15,7 @@
 }
 
 body{
-  background-color: #25283d;
+  background-color: #202833;
   overflow-x: hidden;
 }
 
@@ -25,7 +32,7 @@ ul{
 }
 
 input{
-  background-color: #2f3131;
+  background-color: #2c2e2e;
   border: 1px solid black;
   
   &:focus{
@@ -36,7 +43,7 @@ input{
 select{
   align-self: center;
   padding: 10px;
-  background-color: #282a3a;
+  background-color: rgb(40, 43, 43);
   border: 1px solid black;
   cursor: pointer;
 }
@@ -48,26 +55,6 @@ select{
   justify-content: center;
   align-items: center;
 }
-
-.blue-button {
-  background-color: rgb(1, 83, 151);
-  border-radius: 12px;
-  border: 0;
-  color: #eee;
-  cursor: pointer;
-  font-size: 17.5px;
-  height: 50px;
-  margin-top: 38px;
-  outline: 0;
-  text-align: center;
-  width: 100%;
-  padding: 15px;
-
-  &:hover {
-      background-color: rgb(0, 70, 128);
-  }
-}
-
 
 .form-container {
     display: flex;
@@ -177,7 +164,6 @@ select{
       border-bottom: 3px solid #ddd;
       display: block;
       margin-bottom: .625em;
-
       &:nth-child(2){
         display: none;
       }
@@ -187,7 +173,7 @@ select{
       border-bottom: 1px solid #ddd;
       display: block;
       font-size: .8em;
-      text-align: center;
+      text-align: left;
     
       &:last-child {
         border-bottom: 0;

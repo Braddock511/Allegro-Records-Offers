@@ -6,9 +6,9 @@
                 <div class="title">Upload images</div>
                 <div class="input-container">
                     <label for="files">Images:  </label>
-                    <input @change="handleFiles" id="files" type="file" multiple required/>
+                    <input @change="handleFiles" id="files" type="file" multiple required style="font-size: 14px;"/>
                 </div>
-                <select v-model="type" style="display: flex; align-self: start; width: 200px;">
+                <select v-model="type" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
                         <option value="Vinyl">Vinyl</option>
                         <option value="CD">CD</option>
                 </select>
@@ -19,7 +19,7 @@
                 <p>The images must be in the following order: 1. Front cover 2. Back cover 3. Disc</p>
                 <p>Payment, location and delivery settings are taken from the last offer </p>
                 <p>Description is in polish language</p>
-                <button type="submit" class="blue-button">Send images</button>
+                <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem;" @click="getDataImage">Send images</button>
             </form>
         </section>
         <div id="loading" v-if="loading">

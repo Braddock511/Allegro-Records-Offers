@@ -1,6 +1,6 @@
 <template>
     <header>
-        <router-link to="/" id="home"><h2><span>Allegro Offers</span></h2></router-link>
+        <router-link to="/" id="home"><h1><span>Allegro Offers</span></h1></router-link>
         <a href="https://github.com/Braddock511/Allegro-Offers" target="_blank" id="github"><img src="../assets/github.svg" /></a>
     </header>
   </template>
@@ -11,11 +11,10 @@
         justify-content: center;
         text-align: center;
         background-color: rgb(34, 36, 35);
-        padding: 25px;
-        font-size: 22px;
+        padding: 15px;
         #home{
             display: block;
-            width: 225px;
+            width: 250px;
             span:hover{
                 opacity: 0.8;
             }

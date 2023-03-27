@@ -4,28 +4,28 @@
             <TheSlider :images="img.slice().reverse()"></TheSlider>
             <table>
                 <tr>
+                    <td colspan="7" style="border: none;"><button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem;" @click="next">Next</button></td>
+                </tr>
+                <tr>
                     <td><h2>Title</h2></td>
                     <td><h2>Label</h2></td>
                     <td><h2>Country</h2></td>
                     <td><h2>Year</h2></td>
                     <td><h2>Edit offer</h2></td>
                 </tr>
-                <tr v-for="data in offerData.data.discogs.data" v-if="offerData && offerData.data.discogs.data">
-                    <td>{{ offerData.data.offer.name  }}</td>
-                    <td>{{ data.label }}</td>
-                    <td>{{ data.country }}</td>
-                    <td>{{ data.year }}</td>
-                    <td><a @click="editOffer(data)">Edit</a></td>
-                </tr>
                 <tr>
                     <td>{{ offerData.data.offer.name }}</td>
                     <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
                     <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
                     <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
-                    <td><a @click="editOffer">Edit</a></td>
+                    <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer">Edit</button></td>
                 </tr>
-                <tr>
-                    <td colspan="7"><a @click="next" style="width: 25%;">Next</a></td>
+                <tr v-for="data in offerData.data.discogs.data" v-if="offerData && offerData.data.discogs.data">
+                    <td>{{ offerData.data.offer.name  }}</td>
+                    <td>{{ data.label }}</td>
+                    <td>{{ data.country }}</td>
+                    <td>{{ data.year }}</td>
+                    <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer(data)">Edit</button></td>
                 </tr>
             </table>
         </div>
@@ -33,10 +33,12 @@
     <div id="loading" v-if="loading">
         <img src="../assets/spinner.gif" alt="loading">
     </div>
+    <TheAlert :alert="alert" />
 </template>
 
 <script>
     import TheSlider from '@/components/TheSlider.vue'
+    import TheAlert from '../components/TheAlert.vue'
     import axios from 'axios'
     export default {
         data(){
@@ -48,6 +50,7 @@
                 country: "",
                 year: "",
                 loading: false,
+                alert: {}
             }
         },
         methods:{
@@ -68,14 +71,16 @@
                         year: this.year ? this.year : "-",
                 }]
                 this.loading = true
-                try{
-                    await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.allegroData.data.offers[this.offerIndex].id, images: this.offerData.data.offer.images, data: selectedData})
+                const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.allegroData.data.offers[this.offerIndex].id, images: this.offerData.data.offer.images, data: selectedData})
+                if (response.data.error || response.data.errors){
+                    this.alert = {variant: "danger", message: "Edit description failed"}
                 }
-                catch{
-                    alert("Upload failed")
+                else{
+                    this.alert = {variant: "success", message: "Edit description success"}
+                    // New offer
+                    this.next()
                 }
-                // New offer
-                this.next()
+                this.loading = false
             },
             async next(){
                 this.loading = true
@@ -83,23 +88,28 @@
                 if (this.offerIndex == this.allegroData.data.offers.length){
                     this.$router.push("/")
                 }
-                try{
-                    this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
+                this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
+                if (this.allegroData.data.error || this.allegroData.data.errors){
+                    this.alert = {variant: "danger", message: "Something went wrong with getting offer"}
                 }
-                catch{
-                    alert("Upload failed")
+                else{
+                    this.label = "",
+                    this.country = "",
+                    this.year = "",
+                    this.img = this.offerData.data.offer.images
+                    setTimeout(() => { this.loading = false }, 3500)
                 }
-                this.label = "",
-                this.country = "",
-                this.year = "",
-                this.img = this.offerData.data.offer.images
-                setTimeout(() => { this.loading = false }, 3500)
             }
         },
         async beforeMount() {
             this.loading = true
             this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
-            this.img = this.offerData.data.offer.images
+            if (this.allegroData.data.error || this.allegroData.data.errors){
+                this.alert = {variant: "danger", message: "Something went wrong with getting discogs information"}
+            }
+            else{
+                this.img = this.offerData.data.offer.images
+            }
             this.loading = false
         },
         props: {
@@ -111,7 +121,8 @@
             },
         },
         components:{
-            TheSlider
+            TheSlider,
+            TheAlert
         }
     }
 </script>

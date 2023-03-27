@@ -1,10 +1,10 @@
 <template>
-    <span v-if="!cartonFlag" id="carton"><h1>Enter carton:</h1> <input type="text" name="carton" v-model="carton" style="width: 15%; padding: 7.5px;"> <button class="blue-button" @click="confirmCarton" style="width: 15%;">Confirm</button></span>
+    <span v-if="!cartonFlag" id="carton"><h2>Enter carton:</h2> <input type="text" name="carton" v-model="carton" style="width: 15%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 15%; padding: 0.5rem;">Confirm</button></span>
     <div class="data" v-if="img && cartonFlag && !waitFlag">
         <TheSlider :images="img" ></TheSlider>
         <table v-if="imgFlag">
-            <tr>
-                <td colspan="7" style="border: none;"><a @click="next" style="width: 50%;">Next</a></td>
+            <tr style="border: none;">
+                <td colspan="7" style="border: none; text-align: center;"><button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%;" @click="next">Next</button></td>
             </tr>
             <tr>
                 <td><h2>Title</h2></td>
@@ -25,7 +25,7 @@
                 <td><h2>Listing offer</h2></td>
             </tr>
             <tr>
-                <td>Enter title: <br><input type="text" name="title" class="custom" v-model="title"></td>
+                <td>Enter title: <input type="text" name="title" class="custom" v-model="title"></td>
                 <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
                 <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
                 <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
@@ -62,7 +62,7 @@
                     </select>
                 </td>
                 <td>Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
-                <td><a @click="listingOffer">Send</a></td>
+                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">Send</button></td>
             </tr>
             <tbody>
             <tr v-for="data in imageData.data[currentIndex].information.data">
@@ -71,9 +71,9 @@
                 <td>{{ data.country }}</td>
                 <td>{{ data.year }}</td>
                 <td>{{ data.genre }}</td>
-                <td v-if="Object.keys(data.price).length != 0">{{ roundedPrice(data.price[condition].value)}}</td>
+                <td v-if="Object.keys(data.price).length != 0 && data.price != ''">{{ roundedPrice(data.price[condition].value) }}</td>
                 <td v-if="Object.keys(data.price).length == 0">Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
-                <td><a @click="listingOffer(data)">Send</a></td>
+                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer(data)">Send</button></td>
             </tr>
             </tbody>
         </table>
@@ -81,10 +81,12 @@
     <div id="loading" v-if="loading">
         <img src="../assets/spinner.gif" alt="loading">
     </div>
+    <TheAlert :alert="alert" />
 </template>
   
 <script>
     import TheSlider from '@/components/TheSlider.vue'
+    import TheAlert from '../components/TheAlert.vue'
     import axios from 'axios'
     export default {
         data(){
@@ -105,6 +107,7 @@
                 imgFlag: false,
                 waitFlag: false,
                 loading: false,
+                alert: {}
             }
         },
         methods:{
@@ -145,19 +148,24 @@
                 if (selectedData[0].title != "" && selectedData[0].price != ""){
                     this.loading = true
                     this.waitFlag = true
-                    await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: [this.img[2], this.img[1], this.img[0]], type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
-                    this.title = "",
-                    this.label = "",
-                    this.country = "",
-                    this.year = "",
-                    this.price = ""
-                    
+                    const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: [this.img[2], this.img[1], this.img[0]], type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
+                    if (response.data.error || response.data.errors){
+                        this.alert = {variant: "danger", message: "Listing offer failed"}
+                    }
+                    else{
+                        this.alert = {variant: "success", message: "Listing offer success"}
+                        this.title = "",
+                        this.label = "",
+                        this.country = "",
+                        this.year = "",
+                        this.price = ""
+                        // New offer
+                        this.next()
+                    }
                 }
                 else{
-                    alert("Complete title and price")
+                    this.alert = {variant: "warning", message: "Complete title and price"}
                 }
-                // Change images
-                this.next()
             },
 
             next(){
@@ -201,12 +209,17 @@
         },
         beforeMount() {
             this.loading =  true
-            let data = this.imageData.data.slice(0, 3)
-            for (let i = 0; i < data.length; i++) {
-                this.img.push(data[i].url)
+            try{
+                let data = this.imageData.data.slice(0, 3)
+                for (let i = 0; i < data.length; i++) {
+                    this.img.push(data[i].url)
+                }
+                if (this.type == "CD"){
+                    this.currentIndex = 1
+                }
             }
-            if (this.type == "CD"){
-                this.currentIndex = 1
+            catch{
+                this.alert = {variant: "danger", message: "Something went wrong with getting data"}
             }
             this.loading =  false
         },
@@ -222,7 +235,8 @@
             }
         },
         components:{
-            TheSlider
+            TheSlider,
+            TheAlert
         }
     }
 </script>

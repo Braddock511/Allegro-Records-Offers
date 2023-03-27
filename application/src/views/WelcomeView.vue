@@ -6,12 +6,12 @@
             <p>The application features a user-friendly interface that allows you to quickly and easily upload your products to the Allegro platform. Users can add product photos, descriptions, prices, and other important details to create engaging and informative listings that will appeal to potential buyers. </p>
             <p>In addition, the user can clear the background of the image and view the statistics of the offers</p>                    
         </div>
-        <div id="buttons">
+        <div id="buttons" style="display: flex; flex-direction: column; justify-content: center; gap: 40px;">
             <h1 v-if="isCookieSet" style="display: flex; justify-content: center;">Options</h1>
-            <router-link v-if="isCookieSet" to="/listing" ><h3 class="blue-button">Listing offers</h3></router-link>
-            <router-link v-if="isCookieSet"  to="/edit"><h3 class="blue-button">Edit offers</h3></router-link>
-            <router-link  v-if="isCookieSet" to="/stats"><h3 class="blue-button">Statistics</h3></router-link>
-            <router-link  v-if="!isCookieSet" to="/allegro-credentials"><h3 class="blue-button">Enter allegro credentials</h3></router-link>
+            <router-link  v-if="isCookieSet" to="/listing"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">Listing offers</button></router-link>
+            <router-link  v-if="isCookieSet" to="/edit"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">Edit offers</button></router-link>
+            <router-link  v-if="isCookieSet" to="/stats"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">Statistics</button></router-link>
+            <router-link  v-if="!isCookieSet" to="/allegro-credentials"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">Enter allegro credentials</button></router-link>
         </div>
     </main>
 </template>
@@ -54,7 +54,11 @@
     @media only screen and (max-width: 1200px){
         main{
             #info{
-                width: 50%;
+                width: 55%;
+            }
+
+            #buttons{
+                width: 40%;
             }
         }
     }
@@ -67,7 +71,7 @@
                 }
             }
             #buttons{
-                width: 30%;
+                width: 50%;
             }
         }
     }

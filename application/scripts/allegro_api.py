@@ -81,7 +81,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     payments = offer_info['payments']
     location = offer_info['location']
     delivery = allegro_offer['delivery']
-    category = categories.get(genre)
+    category = categories.get(genre.lower())
     condition = conditions.get(condition)
     author, name = title.split("-")[:2]
     name = f'{author}.{carton}' if len(f'{author} - {name}.{carton}') > 50 else f'{author} - {name}.{carton}'
