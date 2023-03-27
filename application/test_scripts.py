@@ -3,7 +3,7 @@ import base64
 from scripts.preprocessing_data import search_data, get_cd_barcode, preprocess_data, remove_background
 from scripts.imageKit_api import upload_file_imageKit
 from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist
-from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_cartoon, edit_description, edit_images
+from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description
 
 class Test(unittest.TestCase):
     credentials = {"api_azure_subscription_key": "", "api_azure_endpoint": "", "api_imagekit_id": "", "api_imagekit_secret": "", "api_imagekit_endpoint": "", "api_discogs_token": "", "api_allegro_token": ""}
@@ -248,17 +248,17 @@ class Test(unittest.TestCase):
 
         self.assertNotIn("name", result.keys())
 
-    def test_get_condition_and_cartoon(self):
+    def test_get_condition_and_carton(self):
         offer_id = "1235676"
-        result = get_condition_and_cartoon(Test.credentials, offer_id)
+        result = get_condition_and_carton(Test.credentials, offer_id)
 
         conditions = ['M', 'MINT', '-M', 'M-', 'MINT-', '-MINT', 'MINT-.', '  MINT-', 'MINT, FOLIA', 'EX', 'EX+', 'EX++', 'EX-', 'EX.', 'EXCELLENT', 'VG', 'VG+', 'VG++','VG-', 'VERY GOOD', 'BARDZO DOBRY', 'BARDZO DOBRY.', 'G', 'GOOD', 'GOOD+', 'DOBRY', 'MINT-.DO UMYCIA', "MINT. NOWA ZAFOLIOWANA",'BARDZO DOBRY.PŁYTA DO UMYCIA', 'BARDZO DOBRY.DROBNE RYSKI', 'BARDZO DOBRY.DO UMYCIA']
         self.assertIn(result[0], conditions)
         self.assertIsInstance(result[1], str)
 
-    def test_get_condition_and_cartoon_wrong(self):
+    def test_get_condition_and_carton_wrong(self):
         offer_id = "vfsadasd"
-        result = get_condition_and_cartoon(Test.credentials, offer_id)
+        result = get_condition_and_carton(Test.credentials, offer_id)
 
         conditions = ['M', 'MINT', '-M', 'M-', 'MINT-', '-MINT', 'MINT-.', '  MINT-', 'MINT, FOLIA', 'EX', 'EX+', 'EX++', 'EX-', 'EX.', 'EXCELLENT', 'VG', 'VG+', 'VG++','VG-', 'VERY GOOD', 'BARDZO DOBRY', 'BARDZO DOBRY.', 'G', 'GOOD', 'GOOD+', 'DOBRY', 'MINT-.DO UMYCIA', "MINT. NOWA ZAFOLIOWANA",'BARDZO DOBRY.PŁYTA DO UMYCIA', 'BARDZO DOBRY.DROBNE RYSKI', 'BARDZO DOBRY.DO UMYCIA']
         self.assertNotIn(result[0], conditions)
