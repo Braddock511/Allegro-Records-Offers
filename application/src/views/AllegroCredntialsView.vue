@@ -21,7 +21,6 @@
 
 <script>
     import TheHeader from '@/components/TheHeader.vue'
-    import VueCookies from 'vue-cookies'
     import TheAlert from "@/components/TheAlert.vue"
     import axios from 'axios'
     export default {
@@ -41,13 +40,12 @@
                     this.response = await axios.post("http://127.0.0.1:8000/allegro-auth", {client_id: this.user_id, client_secret: this.user_secret});
                     this.formDisplay = false;
                     this.tokenResponse = await axios.post("http://127.0.0.1:8000/allegro-token", {client_id: this.user_id, client_secret: this.user_secret, device_code: this.response.data["device_code"],});
-                    console.log(this.tokenResponse.data.error)
                     if (this.tokenResponse.data.error){
                         this.formDisplay = true
                         this.alert = {variant: "danger", message: "Failed to obtain Allegro token"};
                     }
                     else{
-                        VueCookies.set("allegro-cred", true);
+                        this.$cookies.set('allegro-cred', true, '12h', '/', '', false, 'Lax');
                         this.$router.push("/");
                     }
                 } catch (error) {
@@ -56,7 +54,6 @@
                 },
         },
         components:{
-            VueCookies,
             TheAlert,
             TheHeader
         }

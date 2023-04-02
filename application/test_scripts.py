@@ -1,9 +1,11 @@
 import unittest
 import base64
+import io
 from scripts.preprocessing_data import search_data, get_cd_barcode, preprocess_data, remove_background
 from scripts.imageKit_api import upload_file_imageKit
 from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist
-from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description
+from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description, get_payment_history
+from scripts.plots import annual_sale_barplot
 
 class Test(unittest.TestCase):
     credentials = {"api_azure_subscription_key": "", "api_azure_endpoint": "", "api_imagekit_id": "", "api_imagekit_secret": "", "api_imagekit_endpoint": "", "api_discogs_token": "", "api_allegro_token": ""}
@@ -294,6 +296,22 @@ class Test(unittest.TestCase):
 
         self.assertNotIn("name", result.keys())
 
+    def test_allegro_sale(self):
+        payments = []
+
+        for i in range(10):
+            payment_history = get_payment_history(Test.credentials, 100, 100*i)
+            payments.append(payment_history['paymentOperations'])
+
+        payments = sum(payments, [])
+        
+        self.assertIn("wallet1", payments[0].keys(), msg=payments[:100])
+
+    def test_annual_sale_barplot(self):
+        data = [{'type': '', 'group': '', 'wallet': {'paymentOperator': '', 'type': '', 'balance': {'amount': '', 'currency': ''}}, 'occurredAt': '', 'value': {'amount': '', 'currency': ''}, 'marketplaceId': '', 'payment': {'id': ''}, 'participant': {'id': '', 'companyName': None, 'login': '', 'firstName': '', 'lastName': '', 'address': {'street': '', 'city': '', 'postCode': ''}}}]
+        result = annual_sale_barplot(Test.credentials, data)
+
+        self.assertIsInstance(result, str)
 
 if __name__ == '__main__':
     unittest.main()

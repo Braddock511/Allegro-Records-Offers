@@ -6,16 +6,12 @@
 
 
 <script>
-  import VueCookies from 'vue-cookies'
 
   export default {
-      components:{VueCookies},
-      
       created() {
-        if (!VueCookies.get('allegro-cred')) {
-          VueCookies.set('allegro-cred', false, "12h")
+        if (!this.$cookies.get('allegro-cred')) {
+          this.$cookies.set('allegro-cred', false, '0', '/', '', false, 'Lax');
         }
       }
-      
   }
 </script>

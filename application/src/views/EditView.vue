@@ -1,8 +1,8 @@
 <template>
     <TheHeader />
     <span v-if="edit == ''" style="height: 500px; display: flex; flex-direction: column; justify-content: center;  align-items: center; gap: 20px;">
-            <button class="btn btn-primary" type="button" style="width: 30%; padding: 0.5rem;" @click="edit='many'">Edit many offers</button>
-            <button class="btn btn-primary" type="button" style="width: 30%;padding: 0.5rem;" @click="edit='specific'">Edit specific offer</button>
+            <button class="btn btn-primary" type="button" style="width: 30%; padding: 0.5rem; font-size: 20px;" @click="edit='many'">Edit many offers</button>
+            <button class="btn btn-primary" type="button" style="width: 30%; padding: 0.5rem; font-size: 20px;" @click="edit='specific'">Edit specific offer</button>
     </span>
     <TheEditMany v-if="edit=='many'"/>
     <TheEditSpecific v-if="edit=='specific'"/>

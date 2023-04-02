@@ -19,7 +19,7 @@
                 <p>The images must be in the following order: 1. Front cover 2. Back cover 3. Disc</p>
                 <p>Payment, location and delivery settings are taken from the last offer </p>
                 <p>Description is in polish language</p>
-                <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem;" @click="getDataImage">Send images</button>
+                <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="getDataImage">Send images</button>
             </form>
         </section>
         <div id="loading" v-if="loading">

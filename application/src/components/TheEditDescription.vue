@@ -4,7 +4,7 @@
             <TheSlider :images="img.slice().reverse()"></TheSlider>
             <table>
                 <tr>
-                    <td colspan="7" style="border: none;"><button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem;" @click="next">Next</button></td>
+                    <td colspan="7" style="border: none; background-color: #202833;"><button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem; font-size: 20px;" @click="next">Next</button></td>
                 </tr>
                 <tr>
                     <td><h2>Title</h2></td>
@@ -55,21 +55,21 @@
         },
         methods:{
             async editOffer(data){
-                let selectedData = []
+                let selectedData = {}
                 // Edit offer
-                selectedData = [{
+                selectedData = {
                     id: data.id,
                     label: data.label,
                     country: data.country,
                     year: data.year,
-                }]
-                if (selectedData[0].id == undefined)
-                    selectedData = [{
+                }
+                if (selectedData.id == undefined)
+                    selectedData = {
                         id: "",
                         label: this.label ? this.label : "-",
                         country: this.country ? this.country : "-",
                         year: this.year ? this.year : "-",
-                }]
+                    }
                 this.loading = true
                 const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.allegroData.data.offers[this.offerIndex].id, images: this.offerData.data.offer.images, data: selectedData})
                 if (response.data.error || response.data.errors){
@@ -85,7 +85,7 @@
             async next(){
                 this.loading = true
                 this.offerIndex += 1
-                if (this.offerIndex == this.allegroData.data.offers.length){
+                if (this.offerIndex >= this.allegroData.data.offers.length){
                     this.$router.push("/")
                 }
                 this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData.data, typeRecord: this.typeRecord})

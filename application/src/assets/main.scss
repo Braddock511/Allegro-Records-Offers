@@ -121,21 +121,22 @@ select{
 }
 
 .data{
-  overflow-x: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px;
   gap: 10px;
+
   table {
       border-collapse: collapse;
       color: white;
+      background-color: #21454e75;;
       text-align: center;
       margin-bottom: 50px;
       width: 100%;
       td {
           border: 1px solid #ddd;
-          padding: 15px;
+          padding: 10px;
           font-size: 18px;
           .custom{
               text-align: center;
@@ -156,7 +157,7 @@ select{
   }
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1700px) {
   table {
     border: 0;
 
@@ -164,9 +165,6 @@ select{
       border-bottom: 3px solid #ddd;
       display: block;
       margin-bottom: .625em;
-      &:nth-child(2){
-        display: none;
-      }
     }
     
     td {
@@ -174,9 +172,13 @@ select{
       display: block;
       font-size: .8em;
       text-align: left;
-    
+      padding: 15px;
       &:last-child {
         border-bottom: 0;
+      }
+
+      select{
+        width: 30% !important;
       }
     }
   }

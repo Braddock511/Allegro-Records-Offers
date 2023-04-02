@@ -83,7 +83,7 @@ def preprocess_data(data: str|list, credentials: dict, type_record: str, url: st
                 price = get_price(id, discogs_token)
                 uri = result['uri']
                 genre = result['genre'][0]
-                barcode = result['catno']
+                barcode = result['barcode'][0].replace(" ", "") if 'barcode' in result.keys() else "-"
                 title = result['title']
                 title = title.replace("*", "").replace("•", "").replace("†", " ").replace("º", " ").replace("—", " ")
 

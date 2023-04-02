@@ -1,10 +1,10 @@
 <template>
-    <span v-if="!cartonFlag" id="carton"><h2>Enter carton:</h2> <input type="text" name="carton" v-model="carton" style="width: 15%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 15%; padding: 0.5rem;">Confirm</button></span>
-    <div class="data" v-if="img && cartonFlag && !waitFlag">
+    <span v-if="!cartonFlag" id="carton"><h2>Enter carton</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">Confirm</button></span>
+    <div class="data" v-if="img && cartonFlag && !waitFlag && !failedFlag">
         <TheSlider :images="img" ></TheSlider>
         <table v-if="imgFlag">
             <tr style="border: none;">
-                <td colspan="7" style="border: none; text-align: center;"><button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%;" @click="next">Next</button></td>
+                <td colspan="8" style="border: none; text-align: center; background-color: #202833;"><button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="next">Next</button></td>
             </tr>
             <tr>
                 <td><h2>Title</h2></td>
@@ -12,6 +12,7 @@
                 <td><h2>Country</h2></td>
                 <td><h2>Year</h2></td>
                 <td><h2>Genre</h2></td>
+                <td v-if="type == 'CD'"><h2>Barcode</h2></td>
                 <td>
                     <h2>Condition:</h2>
                     <select v-model="condition">
@@ -31,36 +32,37 @@
                 <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
                 <td>                    
                     <select v-model="genre" style="width: 85%;">
-                        <option value="ballad">Ballada, Poezja śpiewana</option>
+                        <option value="ballad">Ballad, Sung poetry</option>
                         <option value="blues">Blues, Rhythm'n'Blues</option>
                         <option value="country">Country</option>
                         <option value="dance">Dance</option>
-                        <option value="disco">Disco polo, biesiadna, karaoke</option>
-                        <option value="kids">Dla dzieci</option>
+                        <option value="disco">Disco polo, Party, Karaoke</option>
+                        <option value="children's">For children</option>
                         <option value="ethno">Ethno, Folk, World music</option>
                         <option value="jazz">Jazz, Swing</option>
-                        <option value="carols">Kolędy</option>
+                        <option value="carols">Christmas carols</option>
                         <option value="metal">Metal</option>
-                        <option value="alternative">Muzyka alternatywna</option>
-                        <option value="electronic">Muzyka elektroniczna</option>
-                        <option value="film">Muzyka filmowa</option>
-                        <option value="classical">Muzyka klasyczna</option>
-                        <option value="religious">Muzyka religijna, oazowa</option>
-                        <option value="new">Nowe brzmienia</option>
-                        <option value="opera">Opera, Operetka</option>
+                        <option value="alternative">Alternative music</option>
+                        <option value="electronic">Electronic music</option>
+                        <option value="film">Film music</option>
+                        <option value="classical">Classical music</option>
+                        <option value="religious">Religious music, retreat</option>
+                        <option value="new">New sounds</option>
+                        <option value="opera">Opera, Operetta</option>
                         <option value="pop">Pop</option>
                         <option value="rap">Rap, Hip-Hop</option>
                         <option value="reggae">Reggae, Ska</option>
                         <option value="rock">Rock</option>
                         <option value="rock'n'roll">Rock'n'roll</option>
-                        <option value="single">Single</option>
-                        <option value="compilations">Składanki</option>
+                        <option value="single">Singles</option>
+                        <option value="compilations">Compilations</option>
                         <option value="soul">Soul, Funk</option>
                         <option value="synth-po">Synth-pop</option>
-                        <option value="other">Pozostałe</option>
-                        <option value="sets">Zestawy, pakiety</option>
+                        <option value="other">Other</option>
+                        <option value="sets">Sets, packages</option>
                     </select>
                 </td>
+                <td v-if="type == 'CD'">Enter barcode: <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
                 <td>Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
                 <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">Send</button></td>
             </tr>
@@ -71,8 +73,13 @@
                 <td>{{ data.country }}</td>
                 <td>{{ data.year }}</td>
                 <td>{{ data.genre }}</td>
-                <td v-if="Object.keys(data.price).length != 0 && data.price != ''">{{ roundedPrice(data.price[condition].value) }}</td>
-                <td v-if="Object.keys(data.price).length == 0">Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
+                <td v-if="type == 'CD'">{{ data.barcode }}</td>
+                <td v-if="data.price[condition] !== undefined">
+                    {{ roundedPrice(data.price[condition])}}
+                </td>
+                <td v-else>
+                    <input type="number" name="price" class="custom" v-model="price">
+                </td>
                 <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer(data)">Send</button></td>
             </tr>
             </tbody>
@@ -82,11 +89,14 @@
         <img src="../assets/spinner.gif" alt="loading">
     </div>
     <TheAlert :alert="alert" />
+
+    <TheFailed :dataFailed="failed" :type="type" v-if="failedFlag"/>
 </template>
   
 <script>
     import TheSlider from '@/components/TheSlider.vue'
     import TheAlert from '../components/TheAlert.vue'
+    import TheFailed from './TheFailed.vue'
     import axios from 'axios'
     export default {
         data(){
@@ -98,70 +108,73 @@
                 country: "",
                 year: "",
                 genre: "rock",
+                barcode: "",
                 price: "",
                 priceEnter: 'Enter price: <input type="number" name="price" class="custom" v-model="price">',
                 currentIndex: 0,
                 img: [],
+                failed: {"data": [], "condition": [], "img": []},
+                alert: {},
                 cartonFlag: false,
                 visible: false,
                 imgFlag: false,
                 waitFlag: false,
-                loading: false,
-                alert: {}
+                failedFlag: false,
+                loading: false
             }
         },
         methods:{
             async listingOffer(data) {
-                let selectedData = []
-                let barcode = ""
-                let input_data = this.imageData.data.slice(this.currentIndex-1, this.currentIndex+2)
-                if (input_data.length > 0){
-                    for (let i = 0; i<3; i++){
-                        barcode += input_data[i].input_data
-                    }
-                }
-                // Listing offer
-                try{
-                    selectedData = [{
+                if (data.title !== undefined && data.price !== undefined){
+                    let selectedData = {}
+                    // Get data
+                    selectedData = {
                         id: data.id,
                         title: data.title,
                         label: data.label,
                         country: data.country,
                         year: data.year,
                         genre: data.genre,
-                        price: Object.keys(data.price).length != 0 && data.price.hasOwnProperty(this.condition) ? this.roundedPrice(data.price[this.condition].value) : this.price,
-                        barcode: barcode
-                    }]
-                }
-                catch{
-                    selectedData = [{
-                        id: "",
-                        title: this.title,
-                        label: this.label ? this.label : "-",
-                        country: this.country ? this.country : "-",
-                        year: this.year ? this.year : "-",
-                        genre: this.genre,
-                        price: this.price,
-                        barcode: barcode
-                    }]
-                }
-                if (selectedData[0].title != "" && selectedData[0].price != ""){
-                    this.loading = true
-                    this.waitFlag = true
-                    const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: [this.img[2], this.img[1], this.img[0]], type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
-                    if (response.data.error || response.data.errors){
-                        this.alert = {variant: "danger", message: "Listing offer failed"}
+                        price: data.price[this.condition] !== undefined ? this.roundedPrice(data.price[this.condition]) : data.price,
+                        barcode: data.barcode
                     }
-                    else{
-                        this.alert = {variant: "success", message: "Listing offer success"}
-                        this.title = "",
-                        this.label = "",
-                        this.country = "",
-                        this.year = "",
-                        this.price = ""
-                        // New offer
-                        this.next()
+
+                    if (selectedData.id == undefined){
+                        selectedData = {
+                            id: "",
+                            title: this.title,
+                            label: this.label ? this.label : "-",
+                            country: this.country ? this.country : "-",
+                            year: this.year ? this.year : "-",
+                            genre: this.genre,
+                            price: this.price,
+                            barcode: this.barcode ? this.barcode : "-"
+                        }
                     }
+
+                    // Send data
+                        this.loading = true
+                        this.waitFlag = true
+                        const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: [this.img[2], this.img[1], this.img[0]], type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
+                        console.log(response)
+                        if (response.data.error || response.data.errors){
+                            this.failed.data.push(selectedData)
+                            this.failed.condition.push(this.condition)
+                            this.failed.img.push(this.img[0])
+                            this.alert = {variant: "danger", message: "Listing offer failed"}
+                            // Next offer   
+                            this.next()
+                        }
+                        else{
+                            this.alert = {variant: "success", message: "Listing offer success"}
+                            this.title = "",
+                            this.label = "",
+                            this.country = "",
+                            this.year = "",
+                            this.price = ""
+                            // Next offer
+                            this.next()
+                        }
                 }
                 else{
                     this.alert = {variant: "warning", message: "Complete title and price"}
@@ -170,17 +183,28 @@
 
             next(){
                 this.loading = true
+                this.waitFlag = true
                 this.currentIndex += 3
                 if (this.currentIndex >= this.imageData.data.length) {
-                    this.$router.push('/')
-                    this.cartonFlag = false
+                    if(this.failed.data.length != 0){
+                        this.failedFlag = true
+                    }
+                    else{
+                        this.$router.push('/')
+                    }
+                    
                     this.imgFlag = false
                     this.loading = false
-                    return ""
                 }
                 else{
                     this.img = []
-                    let data = this.imageData.data.slice(this.currentIndex, this.currentIndex+3)
+                    let data
+                    if (this.type == "CD"){
+                        data = this.imageData.data.slice(this.currentIndex-1, this.currentIndex+2)
+                    }
+                    else{
+                        data = this.imageData.data.slice(this.currentIndex, this.currentIndex+3)
+                    }
                     for (let i = 0; i < data.length; i++) {
                         this.img.push(data[i].url)
                     }
@@ -188,8 +212,14 @@
                 }
             },
             roundedPrice(price) {
-                const roundedValue = Math.round((price * 3) / 10) * 10 - 0.01
-                const finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
+                let finalValue
+                if (price){
+                    const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01
+                    finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
+                }
+                else{
+                    finalValue = 0
+                }
                 return finalValue
             },
             confirmCarton(){
@@ -236,7 +266,8 @@
         },
         components:{
             TheSlider,
-            TheAlert
+            TheAlert,
+            TheFailed
         }
     }
 </script>

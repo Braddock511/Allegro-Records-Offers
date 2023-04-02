@@ -6,7 +6,7 @@
                 <div class="input-container">
                     <input type="text" name="offer-id" v-model="offerId" required>
                 </div>        
-                <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getOffer">Get offer</button>
+                <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getOffer">Get offer</button>
             </form>
         </section>
     </span>
@@ -15,10 +15,10 @@
             <TheSlider :images="img.slice().reverse()"></TheSlider>
             <table>
                 <tr>
-                    <td colspan="5"  style="border: none;">
+                    <td colspan="6"  style="border: none; background-color: #202833;">
                         <span style="display: flex; flex-direction: column; align-items: center; gap: 10px;">    
-                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem;" @click="editImage">Clear image</button>
-                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem;" @click="offerData = ''">Back</button>
+                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">Clear image</button>
+                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="offerData = ''; alert = {}">Back</button>
                         </span>
                     </td>
                 </tr>
@@ -29,13 +29,24 @@
                     <td><h2>Label</h2></td>
                     <td><h2>Country</h2></td>
                     <td><h2>Year</h2></td>
+                    <td>
+                        <h2>Price</h2>
+                        <select v-model="condition" @change="this.price = ''">
+                            <option value="Near Mint (NM or M-)">M- (Almost Perfect)</option>
+                            <option value="Mint (M)">M (New)</option>
+                            <option value="Very Good Plus (VG+)">VG+ (Excellent)</option>
+                            <option value="Very Good (VG)">VG (Very Good)</option>
+                            <option value="Good (G)">G (Good)</option>
+                        </select>
+                    </td>
                     <td><h2>Edit offer</h2></td>
                 </tr>
                 <tr>
                     <td>{{ offerData.data.offer.name }}</td>
-                    <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
-                    <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
-                    <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
+                    <td><input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
+                    <td><input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
+                    <td><input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
+                    <td><input type="text" name="price" class="custom" placeholder="-" v-model="price"></td>
                     <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer">Edit</button></td>
                 </tr>
                 <tr v-for="data in offerData.data.discogs.data" v-if="offerData && offerData.data.discogs.data">
@@ -43,6 +54,12 @@
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
+                    <td v-if="data.price[condition] !== undefined">
+                        <input type="number" name="price" class="custom" :placeholder="roundedPrice(data.price[condition])" v-model="price" @click="price = roundedPrice(data.price[condition])">
+                    </td>
+                    <td v-else>
+                        <input type="number" name="price" class="custom" v-model="price">
+                    </td>
                     <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer(data)">Edit</button></td>
                 </tr>
             </table>
@@ -68,6 +85,8 @@
                 label: "",
                 country: "",
                 year: "",
+                price: "",
+                condition: "Near Mint (NM or M-)",
                 loading: false,
                 alert: {}
             }
@@ -105,50 +124,68 @@
                 this.loading = false
             },
             async editOffer(data){
-                let selectedData = []
-                // Edit offer
-                selectedData = [{
-                    id: data.id,
-                    label: data.label,
-                    country: data.country,
-                    year: data.year,
-                }]
+                if (this.price !== ""){
+                    let selectedData = {}
+                    // Edit offer
+                    selectedData = {
+                        id: data.id,
+                        label: data.label,
+                        country: data.country,
+                        year: data.year,
+                        price: this.price
+                    }
 
-                if (selectedData[0].id == undefined)
-                    selectedData = [{
-                        id: "",
-                        label: this.label ? this.label : "-",
-                        country: this.country ? this.country : "-",
-                        year: this.year ? this.year : "-",
-                }]
-                this.loading = true
-                const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.offerId, images: this.img, data: selectedData})
-                if (response.data.error || response.data.errors){
-                    this.alert = {variant: "danger", message: "Edit description failed"}
+                    if (selectedData.id === undefined){
+                        selectedData = {
+                            id: "-",
+                            label: this.label ? this.label : "-",
+                            country: this.country ? this.country : "-",
+                            year: this.year ? this.year : "-",
+                            price: this.price
+                        }
+                    }
+                    this.loading = true
+                    const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.offerId, images: this.img, data: selectedData})
+                    if (response.data.error || response.data.errors){
+                        this.alert = {variant: "danger", message: "Edit description failed"}
+                    }
+                    else{
+                        this.alert = {variant: "success", message: "Edit description success"}
+                    }
+                    this.label = ""
+                    this.country = ""
+                    this.year = ""
+                    this.price = ""
+                    this.loading = false
                 }
                 else{
-                    this.alert = {variant: "success", message: "Edit description success"}
+                    this.alert = {variant: "warning", message: "Complete price"}
+                }
+            },
+            async editImage(){
+                this.loading = true
+                this.clearImage = await axios.post('http://127.0.0.1:8000/clear-image', {image: this.img[0]})
+                let otherImages = this.img.slice(1, this.img.length)
+                let newImages = ([this.clearImage.data, otherImages]).flat()
+                const response = await axios.post('http://127.0.0.1:8000/allegro-edit-image', {offerID: this.offerId, images: newImages})
+                if (response.data.error || response.data.errors){
+                    this.alert = {variant: "danger", message: "Edit image failed"}
+                }
+                else{
+                    this.alert = {variant: "success", message: "Edit image success"}
                 }
                 this.loading = false
             },
-            async editImage(){
-                try{
-                    this.loading = true
-                    this.clearImage = await axios.post('http://127.0.0.1:8000/clear-image', {image: this.img[0]})
-                    let otherImages = this.img.slice(1, this.img.length)
-                    let newImages = ([this.clearImage.data, otherImages]).flat()
-                    const response = await axios.post('http://127.0.0.1:8000/allegro-edit-image', {offerID: this.offerId, images: newImages})
-                    if (response.data.error || response.data.errors){
-                        this.alert = {variant: "danger", message: "Edit image failed"}
-                    }
-                    else{
-                        this.alert = {variant: "success", message: "Edit image success"}
-                    }
-                    this.loading = false
+            roundedPrice(price) {
+                let finalValue
+                if (price){
+                    const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01
+                    finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
                 }
-                catch{
-                    alert("Upload failed")
+                else{
+                    finalValue = 0
                 }
+                return finalValue
             }
         },
         components:{

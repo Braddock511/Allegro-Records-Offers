@@ -28,10 +28,10 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
 def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str) -> dict:
     allegro_token = credentials["api_allegro_token"]
     if type_record == "Vinyl":
-        categories_lp = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "classical": 9536, "new": 284, "opera": 261156, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
+        categories_lp = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
         genre = categories_lp.get(genre)
     elif type_record == "CD":
-        categories_cd = {"all": 175, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
+        categories_cd = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
         genre = categories_cd.get(genre)
 
     if type_offer == "all":
@@ -55,14 +55,13 @@ def get_offer_info(credentials: dict, offer_id: int) -> dict:
 
 def create_offer(credentials: dict, data: dict, carton: str, condition: str, images: list, type_record: str, clear: bool) -> dict:
     if type_record == "Vinyl":
-        categories = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "classical": 9536, "new": 284, "opera": 261156, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
+        categories = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "classical": 9536, "new": 284, "opera": 261156, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
     elif type_record == "CD":
-        categories = {"all": 175, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
+        categories = {"all": 175, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
 
     conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G"}
 
     # Discogs data
-    data = data[0]
     id = data['id']
     title = data['title']
     label = data['label']
@@ -84,7 +83,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     category = categories.get(genre.lower())
     condition = conditions.get(condition)
     author, name = title.split("-")[:2]
-    name = f'{author}.{carton}' if len(f'{author} - {name}.{carton}') > 50 else f'{author} - {name}.{carton}'
+    full_name = f'{author.strip()}.{carton}' if len(f'{author} - {name}.{carton}') > 50 else f'{author} - {name}.{carton}'
     allegro_condition = ["Nowy", "11323_1"] if condition == "M" else ["Używany", "11323_2"]
 
     if clear:
@@ -143,11 +142,11 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     
     elif type_record == "CD":
         data = {
-            "name": name,
+            "name": full_name,
 
             "productSet": [{
                 "product": {
-                    "name": f'{author} - {name}',
+                    "name": f'{author.strip()} - {name.strip()}',
                     "category": {
                         "id": category
                     },
@@ -166,7 +165,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
                         },
                         {
                             'name': 'EAN (GTIN)',
-                            'values': [barcode]
+                            'values': [barcode.strip()]
                         },
                     ],
 
@@ -207,9 +206,8 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
         try:
             error = result.json()['errors'][0]['message']
-
             if "Existing Product related" in error:
-                # Update category ID)
+                # Update category ID
                 error = result.json()
                 error = error['errors'][0]['userMessage']
 
@@ -243,13 +241,16 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
                 
                 if new_title:
                     data['productSet'][0]['product']['parameters'][1]['values'] = [new_title.strip()]
-                
                 else:
                     return result.json()
             
-            elif "Request Timeout" in error:
-                pass
-            
+            elif "Invalid GTIN" in error:
+                # Update barcode
+                new_barcode = error.split(" - ")[1].split(" in ")[0]
+                if len(new_barcode) not in [8, 10, 12, 13, 14]:
+                    new_barcode = "0" + new_barcode
+                data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]                
+
             i+=1
             
         except:
@@ -303,6 +304,7 @@ def edit_description(credentials: dict, offer_id: str, images: list, information
     label = information['label'].replace("&", "")
     country = information['country'].replace("&", "")
     released = information['year'].replace("&", "")
+    price = information['price'] if 'price' in information.keys() else ""
     offer = get_offer_info(credentials, offer_id)
 
     if not "Rok wydania" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and released != "-":
@@ -326,7 +328,7 @@ def edit_description(credentials: dict, offer_id: str, images: list, information
                     {
                         'items': [
                             {'type': 'IMAGE', 'url': images[1]}, 
-                            {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}
+                            {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
                         ]
                     },
                     {
@@ -336,8 +338,9 @@ def edit_description(credentials: dict, offer_id: str, images: list, information
                     }
                 ]
             }
-
     offer['productSet'][0]['product']['images'] = images
+    if price:
+        offer['sellingMode'] = {"price": {"amount": price, "currency": "PLN"}}
 
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
     result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
@@ -347,4 +350,10 @@ def edit_images(credentials: dict, offer_id: str, images: list) -> dict:
     allegro_token = credentials["api_allegro_token"]
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
     result = requests.patch(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json={'images': images}, verify=False)
+    return result.json()
+
+def get_payment_history(credentials: dict, limit: int, offset: int) -> dict:
+    allegro_token = credentials["api_allegro_token"]
+    url = f"https://api.allegro.pl/payments/payment-operations?limit={limit}&offset={offset}"
+    result = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, verify=False)
     return result.json()

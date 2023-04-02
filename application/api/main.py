@@ -6,6 +6,7 @@ import allegro_api as allegro
 from  azure_api import read_image
 from  preprocessing_data import preprocess_data, remove_background, get_cd_barcode
 from  imageKit_api import upload_file_imageKit
+from plots import annual_sale_barplot
 
 app = FastAPI()
 
@@ -170,7 +171,7 @@ async def edit_offer(request: Request):
         response = loads((await request.body()).decode('utf-8'))
         offer_id = response['offerId']
         images = response['images']
-        new_data = response['data'][0]
+        new_data = response['data']
 
         result = allegro.edit_description(credentials, offer_id, images, new_data)
 
@@ -241,8 +242,8 @@ async def allegro_offer(request: Request):
     except Exception as e:
         return {"error": f"Exception in allegro_offer: {str(e)}"}
 
-@app.get("/allegro-stats")
-async def allegro_stats():
+@app.get("/allegro-visitors-viewers")
+async def allegro_visitors_viewers():
     try:
         credentials = db.get_credentials()
         offers = []
@@ -264,4 +265,38 @@ async def allegro_stats():
         return offers
 
     except Exception as e:
-        return {"error": f"Exception in allegro_stats: {str(e)}"}
+        return {"error": f"Exception in allegro_visitors_viewers: {str(e)}"}
+    
+@app.get("/allegro-sale")
+async def allegro_sale():
+    try:
+        credentials = db.get_credentials()
+        offers = []
+        i = 0
+
+        while True:
+            payment_history = allegro.get_payment_history(credentials, 100, 100*i)
+            offers.append(payment_history['paymentOperations'])
+
+            if not payment_history['paymentOperations']:
+                break
+            i+=1
+
+        offers = sum(offers, [])
+
+        return offers
+    
+    except Exception as e:
+        return {"error": f"Exception in allegro_sale: {str(e)}"}
+    
+@app.get("/plots")
+async def plots():
+    try:
+        credentials = db.get_credentials()
+        data = await allegro_sale()
+        bar_plot = annual_sale_barplot(credentials, data)
+        
+        return {"bar_plot": bar_plot}
+    
+    except Exception as e:
+        return {"error": f"Exception in plots: {str(e)}"}

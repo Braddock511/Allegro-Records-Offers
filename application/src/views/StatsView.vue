@@ -1,19 +1,26 @@
 <template>
     <TheHeader />
-    <span>
+
+    <h1 @click="flagToogle" style="width: 100%; text-align: center; cursor: pointer; ;opacity: 0.8 hover;">Visitors and viewers statistics / Sales statistics</h1>
+    <span v-if="!loading && flag">
         <div class="data">
-            <table v-if="!loading && allegroStats">
+            <table v-if="visitors_viewers">
                 <tr>
                     <td>Name (Click to go to the offer)</td>
                     <td @click="sortVisitors" style="cursor: pointer;"><span class="arrow">Visitors &#8595</span></td>
                     <td @click="sortWatchers" style="cursor: pointer;"><span class="arrow">Watchers &#8595</span></td>
                 </tr>
-                <tr v-for="index in 60" :key="index" v-if="allegroStats[0]">
-                    <td><a :href="getUrl(allegroStats[index-1]?.id, allegroStats[index-1]?.name)" target="_blank" style="background-color: none;">{{ allegroStats[index-1]?.name}}</a></td>
-                    <td>{{ allegroStats[index-1]?.stats.visitsCount }}</td>
-                    <td>{{ allegroStats[index-1]?.stats.watchersCount }}</td>
+                <tr v-for="index in 60" :key="index" v-if="visitors_viewers[0]">
+                    <td><a :href="getUrl(visitors_viewers[index-1]?.id, visitors_viewers[index-1]?.name)" target="_blank" style="background-color: none;">{{ visitors_viewers[index-1]?.name}}</a></td>
+                    <td>{{ visitors_viewers[index-1]?.stats.visitsCount }}</td>
+                    <td>{{ visitors_viewers[index-1]?.stats.watchersCount }}</td>
                 </tr>
             </table>
+        </div>
+    </span>
+    <span v-if="!loading && !flag" style="flex-direction: column; width: 100%;">
+        <div class="data" style="width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap;">
+            <img :src="barPlot" alt="bar plot">
         </div>
     </span>
     <div id="loading" v-if="loading">
@@ -30,7 +37,9 @@
     export default {
         data(){
             return{
-                allegroStats: "",
+                visitors_viewers: "",
+                barPlot: "",
+                flag: true,
                 loading: false,
                 alert: {}
             }
@@ -43,20 +52,27 @@
                 return "https://allegro.pl/oferta/" + formattedName
             },
             sortVisitors(){
-                this.allegroStats = this.allegroStats.sort((a, b) => b.stats.visitsCount - a.stats.visitsCount)
+                this.visitors_viewers = this.visitors_viewers.sort((a, b) => b.stats.visitsCount - a.stats.visitsCount)
             },
             sortWatchers(){
-                this.allegroStats = this.allegroStats.sort((a, b) => b.stats.watchersCount - a.stats.watchersCount)
+                this.visitors_viewers = this.visitors_viewers.sort((a, b) => b.stats.watchersCount - a.stats.watchersCount)
+            },
+            flagToogle(){
+                this.flag = !this.flag
             }
         },
         async beforeMount(){
             this.loading = true
-            this.allegroStats = await axios.get('http://127.0.0.1:8000/allegro-stats')
-            this.allegroStats = this.allegroStats.data
-            if (this.allegroStats.error){
+            this.visitors_viewers = await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')
+            this.visitors_viewers = this.visitors_viewers.data
+            
+            const plots = await axios.get('http://127.0.0.1:8000/plots')
+            if (this.visitors_viewers.error || plots.data.error)
+            {
                 this.alert = {variant: "danger", message: "Something went wrong"}
             }
             else{
+                this.barPlot = plots.data.bar_plot
                 this.alert = {variant: "success", message: "Uploading statistics - success"}
             }
             
@@ -71,6 +87,9 @@
 </script>
 
 <style lang="scss" scoped>
+    h1:hover{
+        opacity: 0.7;
+    };
     span{
         display: flex;
         justify-content: center;
@@ -86,6 +105,11 @@
             .arrow:hover{
                 color: #4CAF50;
             }
+        }
+
+        img{
+            max-width: 100%;
+            height: 750px;
         }
     }
 @media screen and (max-width: 500px) {

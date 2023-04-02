@@ -28,39 +28,39 @@
                     Genre
                     <select v-model="genre">
                         <option value="all">All</option>
-                        <option value="ballad">Ballada, Poezja śpiewana</option>
+                        <option value="ballad">Ballad, Sung poetry</option>
                         <option value="blues">Blues, Rhythm'n'Blues</option>
                         <option value="country">Country</option>
                         <option value="dance">Dance</option>
-                        <option value="disco">Disco polo, biesiadna, karaoke</option>
-                        <option value="kids">Dla dzieci</option>
+                        <option value="disco">Disco polo, Party, Karaoke</option>
+                        <option value="kids">For children</option>
                         <option value="ethno">Ethno, Folk, World music</option>
                         <option value="jazz">Jazz, Swing</option>
-                        <option value="carols">Kolędy</option>
+                        <option value="carols">Christmas carols</option>
                         <option value="metal">Metal</option>
-                        <option value="alternative">Muzyka alternatywna</option>
-                        <option value="electronic">Muzyka elektroniczna</option>
-                        <option value="film">Muzyka filmowa</option>
-                        <option value="classical">Muzyka klasyczna</option>
-                        <option value="religious">Muzyka religijna, oazowa</option>
-                        <option value="new">Nowe brzmienia</option>
-                        <option value="opera">Opera, Operetka</option>
+                        <option value="alternative">Alternative music</option>
+                        <option value="electronic">Electronic music</option>
+                        <option value="film">Film music</option>
+                        <option value="classical">Classical music</option>
+                        <option value="religious">Religious music, retreat</option>
+                        <option value="new">New sounds</option>
+                        <option value="opera">Opera, Operetta</option>
                         <option value="pop">Pop</option>
                         <option value="rap">Rap, Hip-Hop</option>
                         <option value="reggae">Reggae, Ska</option>
                         <option value="rock">Rock</option>
                         <option value="rock'n'roll">Rock'n'roll</option>
-                        <option value="single">Single</option>
-                        <option value="compilations">Składanki</option>
+                        <option value="single">Singles</option>
+                        <option value="compilations">Compilations</option>
                         <option value="soul">Soul, Funk</option>
                         <option value="synth-po">Synth-pop</option>
-                        <option value="other">Pozostałe</option>
-                        <option value="sets">Zestawy, pakiety</option>
+                        <option value="other">Other</option>
+                        <option value="sets">Sets, packages</option>
                     </select>
                 </div>
                 <span style="display:flex; justify-content: center; gap: 10px;">
-                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getData('desc')">Edit description</button>
-                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getData('images')">Edit images</button>
+                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getData('desc')">Edit description</button>
+                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getData('images')">Edit images</button>
                 </span>
             </form>
         </section>

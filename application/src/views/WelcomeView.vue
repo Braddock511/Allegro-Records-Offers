@@ -18,16 +18,14 @@
 
 <script>
     import TheHeader from "@/components/TheHeader.vue"
-    import VueCookies from "vue-cookies"
     export default {
         computed: {
             isCookieSet() {
-                return VueCookies.get("allegro-cred") === "true"
+                return this.$cookies.get("allegro-cred") === "true"
             },
         },
         components: {
             TheHeader,
-            VueCookies
         }
     }
 </script>

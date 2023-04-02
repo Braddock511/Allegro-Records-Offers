@@ -5,9 +5,9 @@
         <img :src="clearImage.data" alt="clear-image" v-if="clearImage">
         <h2 v-if="clearImage">Cleared image</h2>
         <span id="buttons" style="width: 50%; display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem;" @click="editImages" v-if="clearImage">Edit image</button>
-            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem;" @click="clearImages" v-if="!clearImage">Clear</button>
-            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem;" @click="next">Next</button>
+            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="editImages" v-if="clearImage">Edit image</button>
+            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="clearImages" v-if="!clearImage">Clear</button>
+            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="next">Next</button>
         </span>
     </div>
     <div id="loading" v-if="loading">
