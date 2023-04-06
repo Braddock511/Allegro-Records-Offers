@@ -137,7 +137,6 @@
                         price: data.price[this.condition] !== undefined ? this.roundedPrice(data.price[this.condition]) : data.price,
                         barcode: data.barcode
                     }
-
                     if (selectedData.id == undefined){
                         selectedData = {
                             id: "",
@@ -150,7 +149,6 @@
                             barcode: this.barcode ? this.barcode : "-"
                         }
                     }
-
                     // Send data
                         this.loading = true
                         this.waitFlag = true
@@ -178,7 +176,6 @@
                     this.alert = {variant: "warning", message: this.$t("alerts.complete")}
                 }
             },
-
             next(){
                 this.loading = true
                 this.waitFlag = true

@@ -1,6 +1,6 @@
 import unittest
 import base64
-import io
+from api.main import read_image_data, clear_image, discogs_info, edit_offer, edit_image, allegro_listing, allegro_offers, allegro_offer, allegro_visitors_viewers, allegro_sale
 from scripts.preprocessing_data import search_data, get_cd_barcode, preprocess_data, remove_background
 from scripts.imageKit_api import upload_file_imageKit
 from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist
@@ -198,6 +198,109 @@ class Test(unittest.TestCase):
 
         self.assertEqual(result, "<p><b>LISTA UTWORÓW: -</b></p>")
 
+    async def test_read_image_data(self):
+        payload = {
+            "images": [
+            ],
+            "typeRecord": "Vinyl",
+            "numberImages": 3
+        }
+        response = await read_image_data(payload)
+        
+        self.assertEqual(response, 200, msg=response)
+
+    async def test_clear_image(self):
+        payload = {
+            "image": ""
+        }
+        response = await clear_image(payload)
+
+        self.assertIsInstance(response, str)
+
+    async def test_discogs_info(self):
+        payload = {
+            "allegroData": {
+            
+            },
+            "typeRecord": "Vinyl"
+        }
+        response = await discogs_info(payload)
+
+        self.assertIn('offer', response.keys())
+        self.assertIn('discogs', response.keys())
+
+    async def test_edit_offer(self):
+        payload = {
+            "offerId": 0,
+            "images": [
+            
+            ],
+            "data": {
+            
+            }
+        }
+        response = await edit_offer(payload)
+
+        self.assertIn('name', response.keys())
+
+    async def test_edit_image(self):
+        payload = {
+            "offerId": 0,
+            "images": [
+            
+            ],
+        }
+        response = await edit_image(payload)
+
+        self.assertIn('name', response.keys())
+
+    async def test_allegro_listing(self):
+        payload = {
+            "data": {
+            
+            },
+            "carton": "",
+            "condition": "",
+            "images":[
+            
+            ],
+            "type": "Vinyl",
+            "clear": False
+        }
+        response = await allegro_listing(payload)
+
+        self.assertIn('name', response.keys())
+
+    async def test_allegro_offers(self):
+        payload = {
+            "limit": 0,
+            "offset": 0,
+            "typeOffer": "BUY_NOW",
+            "typeRecord": "Vinyl",
+            "genre": "all"
+        }
+        response = await allegro_offers(payload)
+
+        self.assertIn('offers', response.keys())
+
+    async def test_allegro_offer(self):
+        payload = {
+            "offerId": 0,
+        }
+        response = await allegro_offer(payload)
+
+        self.assertIn('name', response.keys())
+
+    async def test_allegro_offer(self):
+        response = await allegro_visitors_viewers()
+
+        self.assertIn('name', response[0].keys())
+
+    async def test_allegro_offer(self):
+        response = await allegro_sale()
+
+        self.assertIn('wallet', response[0].keys())
+
     def test_get_my_offers(self):
         limit = 1
         offset = 0
@@ -312,6 +415,8 @@ class Test(unittest.TestCase):
         result = annual_sale_barplot(Test.credentials, data)
 
         self.assertIsInstance(result, str)
+
+
 
 if __name__ == '__main__':
     unittest.main()

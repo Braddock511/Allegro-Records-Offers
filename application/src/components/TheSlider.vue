@@ -9,11 +9,11 @@
         @hide="visible = false">
     </vue-easy-lightbox>
     <div class="slider">
-      <div class="arrow-left" @click="prevImage" v-if="waitFlag">&#8249;</div>
+      <div class="arrow-left" @click="prevImage" v-if="waitFlag" style="left: 10px;">&#8249;</div>
       <div class="image-container">
         <img :src="images[currentIndex]" alt="Slider Image" @click="visible = true">
       </div>
-      <div class="arrow-right" @click="nextImage" v-if="waitFlag">&#8250;</div>
+      <div class="arrow-right" @click="nextImage" v-if="waitFlag" style="right: 10px;">&#8250;</div>
     </div>
 </template>
   
@@ -43,7 +43,6 @@
                 }
             }
         },
-
         mounted(){
             const images = this.images
             const promises = images.map(imgSrc => {
@@ -53,12 +52,10 @@
                     img.src = imgSrc
                 })
             })
-
             Promise.all(promises).then(() => {
                 this.waitFlag = true
             })
         },
-
         props: {
             images: {
                 type: Array,
@@ -92,12 +89,6 @@
         align-items: center;
         cursor: pointer;
     }
-    .arrow-left {
-        left: 10px;
-    }
-    .arrow-right {
-        right: 10px;
-    }
     .image-container {
         flex: 1;
         height: 100%;
@@ -115,7 +106,6 @@
         }
     }
 }
-
 @media only screen and (max-width: 820px) {
     .slider{
         width: 500px;

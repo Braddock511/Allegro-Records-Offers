@@ -2,7 +2,7 @@
     <div class="data" v-if="!loading">
         <h1 v-if="!clearImage">{{ $t("editImages.firstImage") }}</h1>
         <TheSlider :images="allegroImages" v-if="!clearImage"></TheSlider>
-        <img :src="clearImage.data" alt="clear-image" v-if="clearImage">
+        <img :src="clearImage.data" alt="clear-image" v-if="clearImage" style="min-width: 750px; min-height: 750px; border: 3px solid black;">
         <h2 v-if="clearImage">{{ $t("editImages.cleared") }}</h2>
         <span id="buttons" style="width: 50%; display: flex; flex-direction: column; gap: 10px;">
             <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="editImages" v-if="clearImage">{{ $t("editImages.editImage") }}</button>
@@ -37,7 +37,6 @@
                 if (this.clearImage.data.error || this.clearImage.data.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.clearFailed")}
                 }
-
                 setTimeout(() => { this.loading = false }, 2500)
             },
             async editImages(){
@@ -98,13 +97,3 @@
         }
     }
 </script>
-
-<style lang="scss" scoped>
-    .data{
-        img{
-            min-width: 750px;
-            min-height: 750px;
-            border: 3px solid black;
-        }
-    }
-</style>
