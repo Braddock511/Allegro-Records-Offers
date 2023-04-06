@@ -1,70 +1,70 @@
 <template>
-    <span v-if="!cartonFlag" id="carton"><h2>Enter carton</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">Confirm</button></span>
+    <span v-if="!cartonFlag" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
     <div class="data" v-if="img && cartonFlag && !waitFlag && !failedFlag">
         <TheSlider :images="img" ></TheSlider>
         <table v-if="imgFlag">
             <tr style="border: none;">
-                <td colspan="8" style="border: none; text-align: center; background-color: #202833;"><button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="next">Next</button></td>
+                <td colspan="8" style="border: none; text-align: center; background-color: #202833;"><button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="next">{{ $t("table.next") }}</button></td>
             </tr>
             <tr>
-                <td><h2>Title</h2></td>
-                <td><h2>Label</h2></td>
-                <td><h2>Country</h2></td>
-                <td><h2>Year</h2></td>
-                <td><h2>Genre</h2></td>
-                <td v-if="type == 'CD'"><h2>Barcode</h2></td>
+                <td><h2>{{ $t("table.title") }}</h2></td>
+                <td><h2>{{ $t("table.label") }}</h2></td>
+                <td><h2>{{ $t("table.country") }}</h2></td>
+                <td><h2>{{ $t("table.year") }}</h2></td>
+                <td><h2>{{ $t("table.genre") }}</h2></td>
+                <td v-if="type == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
                 <td>
-                    <h2>Condition:</h2>
+                    <h2>{{ $t("table.condition") }}</h2>
                     <select v-model="condition">
-                        <option value="Near Mint (NM or M-)">M- (Almost Perfect)</option>
-                        <option value="Mint (M)">M (New)</option>
-                        <option value="Very Good Plus (VG+)">VG+ (Excellent)</option>
-                        <option value="Very Good (VG)">VG (Very Good)</option>
-                        <option value="Good (G)">G (Good)</option>
+                        <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
+                        <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                        <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
+                        <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
+                        <option value="Good (G)">{{ $t("table.good") }}</option>
                     </select>
                 </td>
-                <td><h2>Listing offer</h2></td>
+                <td><h2>{{ $t("table.listing_offer") }}</h2></td>
             </tr>
             <tr>
-                <td>Enter title: <input type="text" name="title" class="custom" v-model="title"></td>
-                <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
-                <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
-                <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
+                <td>{{ $t("table.enter_title") }} <input type="text" name="title" class="custom" v-model="title"></td>
+                <td>{{ $t("table.enter_label") }} <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
+                <td>{{ $t("table.enter_country") }} <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
+                <td>{{ $t("table.enter_year") }} <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
                 <td>                    
                     <select v-model="genre" style="width: 85%;">
-                        <option value="ballad">Ballad, Sung poetry</option>
-                        <option value="blues">Blues, Rhythm'n'Blues</option>
-                        <option value="country">Country</option>
-                        <option value="dance">Dance</option>
-                        <option value="disco">Disco polo, Party, Karaoke</option>
-                        <option value="children's">For children</option>
-                        <option value="ethno">Ethno, Folk, World music</option>
-                        <option value="jazz">Jazz, Swing</option>
-                        <option value="carols">Christmas carols</option>
-                        <option value="metal">Metal</option>
-                        <option value="alternative">Alternative music</option>
-                        <option value="electronic">Electronic music</option>
-                        <option value="film">Film music</option>
-                        <option value="classical">Classical music</option>
-                        <option value="religious">Religious music, retreat</option>
-                        <option value="new">New sounds</option>
-                        <option value="opera">Opera, Operetta</option>
-                        <option value="pop">Pop</option>
-                        <option value="rap">Rap, Hip-Hop</option>
-                        <option value="reggae">Reggae, Ska</option>
-                        <option value="rock">Rock</option>
-                        <option value="rock'n'roll">Rock'n'roll</option>
-                        <option value="single">Singles</option>
-                        <option value="compilations">Compilations</option>
-                        <option value="soul">Soul, Funk</option>
-                        <option value="synth-po">Synth-pop</option>
-                        <option value="other">Other</option>
-                        <option value="sets">Sets, packages</option>
+                        <option value="ballad">{{ $t("genre_options.ballad") }}</option>
+                        <option value="blues">{{ $t("genre_options.blues") }}</option>
+                        <option value="country">{{ $t("genre_options.country") }}</option>
+                        <option value="dance">{{ $t("genre_options.dance") }}</option>
+                        <option value="disco">{{ $t("genre_options.disco") }}</option>
+                        <option value="children's">{{ $t("genre_options.children") }}</option>
+                        <option value="ethno">{{ $t("genre_options.ethno") }}</option>
+                        <option value="jazz">{{ $t("genre_options.jazz") }}</option>
+                        <option value="carols">{{ $t("genre_options.carols") }}</option>
+                        <option value="metal">{{ $t("genre_options.metal") }}</option>
+                        <option value="alternative">{{ $t("genre_options.alternative") }}</option>
+                        <option value="electronic">{{ $t("genre_options.electronic") }}</option>
+                        <option value="film">{{ $t("genre_options.film") }}</option>
+                        <option value="classical">{{ $t("genre_options.classical") }}</option>
+                        <option value="religious">{{ $t("genre_options.religious") }}</option>
+                        <option value="new">{{ $t("genre_options.new") }}</option>
+                        <option value="opera">{{ $t("genre_options.opera") }}</option>
+                        <option value="pop">{{ $t("genre_options.pop") }}</option>
+                        <option value="rap">{{ $t("genre_options.rap") }}</option>
+                        <option value="reggae">{{ $t("genre_options.reggae") }}</option>
+                        <option value="rock">{{ $t("genre_options.rock") }}</option>
+                        <option value="rock'n'roll">{{ $t("genre_options.rock_and_roll") }}</option>
+                        <option value="single">{{ $t("genre_options.single") }}</option>
+                        <option value="compilations">{{ $t("genre_options.compilations") }}</option>
+                        <option value="soul">{{ $t("genre_options.soul") }}</option>
+                        <option value="synth-pop">{{ $t("genre_options.synth_pop") }}</option>
+                        <option value="other">{{ $t("genre_options.other") }}</option>
+                        <option value="sets">{{ $t("genre_options.sets") }}</option>
                     </select>
                 </td>
-                <td v-if="type == 'CD'">Enter barcode: <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
-                <td>Enter price: <input type="number" name="price" class="custom" v-model="price"></td>
-                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">Send</button></td>
+                <td v-if="type == 'CD'">{{ $t("table.enter_barcode") }} <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
+                <td>{{ $t("table.enter_price") }} <input type="number" name="price" class="custom" min="1" v-model="price"></td>
+                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
             </tr>
             <tbody>
             <tr v-for="data in imageData.data[currentIndex].information.data">
@@ -78,9 +78,9 @@
                     {{ roundedPrice(data.price[condition])}}
                 </td>
                 <td v-else>
-                    <input type="number" name="price" class="custom" v-model="price">
+                    <input type="number" name="price" class="custom" min="1" v-model="price">
                 </td>
-                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer(data)">Send</button></td>
+                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer(data)">{{ $t("table.send") }}</button></td>
             </tr>
             </tbody>
         </table>
@@ -110,7 +110,6 @@
                 genre: "rock",
                 barcode: "",
                 price: "",
-                priceEnter: 'Enter price: <input type="number" name="price" class="custom" v-model="price">',
                 currentIndex: 0,
                 img: [],
                 failed: {"data": [], "condition": [], "img": []},
@@ -155,18 +154,17 @@
                     // Send data
                         this.loading = true
                         this.waitFlag = true
-                        const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: [this.img[2], this.img[1], this.img[0]], type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
-                        console.log(response)
+                        const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
                         if (response.data.error || response.data.errors){
                             this.failed.data.push(selectedData)
                             this.failed.condition.push(this.condition)
                             this.failed.img.push(this.img[0])
-                            this.alert = {variant: "danger", message: "Listing offer failed"}
+                            this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
                             // Next offer   
                             this.next()
                         }
                         else{
-                            this.alert = {variant: "success", message: "Listing offer success"}
+                            this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
                             this.title = "",
                             this.label = "",
                             this.country = "",
@@ -177,14 +175,14 @@
                         }
                 }
                 else{
-                    this.alert = {variant: "warning", message: "Complete title and price"}
+                    this.alert = {variant: "warning", message: this.$t("alerts.complete")}
                 }
             },
 
             next(){
                 this.loading = true
                 this.waitFlag = true
-                this.currentIndex += 3
+                this.currentIndex += this.numberImages
                 if (this.currentIndex >= this.imageData.data.length) {
                     if(this.failed.data.length != 0){
                         this.failedFlag = true
@@ -200,14 +198,15 @@
                     this.img = []
                     let data
                     if (this.type == "CD"){
-                        data = this.imageData.data.slice(this.currentIndex-1, this.currentIndex+2)
+                        data = this.imageData.data.slice(this.currentIndex-1, this.currentIndex+this.numberImages-1)
                     }
                     else{
-                        data = this.imageData.data.slice(this.currentIndex, this.currentIndex+3)
+                        data = this.imageData.data.slice(this.currentIndex, this.currentIndex+this.numberImages)
                     }
                     for (let i = 0; i < data.length; i++) {
                         this.img.push(data[i].url)
                     }
+                    this.img.reverse()
                     setTimeout(() => { this.imgFlag = true; this.loading = false; this.waitFlag = false }, 2500)
                 }
             },
@@ -240,16 +239,17 @@
         beforeMount() {
             this.loading =  true
             try{
-                let data = this.imageData.data.slice(0, 3)
+                let data = this.imageData.data.slice(0, this.numberImages)
                 for (let i = 0; i < data.length; i++) {
                     this.img.push(data[i].url)
                 }
                 if (this.type == "CD"){
                     this.currentIndex = 1
                 }
+                this.img.reverse()
             }
             catch{
-                this.alert = {variant: "danger", message: "Something went wrong with getting data"}
+                this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             this.loading =  false
         },
@@ -261,6 +261,9 @@
                 required: true
             },
             clear:{
+                required: true
+            },
+            numberImages:{
                 required: true
             }
         },

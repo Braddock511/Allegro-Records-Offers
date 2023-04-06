@@ -1,13 +1,13 @@
 <template>
     <div class="data" v-if="!loading">
-        <h1 v-if="!clearImage">Clears only the first image</h1>
+        <h1 v-if="!clearImage">{{ $t("editImages.firstImage") }}</h1>
         <TheSlider :images="allegroImages" v-if="!clearImage"></TheSlider>
         <img :src="clearImage.data" alt="clear-image" v-if="clearImage">
-        <h2 v-if="clearImage">Cleared image</h2>
+        <h2 v-if="clearImage">{{ $t("editImages.cleared") }}</h2>
         <span id="buttons" style="width: 50%; display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="editImages" v-if="clearImage">Edit image</button>
-            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="clearImages" v-if="!clearImage">Clear</button>
-            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="next">Next</button>
+            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="editImages" v-if="clearImage">{{ $t("editImages.editImage") }}</button>
+            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="clearImages" v-if="!clearImage">{{ $t("editImages.clear") }}</button>
+            <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="next">{{ $t("table.next") }}</button>
         </span>
     </div>
     <div id="loading" v-if="loading">
@@ -35,7 +35,7 @@
                 this.loading = true
                 this.clearImage = await axios.post('http://127.0.0.1:8000/clear-image', {image: this.allegroImages[0]})
                 if (this.clearImage.data.error || this.clearImage.data.errors){
-                    this.alert = {variant: "danger", message: "Clear image failed"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.clearFailed")}
                 }
 
                 setTimeout(() => { this.loading = false }, 2500)
@@ -46,10 +46,10 @@
                 let newImages = ([this.clearImage.data, otherImages]).flat()
                 const response = await axios.post('http://127.0.0.1:8000/allegro-edit-image', {offerID: this.allegroData.data.offers[this.offerIndex].id, images: newImages})
                 if (response.data.error || response.data.errors){
-                    this.alert = {variant: "danger", message: "Edit image failed"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.imageFailed")}
                 }
                 else{
-                    this.alert = {variant: "success", message: "Edit image success"}
+                    this.alert = {variant: "success", message: this.$t("alerts.imageSuccess")}
                     // Next images
                     this.next()
                 }
@@ -64,7 +64,7 @@
                 }
                 this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
                 if (this.allegroData.data.error || this.allegroData.data.errors){
-                    this.alert = {variant: "danger", message: "Something went wrong with getting offer"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                 }
                 else{    
                     this.clearImage = ""
@@ -77,7 +77,7 @@
             this.loading = true
             this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
             if (this.allegroData.data.error || this.allegroData.data.errors){
-                this.alert = {variant: "danger", message: "Something went wrong with getting discogs information"}
+                this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
                 this.allegroImages = this.offerData.data.offer.images

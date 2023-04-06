@@ -26,37 +26,36 @@ async def read_image_data(request: Request):
         response = loads((await request.body()).decode('utf-8'))
         images = response['images']
         type_record = response['typeRecord']
+        number_images = response['numberImages']
         output = []
 
-        for i in range(0, len(images), 3):
+        for i in range(0, len(images), number_images):
             if type_record == "Vinyl":
                 # Read first image
                 image_1 = images[i]
                 data_1, image_url_1 = read_image(image_1, credentials)
+                output.append({"data": data_1, "url": image_url_1})
 
                 # Other images
-                image_2 = images[i+1]
-                image_3 = images[i+2]
-                image_url_2 = upload_file_imageKit(image_2, credentials)['url']
-                image_url_3 = upload_file_imageKit(image_3, credentials)['url']
+                for j in range(1, number_images):
+                    other_image = images[i+j]
+                    other_image_url = upload_file_imageKit(other_image, credentials)['url']
 
-                output.append({"data": data_1, "url": image_url_1})
-                output.append({"data": "", "url": image_url_2})
-                output.append({"data": "", "url": image_url_3})
+                    output.append({"data": "", "url": other_image_url})
 
             elif type_record == "CD":
                 # Read second image 
                 image_2 = images[i+1]
                 data, image_url_2 = get_cd_barcode(image_2, credentials)
+                
                 # Other images
-                image_1 = images[i]
-                image_3 = images[i+2]
-                image_url_1 = upload_file_imageKit(image_1, credentials)['url']
-                image_url_3 = upload_file_imageKit(image_3, credentials)['url']
+                for j in range(0, number_images-1):
+                    other_image = images[i+j]
+                    other_image_url = upload_file_imageKit(other_image, credentials)['url']
 
-                output.append({"data": "", "url": image_url_1})
-                output.append({"data": data, "url": image_url_2})
-                output.append({"data": "", "url": image_url_3})
+                    output.append({"data": "", "url": other_image_url})
+                    if j == 0:
+                        output.append({"data": data, "url": image_url_2})
 
         db.post_data_image(output)
         return {"success": 200}

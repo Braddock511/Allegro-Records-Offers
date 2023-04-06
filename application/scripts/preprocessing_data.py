@@ -83,23 +83,12 @@ def preprocess_data(data: str|list, credentials: dict, type_record: str, url: st
                 price = get_price(id, discogs_token)
                 uri = result['uri']
                 genre = result['genre'][0]
-                barcode = result['barcode'][0].replace(" ", "") if 'barcode' in result.keys() else "-"
                 title = result['title']
                 title = title.replace("*", "").replace("•", "").replace("†", " ").replace("º", " ").replace("—", " ")
-
-                try: 
-                    country = result['country']
-                except KeyError:
-                    pass
-                try:
-                    year = result['year']
-                except KeyError:
-                    pass
-                try:
-                    label = result['label'][0] + " | " + result['catno']
-                except KeyError:
-                    pass
-
+                country = result.get('country') if result.get('country') else '-'
+                year = result.get('year') or result.get('released') if (result.get('year') or result.get('released')) else '-'
+                barcode = result.get('barcode', [''])[0].replace(" ", "") if result.get('barcode') else '-'
+                label = result.get('label', [''])[0] + " | " + result.get('catno', '') if result.get('label') else '-'
 
             information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
             output['data'].append(information)

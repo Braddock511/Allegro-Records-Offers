@@ -2,11 +2,11 @@
     <span>
         <section class="form-container" v-if="!offerData && !loading">
             <form>
-                <div class="title">Enter offer id</div>
+                <div class="title">{{ $t("editSpecific.offerId") }}</div>
                 <div class="input-container">
                     <input type="text" name="offer-id" v-model="offerId" required>
                 </div>        
-                <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getOffer">Get offer</button>
+                <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getOffer">{{ $t("editSpecific.edit") }}</button>
             </form>
         </section>
     </span>
@@ -17,50 +17,50 @@
                 <tr>
                     <td colspan="6"  style="border: none; background-color: #202833;">
                         <span style="display: flex; flex-direction: column; align-items: center; gap: 10px;">    
-                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">Clear image</button>
-                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="offerData = ''; alert = {}">Back</button>
+                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">{{ $t("editSpecific.clearImage") }}</button>
+                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="offerData = ''; alert = {}">{{ $t("table.back") }}</button>
                         </span>
                     </td>
                 </tr>
                 <tr>
                 </tr>
                 <tr>
-                    <td><h2>Title</h2></td>
-                    <td><h2>Label</h2></td>
-                    <td><h2>Country</h2></td>
-                    <td><h2>Year</h2></td>
-                    <td>
-                        <h2>Price</h2>
+                    <td><h2>{{ $t("table.title") }}</h2></td>
+                    <td><h2>{{ $t("table.label") }}</h2></td>
+                    <td><h2>{{ $t("table.country") }}</h2></td>
+                    <td><h2>{{ $t("table.year") }}</h2></td>
+                    <td v-if="allegroData.data.sellingMode.format=='BUY_NOW'">
+                        <h2>{{ $t("table.price") }}</h2>
                         <select v-model="condition" @change="this.price = ''">
-                            <option value="Near Mint (NM or M-)">M- (Almost Perfect)</option>
-                            <option value="Mint (M)">M (New)</option>
-                            <option value="Very Good Plus (VG+)">VG+ (Excellent)</option>
-                            <option value="Very Good (VG)">VG (Very Good)</option>
-                            <option value="Good (G)">G (Good)</option>
+                            <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
+                            <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                            <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
+                            <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
+                            <option value="Good (G)">{{ $t("table.good") }}</option>
                         </select>
                     </td>
-                    <td><h2>Edit offer</h2></td>
+                    <td><h2>{{ $t("editSpecific.editOffer") }}</h2></td>
                 </tr>
                 <tr>
                     <td>{{ offerData.data.offer.name }}</td>
                     <td><input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
                     <td><input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
                     <td><input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
-                    <td><input type="text" name="price" class="custom" placeholder="-" v-model="price"></td>
-                    <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer">Edit</button></td>
+                    <td v-if="allegroData.data.sellingMode.format=='BUY_NOW'"><input type="text" name="price" class="custom" placeholder="-" v-model="price"></td>
+                    <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
                 <tr v-for="data in offerData.data.discogs.data" v-if="offerData && offerData.data.discogs.data">
                     <td>{{ offerData.data.offer.name  }}</td>
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
-                    <td v-if="data.price[condition] !== undefined">
-                        <input type="number" name="price" class="custom" :placeholder="roundedPrice(data.price[condition])" v-model="price" @click="price = roundedPrice(data.price[condition])">
+                    <td v-if="data.price[condition] !== undefined && allegroData.data.sellingMode.format=='BUY_NOW'">
+                        <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition])" v-model="price" @click="price = roundedPrice(data.price[condition])">
                     </td>
-                    <td v-else>
-                        <input type="number" name="price" class="custom" v-model="price">
+                    <td v-if="data.price[condition] === undefined && allegroData.data.sellingMode.format=='BUY_NOW'">
+                        <input type="number" name="price" class="custom" min="1" v-model="price">
                     </td>
-                    <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer(data)">Edit</button></td>
+                    <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
             </table>
         </div>
@@ -96,7 +96,7 @@
                 this.loading = true
                 this.allegroData = await axios.post('http://127.0.0.1:8000/allegro-offer', {offerId: this.offerId})
                 if (this.allegroData.data.error || this.allegroData.data.errors){
-                    this.alert = {variant: "danger", message: "Something went wrong with getting offer"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                 }
                 else{
                     let parameters = this.allegroData.data.productSet[0].product.parameters
@@ -110,56 +110,66 @@
                             break
                         }
                     }
-                    
                     this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData.data, typeRecord: typeRecord})
-
-                    if (this.offerData.data.error){
-                        this.alert = {variant: "danger", message: "Something went wrong with getting discogs information"}
-                        this.offerData = ""
-                    }
-                    else{
-                        this.img = this.offerData.data.offer.images
-                    }
+                    this.img = this.offerData.data.offer.images
                 }
                 this.loading = false
             },
             async editOffer(data){
-                if (this.price !== ""){
-                    let selectedData = {}
-                    // Edit offer
+                let selectedData = {}
+                selectedData = {
+                    id: data.id,
+                    label: data.label,
+                    country: data.country,
+                    year: data.year,
+                    price: this.price
+                }
+
+                if (selectedData.id === undefined){
                     selectedData = {
-                        id: data.id,
-                        label: data.label,
-                        country: data.country,
-                        year: data.year,
+                        id: "-",
+                        label: this.label ? this.label : "-",
+                        country: this.country ? this.country : "-",
+                        year: this.year ? this.year : "-",
                         price: this.price
                     }
-
-                    if (selectedData.id === undefined){
-                        selectedData = {
-                            id: "-",
-                            label: this.label ? this.label : "-",
-                            country: this.country ? this.country : "-",
-                            year: this.year ? this.year : "-",
-                            price: this.price
+                }
+                if (this.allegroData.data.sellingMode.format=='BUY_NOW'){
+                    if (this.price !== ""){
+                        // Edit offer
+                        this.loading = true
+                        const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.offerId, images: this.img, data: selectedData})
+                        if (response.data.error || response.data.errors){
+                            this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                         }
+                        else{
+                            this.alert = {variant: "success", message: this.$t("alerts.descSuccess")}
+                        }
+                        this.label = ""
+                        this.country = ""
+                        this.year = ""
+                        this.price = ""
+                        this.loading = false
                     }
+                    else{
+                        this.alert = {variant: "warning", message: this.$t("alerts.completePrice")}
+                    }
+                }
+                else{
+                    // Edit offer
                     this.loading = true
                     const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.offerId, images: this.img, data: selectedData})
                     if (response.data.error || response.data.errors){
-                        this.alert = {variant: "danger", message: "Edit description failed"}
+                        this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                     }
                     else{
-                        this.alert = {variant: "success", message: "Edit description success"}
+                        this.alert = {variant: "success", message: this.$t("alerts.descSuccess")}
                     }
                     this.label = ""
                     this.country = ""
                     this.year = ""
                     this.price = ""
                     this.loading = false
-                }
-                else{
-                    this.alert = {variant: "warning", message: "Complete price"}
                 }
             },
             async editImage(){
@@ -169,10 +179,10 @@
                 let newImages = ([this.clearImage.data, otherImages]).flat()
                 const response = await axios.post('http://127.0.0.1:8000/allegro-edit-image', {offerID: this.offerId, images: newImages})
                 if (response.data.error || response.data.errors){
-                    this.alert = {variant: "danger", message: "Edit image failed"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.imageFailed")}
                 }
                 else{
-                    this.alert = {variant: "success", message: "Edit image success"}
+                    this.alert = {variant: "success", message: this.$t("alerts.imageSuccess")}
                 }
                 this.loading = false
             },

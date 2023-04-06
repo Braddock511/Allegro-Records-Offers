@@ -2,16 +2,15 @@
     <TheHeader />
     <main>
         <div id="info" v-if="!isCookieSet">
-            <p>The "Allegro Records Offers" application is a tool designed to help users effectively manage their records offers on Allegro, one of the largest online marketplaces in Poland. Thanks to this application, users can easily list their products on Allegro and edit existing offers.</p>
-            <p>The application features a user-friendly interface that allows you to quickly and easily upload your products to the Allegro platform. Users can add product photos, descriptions, prices, and other important details to create engaging and informative listings that will appeal to potential buyers. </p>
-            <p>In addition, the user can clear the background of the image and view the statistics of the offers</p>                    
+            <h1>{{ $t('info.title') }}</h1>
+            <p>{{ $t('info.description') }}</p>               
         </div>
         <div id="buttons" style="display: flex; flex-direction: column; justify-content: center; gap: 40px;">
-            <h1 v-if="isCookieSet" style="display: flex; justify-content: center;">Options</h1>
-            <router-link  v-if="isCookieSet" to="/listing"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">Listing offers</button></router-link>
-            <router-link  v-if="isCookieSet" to="/edit"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">Edit offers</button></router-link>
-            <router-link  v-if="isCookieSet" to="/stats"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">Statistics</button></router-link>
-            <router-link  v-if="!isCookieSet" to="/allegro-credentials"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">Enter allegro credentials</button></router-link>
+            <h1 v-if="isCookieSet" style="display: flex; justify-content: center;">{{ $t('buttons.options') }}</h1>
+            <router-link  v-if="isCookieSet" to="/listing"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">{{ $t('buttons.listingOffers') }}</button></router-link>
+            <router-link  v-if="isCookieSet" to="/edit"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">{{ $t('buttons.editOffers') }}</button></router-link>
+            <router-link  v-if="isCookieSet" to="/stats"><button class="btn btn-primary w-100" type="button" style="padding: 0.75rem; font-size: 20px;">{{ $t('buttons.statistics') }}</button></router-link>
+            <router-link  v-if="!isCookieSet" to="/allegro-credentials"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('buttons.enterAllegroCredentials') }}</button></router-link>
         </div>
     </main>
 </template>

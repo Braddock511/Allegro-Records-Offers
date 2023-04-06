@@ -4,7 +4,7 @@ import json
 import re
 from time import sleep
 from discogs_api import get_tracklist
-from  preprocessing_data import remove_background
+from preprocessing_data import remove_background
 
 urllib3.disable_warnings()
 
@@ -89,15 +89,16 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     if clear:
         first_image = images[0]
         clear_first_image = remove_background(first_image, credentials)
-        images = [clear_first_image, images[1], images[2]]
+        images = [clear_first_image, *[image for image in images[1:]]]
+
 
     if type_record == "Vinyl":
         data = {
-        "name": name,
+        "name": name.strip(),
 
         "productSet": [{
             "product": {
-                "name": f'{author} - {name}',
+                "name": f'{author.strip()} - {name.strip()}',
                 "category": {
                     "id": category
                 },

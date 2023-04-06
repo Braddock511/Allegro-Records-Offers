@@ -2,18 +2,18 @@
     <TheHeader/>
     <section class="form-container" v-if="formDisplay">
         <form @submit.prevent="allegroToken">
-            <div class="title">Credentials</div>
+            <div class="title">{{ $t('formContainer.credentials') }}</div>
             <div class="input-container">
-                <input v-model="user_id" id="client_id" class="input" type="text" placeholder="Client id" required style="width: 50%;"/>
+                <input v-model="user_id" id="client_id" class="input" type="text" :placeholder="$t('formContainer.clientId')" required style="width: 50%;"/>
             </div>
             <div class="input-container">
-                <input v-model="user_secret" id="client_secret" class="input" type="text" placeholder="Client secret" required style="width: 50%;"/>
+                <input v-model="user_secret" id="client_secret" class="input" type="text" :placeholder="$t('formContainer.clientSecret')" required style="width: 50%;"/>
             </div>
-            <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; margin-top: 30px;">Send credentials</button>
+            <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; margin-top: 30px; font-size: 20px;">{{ $t('formContainer.button') }}</button>
         </form>
     </section>
     <div id="confirm" v-if="!formDisplay">
-        <a :href="response.data.verification_uri_complete" target="_blank"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem;">Confirm</button></a>
+        <a :href="response.data.verification_uri_complete" target="_blank"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('formContainer.confirm') }}</button></a>
     </div>
 
     <TheAlert :alert="alert" />
@@ -42,14 +42,14 @@
                     this.tokenResponse = await axios.post("http://127.0.0.1:8000/allegro-token", {client_id: this.user_id, client_secret: this.user_secret, device_code: this.response.data["device_code"],});
                     if (this.tokenResponse.data.error){
                         this.formDisplay = true
-                        this.alert = {variant: "danger", message: "Failed to obtain Allegro token"};
+                        this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")};
                     }
                     else{
                         this.$cookies.set('allegro-cred', true, '12h', '/', '', false, 'Lax');
                         this.$router.push("/");
                     }
                 } catch (error) {
-                    this.alert = {variant: "danger", message: "Failed to obtain Allegro token"};
+                    this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")};
                 }
                 },
         },

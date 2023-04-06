@@ -1,17 +1,17 @@
 <template>
-    <h1 style="width: 100%; margin-top: 10px; text-align: center;">Unlisted offers</h1>
+    <h1 style="width: 100%; margin-top: 10px; text-align: center;">{{ $t("table.unlisted") }}</h1>
     <div class="data">
         <table v-if="dataFailed">
             <tr>
-                <td><h2>Image</h2></td>
-                <td><h2>Title</h2></td>
-                <td><h2>Label</h2></td>
-                <td><h2>Country</h2></td>
-                <td><h2>Year</h2></td>
-                <td><h2>Genre</h2></td>
-                <td v-if="type == 'CD'"><h2>Barcode</h2></td>
-                <td><h2>Condition</h2></td>
-                <td><h2>Price</h2></td>
+                <td><h2>{{ $t("table.image") }}</h2></td>
+                <td><h2>{{ $t("table.title") }}</h2></td>
+                <td><h2>{{ $t("table.label") }}</h2></td>
+                <td><h2>{{ $t("table.country") }}</h2></td>
+                <td><h2>{{ $t("table.year") }}</h2></td>
+                <td><h2>{{ $t("table.genre") }}</h2></td>
+                <td v-if="type == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
+                <td><h2>{{ $t("table.condition") }}</h2></td>
+                <td><h2>{{ $t("table.price") }}</h2></td>
             </tr>
             
             <tbody >
@@ -29,8 +29,8 @@
             </tbody>
         </table>
 
-        <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;"><a href="https://allegro.pl/offer/" style="color: white" target="_blank">Go to allegro form</a></button>
-        <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="this.$router.push('/')">Back</button>
+        <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;"><a href="https://allegro.pl/offer/" style="color: white" target="_blank">{{ $t("table.allegroForm") }}</a></button>
+        <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="this.$router.push('/')">{{ $t("table.back") }}</button>
     </div>
 </template>
 

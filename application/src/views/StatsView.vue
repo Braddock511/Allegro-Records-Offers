@@ -1,14 +1,13 @@
 <template>
     <TheHeader />
-
-    <h1 @click="flagToogle" style="width: 100%; text-align: center; cursor: pointer; ;opacity: 0.8 hover;">Visitors and viewers statistics / Sales statistics</h1>
+    <h1 @click="flagToogle" style="width: 100%; text-align: center; cursor: pointer; ;opacity: 0.8 hover;">{{ $t('statistics.header') }}</h1>
     <span v-if="!loading && flag">
         <div class="data">
             <table v-if="visitors_viewers">
                 <tr>
-                    <td>Name (Click to go to the offer)</td>
-                    <td @click="sortVisitors" style="cursor: pointer;"><span class="arrow">Visitors &#8595</span></td>
-                    <td @click="sortWatchers" style="cursor: pointer;"><span class="arrow">Watchers &#8595</span></td>
+                    <td>{{ $t("statistics.name") }}</td>
+                    <td @click="sortVisitors" style="cursor: pointer;"><span class="arrow">{{ $t("statistics.visitors") }}&#8595</span></td>
+                    <td @click="sortWatchers" style="cursor: pointer;"><span class="arrow">{{ $t("statistics.watchers") }}&#8595</span></td>
                 </tr>
                 <tr v-for="index in 60" :key="index" v-if="visitors_viewers[0]">
                     <td><a :href="getUrl(visitors_viewers[index-1]?.id, visitors_viewers[index-1]?.name)" target="_blank" style="background-color: none;">{{ visitors_viewers[index-1]?.name}}</a></td>
@@ -69,11 +68,11 @@
             const plots = await axios.get('http://127.0.0.1:8000/plots')
             if (this.visitors_viewers.error || plots.data.error)
             {
-                this.alert = {variant: "danger", message: "Something went wrong"}
+                this.alert = {variant: "danger", message: this.$t("alerts.complete")}
             }
             else{
                 this.barPlot = plots.data.bar_plot
-                this.alert = {variant: "success", message: "Uploading statistics - success"}
+                this.alert = {variant: "success", message: this.$t("alerts.statistics")}
             }
             
             setTimeout(()=>{this.alert = {}}, 2500)

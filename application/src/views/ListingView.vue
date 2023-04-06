@@ -3,30 +3,33 @@
     <span v-if="!imageData">
         <section class="form-container" v-if="!loading">
             <form @submit.prevent="getDataImage">
-                <div class="title">Upload images</div>
+                <div class="title">{{ $t("listingView.upload") }}</div>
                 <div class="input-container">
-                    <label for="files">Images:  </label>
+                    <label for="files">{{ $t("listingView.images") }} &nbsp;</label>
                     <input @change="handleFiles" id="files" type="file" multiple required style="font-size: 14px;"/>
                 </div>
                 <select v-model="type" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
-                        <option value="Vinyl">Vinyl</option>
+                        <option value="Vinyl">{{ $t("vinyl") }}</option>
                         <option value="CD">CD</option>
                 </select>
                 <span>
-                    Clear first image background <input type="checkbox" v-model="clear">
+                    {{ $t("listingView.clearFirstImage") }} &nbsp;<input type="checkbox" v-model="clear">
                 </span>
-                <p>Offer have exactly 3 images, so upload 3 images on one offer</p>
-                <p>The images must be in the following order: 1. Front cover 2. Back cover 3. Disc</p>
-                <p>Payment, location and delivery settings are taken from the last offer </p>
-                <p>Description is in polish language</p>
-                <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="getDataImage">Send images</button>
+                <div class="input-container">
+                    <label for="number-images">{{ $t("listingView.numberImages") }}</label>
+                    <input v-model="numberImages" id="number-images" type="number" min="2" required style="font-size: 14px; margin-left: 10px;"/>
+                </div>
+                <p>{{ $t("listingView.imageOrder") }}</p>
+                <p>{{ $t("listingView.paymentLocationDelivery") }}</p>
+                <p>{{ $t("listingView.description") }}</p>
+                <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="getDataImage">{{ $t("listingView.sendImages") }}</button>
             </form>
         </section>
         <div id="loading" v-if="loading">
             <img src="../assets/spinner.gif" alt="loading">
         </div>
     </span>
-    <TheListingData v-if="imageData" :imageData="imageData" :type="type" :clear="clear"/>
+    <TheListingData v-if="imageData" :imageData="imageData" :type="type" :clear="clear" :numberImages="numberImages"/>
 </template>
 
 <script>
@@ -38,6 +41,7 @@
         data(){
             return{
                 images: [],
+                numberImages: 3,
                 imageData: "",
                 type: "Vinyl",
                 clear: false,
@@ -68,15 +72,8 @@
             },
             async getDataImage() {
                 this.loading = true
-                try 
-                {
-                    await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.type}, {headers: {'Content-Type': 'application/json'}})
-                    this.imageData = await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type}, {headers: {'Content-Type': 'application/json'}})
-                } 
-                catch (error) 
-                {
-                    alert('Upload failed.')
-                }
+                await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.type, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
+                this.imageData = await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type}, {headers: {'Content-Type': 'application/json'}})
                 this.loading = false
             },
         },

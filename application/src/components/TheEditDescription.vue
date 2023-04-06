@@ -4,28 +4,28 @@
             <TheSlider :images="img.slice().reverse()"></TheSlider>
             <table>
                 <tr>
-                    <td colspan="7" style="border: none; background-color: #202833;"><button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem; font-size: 20px;" @click="next">Next</button></td>
+                    <td colspan="7" style="border: none; background-color: #202833;"><button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem; font-size: 20px;" @click="next">{{ $t("table.next") }}</button></td>
                 </tr>
                 <tr>
-                    <td><h2>Title</h2></td>
-                    <td><h2>Label</h2></td>
-                    <td><h2>Country</h2></td>
-                    <td><h2>Year</h2></td>
-                    <td><h2>Edit offer</h2></td>
+                    <td><h2>{{ $t("table.title") }}</h2></td>
+                    <td><h2>{{ $t("table.label") }}</h2></td>
+                    <td><h2>{{ $t("table.country") }}</h2></td>
+                    <td><h2>{{ $t("table.year") }}</h2></td>
+                    <td><h2>{{ $t("editSpecific.editOffer") }}</h2></td>
                 </tr>
                 <tr>
                     <td>{{ offerData.data.offer.name }}</td>
-                    <td>Enter label: <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
-                    <td>Enter country: <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
-                    <td>Enter year: <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
-                    <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer">Edit</button></td>
+                    <td>{{ $t("table.enter_label") }} <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
+                    <td>{{ $t("table.enter_country") }} <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
+                    <td>{{ $t("table.enter_year") }} <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
+                    <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
                 <tr v-for="data in offerData.data.discogs.data" v-if="offerData && offerData.data.discogs.data">
                     <td>{{ offerData.data.offer.name  }}</td>
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
-                    <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer(data)">Edit</button></td>
+                    <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
             </table>
         </div>
@@ -73,10 +73,10 @@
                 this.loading = true
                 const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.allegroData.data.offers[this.offerIndex].id, images: this.offerData.data.offer.images, data: selectedData})
                 if (response.data.error || response.data.errors){
-                    this.alert = {variant: "danger", message: "Edit description failed"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                 }
                 else{
-                    this.alert = {variant: "success", message: "Edit description success"}
+                    this.alert = {variant: "success", message: this.$t("alerts.descSuccess")}
                     // New offer
                     this.next()
                 }
@@ -90,7 +90,7 @@
                 }
                 this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
                 if (this.allegroData.data.error || this.allegroData.data.errors){
-                    this.alert = {variant: "danger", message: "Something went wrong with getting offer"}
+                    this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                 }
                 else{
                     this.label = "",
@@ -105,7 +105,7 @@
             this.loading = true
             this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
             if (this.allegroData.data.error || this.allegroData.data.errors){
-                this.alert = {variant: "danger", message: "Something went wrong with getting discogs information"}
+                this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
                 this.img = this.offerData.data.offer.images

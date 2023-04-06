@@ -17,6 +17,7 @@
     "vue-awesome-swiper": "^5.0.1",
     "vue-cookies": "^1.8.3",
     "vue-easy-lightbox": "^1.13.0",
+    "vue-i18n": "^9.2.2",
     "vue-router": "^4.1.6",
     "vue-slick-carousel": "^1.0.6"
   },
