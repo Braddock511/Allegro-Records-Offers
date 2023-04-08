@@ -1,7 +1,19 @@
 <template>
     <TheHeader />
-    <h1 @click="flagToogle" style="width: 100%; text-align: center; cursor: pointer; ;opacity: 0.8 hover;">{{ $t('statistics.header') }}</h1>
-    <span v-if="!loading && flag">
+    <nav v-if="!loading">
+        <ul>
+            <li @click="activeOption = 'visitors'">
+                <h3>{{ $t('statistics.visitorsViewers') }}</h3>
+            </li>
+            <li @click="activeOption = 'sales'; getSaleBarplot()">
+                <h3>{{ $t('statistics.sales') }}</h3>
+            </li>
+            <li @click="activeOption = 'genres'; getGenreBarplot()">
+                <h3>{{ $t('statistics.genres') }}</h3>
+            </li>
+        </ul>
+    </nav>
+    <span v-if="!loading && activeOption == 'visitors'">
         <div class="data">
             <table v-if="visitors_viewers">
                 <tr>
@@ -17,9 +29,14 @@
             </table>
         </div>
     </span>
-    <span v-if="!loading && !flag" style="flex-direction: column; width: 100%;">
+    <span v-if="!loading && activeOption == 'sales'" style="flex-direction: column; width: 100%;">
         <div class="data" style="width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap;">
-            <img :src="barPlot" alt="bar plot">
+            <img :src="saleBarplot" alt="bar plot">
+        </div>
+    </span>
+    <span v-if="!loading && activeOption == 'genres'" style="flex-direction: column; width: 100%;">
+        <div class="data" style="width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap;">
+            <img :src="genreBarplot" alt="bar plot">
         </div>
     </span>
     <div id="loading" v-if="loading">
@@ -37,8 +54,9 @@
         data(){
             return{
                 visitors_viewers: "",
-                barPlot: "",
-                flag: true,
+                saleBarplot: "",
+                genreBarplot: "",
+                activeOption: 'visitors',
                 loading: false,
                 alert: {}
             }
@@ -56,8 +74,40 @@
             sortWatchers(){
                 this.visitors_viewers = this.visitors_viewers.sort((a, b) => b.stats.watchersCount - a.stats.watchersCount)
             },
-            flagToogle(){
-                this.flag = !this.flag
+
+            async getSaleBarplot(){
+                if (this.saleBarplot == ""){
+                    this.loading = true
+                    const plot = await axios.get('http://127.0.0.1:8000/sale-barplot')
+                    if ( plot.data.error)
+                    {
+                        this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+                    }
+                    else{
+                        this.saleBarplot = plot.data.sale_barplot
+                        this.alert = {variant: "success", message: this.$t("alerts.statistics")}
+                    }
+                    setTimeout(()=>{this.alert = {}}, 2500)
+                    this.loading = false
+                }
+            },
+
+            async getGenreBarplot(){
+                if (this.genreBarplot == ""){
+                    this.loading = true
+                    const plot = await axios.get('http://127.0.0.1:8000/genre-barplot')
+                    console.log(plot)
+                    if ( plot.data.error)
+                    {
+                        this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+                    }
+                    else{
+                        this.genreBarplot = plot.data.genre_barplot
+                        this.alert = {variant: "success", message: this.$t("alerts.statistics")}
+                    }
+                    setTimeout(()=>{this.alert = {}}, 2500)
+                    this.loading = false
+                }
             }
         },
         async beforeMount(){
@@ -65,13 +115,11 @@
             this.visitors_viewers = await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')
             this.visitors_viewers = this.visitors_viewers.data
             
-            const plots = await axios.get('http://127.0.0.1:8000/plots')
-            if (this.visitors_viewers.error || plots.data.error)
+            if (this.visitors_viewers.error)
             {
-                this.alert = {variant: "danger", message: this.$t("alerts.complete")}
+                this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
-                this.barPlot = plots.data.bar_plot
                 this.alert = {variant: "success", message: this.$t("alerts.statistics")}
             }
             
@@ -86,12 +134,31 @@
 </script>
 
 <style lang="scss" scoped>
-    h1:hover{
-        opacity: 0.7;
-    };
+    nav{
+        display: flex;
+        justify-content: center;
+        background-color: rgba(33, 69, 78, 0.4588235294);
+        margin-bottom: 10px;
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            li {
+                padding: 1rem;
+                cursor: pointer;
+                &:hover, &:active{
+                    background-color: rgba(33, 69, 78);
+                }
+            }
+        }
+    }
+
     span{
         display: flex;
         justify-content: center;
+        
         .data{
             width: 75%;
             a{

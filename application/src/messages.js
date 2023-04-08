@@ -20,7 +20,9 @@ export default {
         confirm: "Confirm"
       },
       statistics:{
-        header: "Visitors and viewers statistics / Sales statistics",
+        visitorsViewers: "Visitors and viewers statistics",
+        sales: "Sales statistics",
+        genres: "Genres statistics",
         name: "Name (Click to go to the offer)",
         visitors: "Visitors",
         watchers: "Watchers",
@@ -162,7 +164,9 @@ export default {
         confirm: "Potwierdź"
       },
       statistics:{
-        header: "Statystyki odwiedzin i obserwacji / Statystyki sprzedaży",
+        visitorsViewers: "Statystyki wizyt i obserwacji",
+        sales: "Statystyki sprzedaży",
+        genres: "Statystyka gatunków",
         name: "Nazwa (Kliknij, aby przejść do oferty)",
         visitors: "Wizyty",
         watchers: "Obserwacje",
@@ -170,7 +174,6 @@ export default {
       listingView:{
         upload: 'Prześlij zdjęcia',
         images: 'Zdjęcia',
-        
         clearFirstImage: 'Wyczyść tło pierwszego zdjęcia',
         numberImages: 'Liczba zdjęć w jednej ofercie',
         imageOrder: 'Zdjęcia muszą być w następującej kolejności: 1. Płyta 2. Okładka tylna',

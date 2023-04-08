@@ -6,7 +6,7 @@ import allegro_api as allegro
 from  azure_api import read_image
 from  preprocessing_data import preprocess_data, remove_background, get_cd_barcode
 from  imageKit_api import upload_file_imageKit
-from plots import annual_sale_barplot
+from plots import annual_sale_barplot, create_genres_barplot
 
 app = FastAPI()
 
@@ -249,7 +249,7 @@ async def allegro_visitors_viewers():
         i = 0
 
         while True:
-            vinyls = allegro.get_my_offers(credentials, 100, 1000*i, "all", "Vinyl", "all")
+            vinyls = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "Vinyl", "all")
             cds = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "CD", "all")
             offers.append(vinyls['offers'])
             offers.append(cds['offers'])
@@ -288,14 +288,40 @@ async def allegro_sale():
     except Exception as e:
         return {"error": f"Exception in allegro_sale: {str(e)}"}
     
-@app.get("/plots")
-async def plots():
+@app.get("/sale-barplot")
+async def sale_barplot():
     try:
         credentials = db.get_credentials()
         data = await allegro_sale()
-        bar_plot = annual_sale_barplot(credentials, data)
+        sale_barplot = annual_sale_barplot(credentials, data)
         
-        return {"bar_plot": bar_plot}
+        return {"sale_barplot": sale_barplot}
     
     except Exception as e:
-        return {"error": f"Exception in plots: {str(e)}"}
+        return {"error": f"Exception in sale_barplot: {str(e)}"}
+    
+@app.get("/genre-barplot")
+async def genre_barplot():
+    try:
+        credentials = db.get_credentials()
+        offers = []
+        i = 0
+
+        while True:
+            vinyls = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "Vinyl", "all")
+            cds = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "CD", "all")
+            offers.append(vinyls['offers'])
+            offers.append(cds['offers'])
+
+            if not vinyls['offers'] and not cds['offers']:
+                break 
+        
+            i+=1
+
+        offers = sum(offers, [])
+        genre_barplot = create_genres_barplot(credentials, offers)
+        
+        return {"genre_barplot":  genre_barplot}
+    
+    except Exception as e:
+        return {"error": f"Exception in genre_barplot: {str(e)}"}

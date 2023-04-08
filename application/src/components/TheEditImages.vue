@@ -37,7 +37,7 @@
                 if (this.clearImage.data.error || this.clearImage.data.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.clearFailed")}
                 }
-                setTimeout(() => { this.loading = false }, 2500)
+                this.loading = false
             },
             async editImages(){
                 this.loading = true
@@ -46,13 +46,13 @@
                 const response = await axios.post('http://127.0.0.1:8000/allegro-edit-image', {offerID: this.allegroData.data.offers[this.offerIndex].id, images: newImages})
                 if (response.data.error || response.data.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.imageFailed")}
+                    this.loading = false
                 }
                 else{
                     this.alert = {variant: "success", message: this.$t("alerts.imageSuccess")}
                     // Next images
                     this.next()
                 }
-                this.loading = false
             },  
             async next(){
                 this.loading = true
@@ -68,8 +68,8 @@
                 else{    
                     this.clearImage = ""
                     this.allegroImages = this.offerData.data.offer.images
-                    setTimeout(() => { this.loading = false }, 2500)
                 }
+                this.loading = false
             }
         },
         async beforeMount() {

@@ -74,13 +74,13 @@
                 const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.allegroData.data.offers[this.offerIndex].id, images: this.offerData.data.offer.images, data: selectedData})
                 if (response.data.error || response.data.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
+                    this.loading = false
                 }
                 else{
                     this.alert = {variant: "success", message: this.$t("alerts.descSuccess")}
                     // New offer
                     this.next()
                 }
-                this.loading = false
             },
             async next(){
                 this.loading = true
@@ -97,8 +97,8 @@
                     this.country = "",
                     this.year = "",
                     this.img = this.offerData.data.offer.images
-                    setTimeout(() => { this.loading = false }, 3500)
                 }
+                this.loading = false
             }
         },
         async beforeMount() {
