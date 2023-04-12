@@ -4,7 +4,9 @@
         <TheSlider :images="img" ></TheSlider>
         <table v-if="imgFlag">
             <tr style="border: none;">
-                <td colspan="8" style="border: none; text-align: center; background-color: #202833;"><button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="next">{{ $t("table.next") }}</button></td>
+                <td colspan="8" style="border: none; text-align: center; background-color: #202833;">
+                    <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="failed.data.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-'}); failed.condition.push(this.condition); failed.img.push(this.img[0]); next()">{{ $t("table.next") }}</button>
+                </td>
             </tr>
             <tr>
                 <td><h2>{{ $t("table.title") }}</h2></td>
@@ -124,9 +126,9 @@
         },
         methods:{
             async listingOffer(data) {
-                if (data.title !== undefined && data.price !== undefined){
-                    let selectedData = {}
-                    // Get data
+                let selectedData = {}
+                // Get data
+                if (data.title !== undefined){
                     selectedData = {
                         id: data.id,
                         title: data.title,
@@ -137,43 +139,50 @@
                         price: data.price[this.condition] !== undefined ? this.roundedPrice(data.price[this.condition]) : data.price,
                         barcode: data.barcode
                     }
-                    if (selectedData.id == undefined){
-                        selectedData = {
-                            id: "",
-                            title: this.title,
-                            label: this.label ? this.label : "-",
-                            country: this.country ? this.country : "-",
-                            year: this.year ? this.year : "-",
-                            genre: this.genre,
-                            price: this.price,
-                            barcode: this.barcode ? this.barcode : "-"
-                        }
-                    }
-                    // Send data
-                        this.loading = true
-                        this.waitFlag = true
-                        const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
-                        if (response.data.error || response.data.errors){
-                            this.failed.data.push(selectedData)
-                            this.failed.condition.push(this.condition)
-                            this.failed.img.push(this.img[0])
-                            this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
-                            // Next offer   
-                            this.next()
-                        }
-                        else{
-                            this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
-                            this.title = "",
-                            this.label = "",
-                            this.country = "",
-                            this.year = "",
-                            this.price = ""
-                            // Next offer
-                            this.next()
-                        }
                 }
                 else{
-                    this.alert = {variant: "warning", message: this.$t("alerts.complete")}
+                    if (this.title !== "" && this.price !== ""){
+                        if (this.title.length+3 < 50){
+                            selectedData = {
+                                id: "",
+                                title: this.title,
+                                label: this.label ? this.label : "-",
+                                country: this.country ? this.country : "-",
+                                year: this.year ? this.year : "-",
+                                genre: this.genre,
+                                price: this.price,
+                                barcode: this.barcode ? this.barcode : "-"
+                            }
+                        }
+                        else{
+                            this.alert = {variant: "warning", message: this.$t("alerts.toLong")}
+                        }
+                    }
+                    else{
+                        this.alert = {variant: "warning", message: this.$t("alerts.complete")}
+                    }
+                }
+                // Send data
+                this.loading = true
+                this.waitFlag = true
+                const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
+                if (response.data.error || response.data.errors){
+                    this.failed.data.push(selectedData)
+                    this.failed.condition.push(this.condition)
+                    this.failed.img.push(this.img[0])
+                    this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
+                    // Next offer   
+                    this.next()
+                }
+                else{
+                    this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
+                    this.title = "",
+                    this.label = "",
+                    this.country = "",
+                    this.year = "",
+                    this.price = ""
+                    // Next offer
+                    this.next()
                 }
             },
             next(){
@@ -181,7 +190,7 @@
                 this.waitFlag = true
                 this.currentIndex += this.numberImages
                 if (this.currentIndex >= this.imageData.data.length) {
-                    if(this.failed.data.length != 0){
+                    if(this.failed.img.length != 0){
                         this.failedFlag = true
                     }
                     else{
@@ -204,7 +213,7 @@
                         this.img.push(data[i].url)
                     }
                     this.img.reverse()
-                    setTimeout(() => { this.imgFlag = true; this.loading = false; this.waitFlag = false }, 2500)
+                    setTimeout(() => { this.imgFlag = true; this.loading = false; this.waitFlag = false }, 500)
                 }
             },
             roundedPrice(price) {

@@ -140,7 +140,8 @@ export default {
         imageFailed: "Edit image failed",
         clearFailed: "Clear image failed",
         descSuccess: "Edit description success",
-        descFailed: "Edit description failed"
+        descFailed: "Edit description failed",
+        toLong: "Title length must be less than 50"
       }
     },
     pl: {
@@ -283,7 +284,8 @@ export default {
         imageFailed: "Edycja zdjęcia - niepowodzenie",
         clearFailed: "Wyczyszczenie tła - niepowodzenie",
         descSuccess: "Edycja opisu - sukces",
-        descFailed: "Edycja opisu - niepowodzenie"
+        descFailed: "Edycja opisu - niepowodzenie",
+        toLong: "Długość tytułu musi być mniejsza niż 50"
       }
   }
 }

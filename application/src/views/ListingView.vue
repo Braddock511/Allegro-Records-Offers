@@ -52,7 +52,6 @@
             handleFiles(event) {
                 // Get an array of the selected files and sort them by name
                 const files = Array.from(event.target.files)
-                files.sort((a, b) => a.name.localeCompare(b.name))
                 let loadedCount = 0
 
                 // Loop through the files and read each one as a data URL
@@ -68,7 +67,6 @@
                         }
                     }
                 }
-
             },
             async getDataImage() {
                 this.loading = true

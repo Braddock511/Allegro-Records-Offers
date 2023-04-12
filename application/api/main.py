@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from json import loads
+from time import sleep
 import database as db
 import allegro_api as allegro
 from  azure_api import read_image
@@ -119,7 +120,11 @@ async def data_image(request: Request):
 
         output_data = []    
         # Get data from discogs
-        for data, url in zip(data_image['data'], data_image['url']):
+        for i, (data, url) in enumerate(zip(data_image['data'], data_image['url'])):
+            # Discogs limit -> 60 requests per minute (In preprocess_data executing 3 request)
+            if (i+1) % 18 == 0:
+                sleep(60)
+
             if not data:
                 output_data.append({"input_data": data, "information": "", "url": url})
             else:
