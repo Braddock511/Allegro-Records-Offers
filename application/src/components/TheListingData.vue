@@ -290,4 +290,15 @@
         gap: 10px;
         margin-top: 10px;
     }
+
+    @media screen and (max-width: 1700px) {
+    tr{
+        td:nth-child(5)::before{
+            content: "Genre: " !important;
+        }
+        td:nth-child(6)::before{
+            content: "Price: " !important;
+        }
+    }
+}
 </style>

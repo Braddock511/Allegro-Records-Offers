@@ -165,20 +165,38 @@ select{
       border-bottom: 3px solid #ddd;
       display: block;
       margin-bottom: .625em;
+
+      &:nth-child(1){
+        border: 0px;
+      }
+      &:nth-child(2){
+          display: none;
+      }
+      &:nth-child(3){
+          display: none;
+      }
     }
     
     td {
-      border-bottom: 1px solid #ddd;
-      display: block;
-      font-size: .8em;
-      text-align: left;
-      padding: 15px;
-      &:last-child {
-        border-bottom: 0;
-      }
+        display: block;
+        font-size: .8em;
+        text-align: left;
 
-      select{
-        width: 30% !important;
+        &:nth-child(2)::before{
+            content: "Label: ";
+        }
+        &:nth-child(3)::before{
+            content: "Country: ";
+        }
+        &:nth-child(4)::before{
+            content: "Year: ";
+        }
+        &:nth-child(5)::before{
+            content: "Price: ";
+        }
+
+        select{
+          width: 30% !important;
       }
     }
   }

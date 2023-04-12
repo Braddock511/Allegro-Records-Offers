@@ -204,13 +204,3 @@
         }
     }
 </script>
-
-<style lang="scss" scoped>
-@media screen and (max-width: 1000px) {
-    tr {
-      &:nth-child(2){
-        display: none;
-      }
-    }
-}
-</style>

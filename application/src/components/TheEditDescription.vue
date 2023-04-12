@@ -126,3 +126,20 @@
         }
     }
 </script>
+
+
+<style lang="scss" scoped>
+@media screen and (max-width: 1700px) {
+    tr:nth-child(1){
+        td:nth-child(1){
+            display: flex;
+            justify-content: center;
+        }
+    }
+    tr{
+        td:nth-child(5)::before{
+            content: "" !important;
+        }
+    }
+}
+</style>

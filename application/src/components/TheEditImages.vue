@@ -2,7 +2,7 @@
     <div class="data" v-if="!loading">
         <h1 v-if="!clearImage">{{ $t("editImages.firstImage") }}</h1>
         <TheSlider :images="allegroImages" v-if="!clearImage"></TheSlider>
-        <img :src="clearImage.data" alt="clear-image" v-if="clearImage" style="min-width: 750px; min-height: 750px; border: 3px solid black;">
+        <img id="clear-image" :src="clearImage.data" alt="clear-image" v-if="clearImage" style="width: 750px; height: 750px; border: 3px solid black;">
         <h2 v-if="clearImage">{{ $t("editImages.cleared") }}</h2>
         <span id="buttons" style="width: 50%; display: flex; flex-direction: column; gap: 10px;">
             <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="editImages" v-if="clearImage">{{ $t("editImages.editImage") }}</button>
@@ -97,3 +97,13 @@
         }
     }
 </script>
+
+<style lang="scss" scoped>
+    @media screen and (max-width: 1000px) {
+        #clear-image{
+            max-width: 500px !important;
+            max-height: 500px !important;
+        }
+    }
+    
+</style>
