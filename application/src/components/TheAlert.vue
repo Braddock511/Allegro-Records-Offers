@@ -16,7 +16,9 @@
         default: {},
       },
     },
-
+    updated(){
+      setTimeout(() => {this.alert.message = ""}, 5000)
+    },
     components:{
       Transition
     }

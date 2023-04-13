@@ -148,7 +148,7 @@ def get_data_image() -> dict:
     class Data_Image(Base):
         __tablename__ = "data_image"
 
-        id = Column(Integer, primary_key=True, index=True)
+        id = Column(Integer, primary_key=True, index=True, autoincrement=True)
         data = Column(String)
         url = Column(String)
 

@@ -2,6 +2,7 @@ import requests
 import urllib3
 import json
 import re
+from collections import Counter
 from time import sleep
 from discogs_api import get_tracklist
 from preprocessing_data import remove_background
@@ -11,7 +12,9 @@ urllib3.disable_warnings()
 def allegro_verification(client_id: str, client_secret: str) -> str:
     payload = {'client_id': client_id}
     headers = {'Content-type': 'application/x-www-form-urlencoded'}
+
     response = requests.post("https://allegro.pl/auth/oauth/device", auth=(client_id, client_secret), headers=headers, data=payload, verify=False)
+
     return response.json()
 
 def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> str:
@@ -20,6 +23,7 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         data = {'grant_type': 'urn:ietf:params:oauth:grant-type:device_code', 'device_code': device_code}
         response = requests.post("https://allegro.pl/auth/oauth/token", auth=(client_id, client_secret), headers=headers, data=data, verify=False)
+
         token = json.loads(response.text)
 
         if response.status_code == 200:
@@ -27,30 +31,39 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
         
 def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str) -> dict:
     allegro_token = credentials["api_allegro_token"]
+
     if type_record == "Vinyl":
         categories_lp = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
         genre = categories_lp.get(genre)
+    
     elif type_record == "CD":
         categories_cd = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
         genre = categories_cd.get(genre)
 
     if type_offer == "all":
         type_offer = ""
+    
     elif type_offer == "BUY_NOW":
         type_offer = "&sellingMode.format=BUY_NOW"
+    
     elif type_offer == "AUCTION":
         type_offer = "&sellingMode.format=AUCTION"
 
     headers = {'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
     url = f"https://api.allegro.pl/sale/offers?publication.status=ACTIVE&limit={limit}&offset={offset}&category.id={genre}{type_offer}"
+
     result = requests.get(url, headers=headers, verify=False)
+    
     return result.json()
 
 def get_offer_info(credentials: dict, offer_id: int) -> dict:
     allegro_token = credentials["api_allegro_token"]
+
     headers = {'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
+    
     result = requests.get(url, headers=headers, verify=False)
+    
     return result.json()
 
 def create_offer(credentials: dict, data: dict, carton: str, condition: str, images: list, type_record: str, clear: bool) -> dict:
@@ -196,61 +209,67 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
     if not "Rok wydania" in [parameter['name'] for parameter in data['productSet'][0]['product']['parameters']] and released != "-": 
         data['productSet'][0]['product']['parameters'].append({"name": "Rok wydania", "values": [released]})
+
     if not "Wytwórnia" in [parameter['name'] for parameter in data['productSet'][0]['product']['parameters']] and label != "-": 
         data['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
 
     i = 0
+    errors = []
 
-    while i!=10:
+    while i<10:
         url = f'https://api.allegro.pl/sale/product-offers'
         result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=data, verify=False)
 
         try:
-            error = result.json()['errors'][0]['message']
-            if "Existing Product related" in error:
-                # Update category ID
-                error = result.json()
-                error = error['errors'][0]['userMessage']
+            error = result.json()['errors'][0]
 
-                category = re.findall(r"product category: .*", error)
+            if "Existing Product related" in error['message']:
+                # Update category ID
+                category = re.findall(r"product category: .*", error['userMessage'])
                 new_genre = "".join(re.findall(r"\d", str(category)))
 
                 data['productSet'][0]['product']['category']['id'] = new_genre
+
+                errors.append("Existing Product related")
             
-            elif "The provided parameter 'Wykonawca'" in error:
+            elif "The provided parameter 'Wykonawca'" in error['message']:
                 # Update artist
-                error = result.json()
-                error = error['errors'][0]['userMessage']
-                
-                category = re.findall(r"product parameter .*", error)[0]
+                category = re.findall(r"product parameter .*", error['userMessage'])[0]
                 new_artist = category.replace("product parameter", "")
                 new_artist = re.sub(r"[.`]", "", new_artist)
                 
-                if new_artist:
-                    data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist.strip()]
-                else:
-                    return result.json()
-                                
-            elif "The provided parameter 'Tytuł'" in error:
-                # Update title
-                error = result.json()
-                error = error['errors'][0]['userMessage']
+                data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist.strip()]
                 
-                category = re.findall(r"product parameter .*", error)[0]
+                errors.append("The provided parameter 'Wykonawca'")
+                                
+            elif "The provided parameter 'Tytuł'" in error['message']:
+                # Update title
+                category = re.findall(r"product parameter .*", error['userMessage'])[0]
                 new_title = category.replace("product parameter", "")
                 new_title = re.sub(r"[.`]", "", new_title)
+
+                data['productSet'][0]['product']['parameters'][1]['values'] = [new_title.strip()]
                 
-                if new_title:
-                    data['productSet'][0]['product']['parameters'][1]['values'] = [new_title.strip()]
-                else:
-                    return result.json()
+                errors.append("The provided parameter 'Tytuł'")
+                
             
-            elif "Invalid GTIN" in error:
+            elif "Invalid GTIN" in error['message']:
                 # Update barcode
-                new_barcode = error.split(" - ")[1].split(" in ")[0]
+                new_barcode = error['message'].split(" - ")[1].split(" in ")[0]
+
                 if len(new_barcode) not in [8, 10, 12, 13, 14]:
                     new_barcode = "0" + new_barcode
-                data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]                
+
+                data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]         
+
+                errors.append("Invalid GTIN")
+
+            # Checking that the given error does not repeating
+            count_error = Counter(errors).values()
+
+            for count in count_error:
+                if count > 1:
+                    i = 10
 
             i+=1
             
@@ -261,6 +280,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
 def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str]:
     allegro_token = credentials["api_allegro_token"]
+
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
     product = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}).json()
 
@@ -310,6 +330,7 @@ def edit_description(credentials: dict, offer_id: str, images: list, information
 
     if not "Rok wydania" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and released != "-":
         offer['productSet'][0]['product']['parameters'].append({"name": "Rok wydania", "values": [released]})
+
     if not "Wytwórnia" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and label != "-":
         offer['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
 
@@ -340,21 +361,27 @@ def edit_description(credentials: dict, offer_id: str, images: list, information
                 ]
             }
     offer['productSet'][0]['product']['images'] = images
+
     if price:
         offer['sellingMode'] = {"price": {"amount": price, "currency": "PLN"}}
 
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
     result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
+    
     return result.json()
 
 def edit_images(credentials: dict, offer_id: str, images: list) -> dict:
     allegro_token = credentials["api_allegro_token"]
+    
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
     result = requests.patch(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json={'images': images}, verify=False)
+    
     return result.json()
 
 def get_payment_history(credentials: dict, limit: int, offset: int) -> dict:
     allegro_token = credentials["api_allegro_token"]
+    
     url = f"https://api.allegro.pl/payments/payment-operations?limit={limit}&offset={offset}"
     result = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, verify=False)
+    
     return result.json()

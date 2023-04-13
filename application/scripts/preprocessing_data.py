@@ -20,15 +20,18 @@ def search_data(data: list, discogs_token: str, type_record: str, image_data: bo
             if not image_data:
                 code = re.sub(r'\(', ' (', code)
                 code = re.sub(r'\([^)]*\)', '', code)
+
             # Check if the code contains only ASCII characters
             if not re.search(r'[^\u0000-\u007F]', code):
                 if not re.match(remove_punctuation, code):
+                    
                     # Remove any unwanted characters from the code if data is a image
                     if image_data:
                         code = code.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
                         
                     if type_record == "Vinyl":
                         discogs_data = get_vinyl(code, discogs_token)
+                        
                     elif type_record == "CD":
                         discogs_data = get_cd(code, discogs_token)
 
@@ -39,6 +42,7 @@ def search_data(data: list, discogs_token: str, type_record: str, image_data: bo
                                 if code == discogs_code:
                                     output_data.append(disc_data)
                                     break
+                                
                             else:
                                 output_data.append(disc_data)
 

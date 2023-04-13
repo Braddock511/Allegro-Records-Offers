@@ -1,8 +1,8 @@
 <template>
     <span v-if="!cartonFlag" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
-    <div class="data" v-if="img && cartonFlag && !waitFlag && !failedFlag">
-        <TheSlider :images="img" ></TheSlider>
-        <table v-if="imgFlag">
+    <div class="data" v-if="cartonFlag && !failedFlag && !loading">
+        <TheSlider :images="img"></TheSlider>
+        <table>
             <tr style="border: none;">
                 <td colspan="8" style="border: none; text-align: center; background-color: #202833;">
                     <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="failed.data.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-'}); failed.condition.push(this.condition); failed.img.push(this.img[0]); next()">{{ $t("table.next") }}</button>
@@ -118,8 +118,6 @@
                 alert: {},
                 cartonFlag: false,
                 visible: false,
-                imgFlag: false,
-                waitFlag: false,
                 failedFlag: false,
                 loading: false
             }
@@ -162,32 +160,39 @@
                         this.alert = {variant: "warning", message: this.$t("alerts.complete")}
                     }
                 }
-                // Send data
-                this.loading = true
-                this.waitFlag = true
-                const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
-                if (response.data.error || response.data.errors){
-                    this.failed.data.push(selectedData)
-                    this.failed.condition.push(this.condition)
-                    this.failed.img.push(this.img[0])
-                    this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
-                    // Next offer   
-                    this.next()
-                }
-                else{
-                    this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
-                    this.title = "",
-                    this.label = "",
-                    this.country = "",
-                    this.year = "",
-                    this.price = ""
-                    // Next offer
-                    this.next()
+                if (Object.keys(selectedData).length !== 0){
+                    // Send data
+                    this.loading = true
+                    const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
+                    if (response.data.error || response.data.errors){
+                        this.failed.data.push(selectedData)
+                        this.failed.condition.push(this.condition)
+                        this.failed.img.push(this.img[0])
+                        this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
+                        this.title = "",
+                        this.label = "",
+                        this.country = "",
+                        this.year = "",
+                        this.price = "",
+                        this.condition = "Near Mint (NM or M-)"
+                        // Next offer   
+                        this.next()
+                    }
+                    else{
+                        this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
+                        this.title = "",
+                        this.label = "",
+                        this.country = "",
+                        this.year = "",
+                        this.price = "",
+                        this.condition = "Near Mint (NM or M-)"
+                        // Next offer
+                        this.next()
+                    }
                 }
             },
             next(){
                 this.loading = true
-                this.waitFlag = true
                 this.currentIndex += this.numberImages
                 if (this.currentIndex >= this.imageData.data.length) {
                     if(this.failed.img.length != 0){
@@ -196,9 +201,6 @@
                     else{
                         this.$router.push('/')
                     }
-                    
-                    this.imgFlag = false
-                    this.loading = false
                 }
                 else{
                     this.img = []
@@ -213,8 +215,8 @@
                         this.img.push(data[i].url)
                     }
                     this.img.reverse()
-                    setTimeout(() => { this.imgFlag = true; this.loading = false; this.waitFlag = false }, 500)
                 }
+                setTimeout(() => {this.loading = false}, 100)
             },
             roundedPrice(price) {
                 let finalValue
@@ -230,7 +232,7 @@
             confirmCarton(){
                 this.loading = true
                 this.cartonFlag = true
-                setTimeout(() => { this.imgFlag = true; this.loading = false }, 2500)
+                this.loading = false
             },
             showImage() {
                 this.show()
@@ -293,6 +295,9 @@
 
     @media screen and (max-width: 1700px) {
     tr{
+        td:nth-child(3){
+            display: block !important;
+        }
         td:nth-child(5)::before{
             content: "Genre: " !important;
         }

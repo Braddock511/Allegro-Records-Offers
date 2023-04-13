@@ -3,25 +3,32 @@ import requests
 def get_vinyl(query: str, discogs_token: str) -> dict:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/database/search?query={query}&format=lp&type=release"
+
     response = requests.get(url, headers=headers)
+
     return response.json()
 
 
 def get_cd(barcode: str, discogs_token: str) -> dict:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/database/search?barcode={barcode}&format=cd&type=release"
+
     response = requests.get(url, headers=headers)
+
     return response.json()
 
 def get_price(id: str, discogs_token: str) -> dict:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com//marketplace/price_suggestions/{id}"
+
     response = requests.get(url, headers=headers)
+
     return response.json()
 
 def get_tracklist(id: str, discogs_token: str) -> dict:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/releases/{id}"
+
     response = requests.get(url, headers=headers)
 
     try:
@@ -33,6 +40,7 @@ def get_tracklist(id: str, discogs_token: str) -> dict:
             if 'sub_tracks' in list(track.keys()):
                 for sub_track in track['sub_tracks']:
                     outtrack = f"<b>{sub_track['position']}. {sub_track['title']}</b>"
+                    
             else:
                 outtrack = f"<b>{track['position']}. {track['title']}</b>"
 
@@ -44,6 +52,7 @@ def get_tracklist(id: str, discogs_token: str) -> dict:
                 paragraph.clear()
 
         tracks = tracks.replace("&", " ")
+
         return tracks
     
     except KeyError:

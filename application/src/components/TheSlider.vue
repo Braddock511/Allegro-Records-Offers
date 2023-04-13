@@ -1,19 +1,24 @@
 <template>
-    <vue-easy-lightbox
-        scrollEnabled
-        escEnabled
-        moveEnabled
-        :visible="visible"
-        :imgs="images[currentIndex]"
-        :zoomScale="1.5"
-        @hide="visible = false">
-    </vue-easy-lightbox>
-    <div class="slider">
-      <div class="arrow-left" @click="prevImage" v-if="waitFlag" style="left: 10px;">&#8249;</div>
-      <div class="image-container">
-        <img :src="images[currentIndex]" alt="Slider Image" @click="visible = true">
-      </div>
-      <div class="arrow-right" @click="nextImage" v-if="waitFlag" style="right: 10px;">&#8250;</div>
+    <span v-if="!loading">
+        <vue-easy-lightbox
+            scrollEnabled
+            escEnabled
+            moveEnabled
+            :visible="visible"
+            :imgs="images[currentIndex]"
+            :zoomScale="1.5"
+            @hide="visible = false">
+        </vue-easy-lightbox>
+        <div class="slider">
+        <div class="arrow-left" @click="prevImage" style="left: 10px;">&#8249;</div>
+        <div class="image-container">
+            <img :src="images[currentIndex]" alt="Slider Image" @click="visible = true">
+        </div>
+        <div class="arrow-right" @click="nextImage" style="right: 10px;">&#8250;</div>
+        </div>
+    </span>
+    <div id="loading" v-if="loading">
+        <img src="../assets/spinner.gif" alt="loading">
     </div>
 </template>
   
@@ -24,7 +29,7 @@
             return {
                 currentIndex: 0,
                 visible: false,
-                waitFlag: false
+                loading: false
             }
         },
         methods: {
@@ -44,6 +49,7 @@
             }
         },
         mounted(){
+            this.loading = true
             const images = this.images
             const promises = images.map(imgSrc => {
                 return new Promise(resolve => {
@@ -53,7 +59,7 @@
                 })
             })
             Promise.all(promises).then(() => {
-                this.waitFlag = true
+                this.loading = false
             })
         },
         props: {

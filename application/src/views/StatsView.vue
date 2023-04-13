@@ -87,7 +87,6 @@
                         this.saleBarplot = plot.data.sale_barplot
                         this.alert = {variant: "success", message: this.$t("alerts.statistics")}
                     }
-                    setTimeout(()=>{this.alert = {}}, 2500)
                     this.loading = false
                 }
             },
@@ -105,7 +104,6 @@
                         this.genreBarplot = plot.data.genre_barplot
                         this.alert = {variant: "success", message: this.$t("alerts.statistics")}
                     }
-                    setTimeout(()=>{this.alert = {}}, 2500)
                     this.loading = false
                 }
             }
@@ -123,7 +121,6 @@
                 this.alert = {variant: "success", message: this.$t("alerts.statistics")}
             }
             
-            setTimeout(()=>{this.alert = {}}, 2500)
             this.loading = false
         },
         components:{

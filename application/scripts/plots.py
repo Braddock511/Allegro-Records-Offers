@@ -26,8 +26,9 @@ def annual_sale_barplot(credentials: dict, data: list) -> str:
     sns.set_style("whitegrid")
     sns.set_palette("pastel")
 
-    plt.figure(figsize=(20, 10))
     plot = sns.barplot(data=output, x="date", y="price", color='green')
+
+    plt.figure(figsize=(20, 10))
     plt.title("Income in given months", fontsize=18)
     plt.xlabel("Months", fontsize=14)
     plt.ylabel("Income in PLN", fontsize=14)
@@ -40,6 +41,7 @@ def annual_sale_barplot(credentials: dict, data: list) -> str:
     # Upload plot to imagekit 
     if not os.path.exists("temp"):
         os.mkdir("temp")
+
     plt.savefig("temp/sale_barplot.png", bbox_inches="tight")
 
     with open('temp/sale_barplot.png', 'rb') as f:
@@ -58,9 +60,10 @@ def create_genres_barplot(credentials: dict, data: list) -> str:
     sns.set_style("whitegrid")
     sns.set_palette("pastel")
 
-    plt.figure(figsize=(20, 10))
     plot = sns.countplot(x=genres, color='green')
     plot.set_xticklabels(plot.get_xticklabels(), rotation=45, ha="right")
+
+    plt.figure(figsize=(20, 10))
     plt.title("Number of genres in offers", fontsize=18)
     plt.xlabel("Genre", fontsize=14)
 
@@ -70,6 +73,7 @@ def create_genres_barplot(credentials: dict, data: list) -> str:
     # Upload plot to imagekit 
     if not os.path.exists("temp"):
         os.mkdir("temp")
+        
     plt.savefig("temp/genres_barplot.png", bbox_inches="tight")
 
     with open('temp/genres_barplot.png', 'rb') as f:

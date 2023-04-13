@@ -122,7 +122,7 @@ async def data_image(request: Request):
         # Get data from discogs
         for i, (data, url) in enumerate(zip(data_image['data'], data_image['url'])):
             # Discogs limit -> 60 requests per minute (In preprocess_data executing 3 request)
-            if (i+1) % 18 == 0:
+            if (i+1) % 15 == 0:
                 sleep(60)
 
             if not data:
