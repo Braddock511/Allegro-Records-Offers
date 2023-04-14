@@ -5,12 +5,12 @@ import os
 from datetime import datetime
 from imageKit_api import upload_file_imageKit
 
-def annual_sale_barplot(credentials: dict, data: list) -> str:
+def annual_sale_barplot(credentials: dict, sales: list) -> str:
     dates = {}
     prices = {}
 
     # Sorting prices by month
-    for sale in data:
+    for sale in sales:
         if sale['group'] == "INCOME":
             date = datetime.strptime(sale['occurredAt'][:7], '%Y-%m')
             price = float(sale['value']['amount'])
@@ -26,9 +26,9 @@ def annual_sale_barplot(credentials: dict, data: list) -> str:
     sns.set_style("whitegrid")
     sns.set_palette("pastel")
 
+    plt.figure(figsize=(20, 10))
     plot = sns.barplot(data=output, x="date", y="price", color='green')
 
-    plt.figure(figsize=(20, 10))
     plt.title("Income in given months", fontsize=18)
     plt.xlabel("Months", fontsize=14)
     plt.ylabel("Income in PLN", fontsize=14)
@@ -60,10 +60,10 @@ def create_genres_barplot(credentials: dict, data: list) -> str:
     sns.set_style("whitegrid")
     sns.set_palette("pastel")
 
+    plt.figure(figsize=(20, 10))
     plot = sns.countplot(x=genres, color='green')
     plot.set_xticklabels(plot.get_xticklabels(), rotation=45, ha="right")
 
-    plt.figure(figsize=(20, 10))
     plt.title("Number of genres in offers", fontsize=18)
     plt.xlabel("Genre", fontsize=14)
 

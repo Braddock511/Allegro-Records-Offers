@@ -69,7 +69,7 @@
                 <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
             </tr>
             <tbody>
-            <tr v-for="data in imageData.data[currentIndex].information.data">
+            <tr v-for="data in discogsData[currentIndex].information">
                 <td>{{ data.title }}</td>
                 <td>{{ data.label }}</td>
                 <td>{{ data.country }}</td>
@@ -163,8 +163,9 @@
                 if (Object.keys(selectedData).length !== 0){
                     // Send data
                     this.loading = true
-                    const response = await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' } })
-                    if (response.data.error || response.data.errors){
+                    const response = (await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' }})).data
+                    console.log(response)
+                    if (response.error || response.output.errors){
                         this.failed.data.push(selectedData)
                         this.failed.condition.push(this.condition)
                         this.failed.img.push(this.img[0])
@@ -194,7 +195,7 @@
             next(){
                 this.loading = true
                 this.currentIndex += this.numberImages
-                if (this.currentIndex >= this.imageData.data.length) {
+                if (this.currentIndex >= this.discogsData.length) {
                     if(this.failed.img.length != 0){
                         this.failedFlag = true
                     }
@@ -206,10 +207,10 @@
                     this.img = []
                     let data
                     if (this.type == "CD"){
-                        data = this.imageData.data.slice(this.currentIndex-1, this.currentIndex+this.numberImages-1)
+                        data = this.discogsData.slice(this.currentIndex-1, this.currentIndex+this.numberImages-1)
                     }
                     else{
-                        data = this.imageData.data.slice(this.currentIndex, this.currentIndex+this.numberImages)
+                        data = this.discogsData.slice(this.currentIndex, this.currentIndex+this.numberImages)
                     }
                     for (let i = 0; i < data.length; i++) {
                         this.img.push(data[i].url)
@@ -247,7 +248,7 @@
         beforeMount() {
             this.loading =  true
             try{
-                let data = this.imageData.data.slice(0, this.numberImages)
+                let data = this.discogsData.slice(0, this.numberImages)
                 for (let i = 0; i < data.length; i++) {
                     this.img.push(data[i].url)
                 }
@@ -262,7 +263,7 @@
             this.loading =  false
         },
         props: {
-            imageData: {
+            discogsData: {
                 required: true
             },
             type:{

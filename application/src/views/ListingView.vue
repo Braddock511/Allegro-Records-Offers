@@ -1,6 +1,6 @@
 <template>
     <TheHeader/>
-    <span v-if="!imageData">
+    <span v-if="!discogsData">
         <section class="form-container" v-if="!loading">
             <form @submit.prevent="getDataImage">
                 <div class="title">{{ $t("listingView.upload") }}</div>
@@ -29,7 +29,7 @@
             <img src="../assets/spinner.gif" alt="loading">
         </div>
     </span>
-    <TheListingData v-if="imageData" :imageData="imageData" :type="type" :clear="clear" :numberImages="numberImages"/>
+    <TheListingData v-if="discogsData" :discogsData="discogsData" :type="type" :clear="clear" :numberImages="numberImages"/>
 </template>
 
 <script>
@@ -42,7 +42,7 @@
             return{
                 images: [],
                 numberImages: 3,
-                imageData: "",
+                discogsData: "",
                 type: "Vinyl",
                 clear: false,
                 loading: false,
@@ -71,7 +71,8 @@
             async getDataImage() {
                 this.loading = true
                 await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.type, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
-                this.imageData = await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type}, {headers: {'Content-Type': 'application/json'}})
+                this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type}, {headers: {'Content-Type': 'application/json'}})).data.output
+                console.log(this.discogsData)
                 this.loading = false
             },
         },

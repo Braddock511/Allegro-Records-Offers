@@ -11,11 +11,11 @@ class Test(unittest.TestCase):
     credentials = {"api_azure_subscription_key": "", "api_azure_endpoint": "", "api_imagekit_id": "", "api_imagekit_secret": "", "api_imagekit_endpoint": "", "api_discogs_token": "", "api_allegro_token": ""}
     
     def test_search_image_data(self):
-        data = ['JNYHUIwdxaD sadMI SOYRcedas', 'SIDE asdad1']
+        data = ['JNYHUID MI SOYR', 'SIDE 1', 'LICENSEE TRADE MARK', 'sport (4:03)', 'GEMA', 'INAUTHORIZED PUBLIC PERFORMANCE BROAD', 'HAMBURG', '33', 'ATL 40 417', '1972 Atlantic Records', 'Klaus Doldinger', 'Except "Fairy Tale" - Trad. Adpt. By', 'Klaus Doldinger', 'All Titles Composed And Produced By', 'ATLANTIC', '4. Get Yourself A Second Passpo', '3. Fairy Tale (7:32)', '1. Mandragora (3:46)', '2. Nexus (5:23)', 'PASSPORT - SECOND PASSPORT', '40 417 -', 'STEREO', 'A ATLANTIC RECORDING CORP. U.S.A.', 'CTURER AND OF THE OWNER OF THE RECORD', 'ALL RIGHTS OF THE', 'BESSIE SMITH', 'AL STEWART', 'SPIRIT', "The World's Greatest Blues", '68258', 'MOONDOG', 'Singar', 'LEONARD COHEN', 'MOONDOG', 'POCO', 'The Bassie Smith Story Volumes 1-4', 'ARGENT', '52377/78/79/80', 'Argent', 'AMERICAN', 'KALEIDOSCOPE', 'Clear', '83729', 'The Family That Plays Together', '83523', 'argeac', '+', 'Spirit', '83278', 'Zero She Flies', '53848', '63241', "IT'S A", 'Love Chronicles', '83450', 'TIFUL DAY', '64082', 'Bedsitter', '53087', 'TREES', 'MILES DAVIS', 'ROCK WORKSHOP', 'bernice', '84005', 'Marrying Maiden', '64085', 'A Beautiful Day', '#3722', 'AMORY KANE', 'The Garden Of Jane Delawney', 'LAURA NYRO', '63837', 'BLACK WIDOW', 'on', 'AHAL', 'Rask Workshop', '64076', 'CEt', 'BOB DYLAN', 'REDBONE', 'SIM', 'GARFU', 'New York Tandeberry', 'L', 'Ch And The Thirteenth Confession 032', '63510', 'Nashville Skyline', 'Highway 61 Revisited', '88260', 'Giant Stop', 'lapisg it All Back Home', '83601', "The Netch'l blues", '82672', '82516', 'a Metal', '$8228', '83387', 'Just To Be There', 'CHAMBERS BROS', 'EVERLY', 'BROTHERS']
         type_record = "Vinyl"
         image_data = True
 
-        result = search_data(data, Test.credentials['discogs_token'], type_record, image_data)
+        result = search_data(data, Test.credentials['api_discogs_token'], type_record, image_data)
 
         self.assertEqual(result[0]['country'], "Germany")
         self.assertEqual(result[0]['year'], "1972")
@@ -25,11 +25,11 @@ class Test(unittest.TestCase):
         self.assertEqual(result[1]['label'][0], "Cook")
 
     def test_search_image_data_wrong(self):
-        data = ['JNYHUID MI SOYR', 'SIDE 1', 'LICENSEE TRADE MARK', 'sport (4:03)', 'GEMA', 'INAUTHORIZED PUBLIC PERFORMANCE BROAD', 'HAMBURG', '33', 'ATL 40 417', '1972 Atlantic Records', 'Klaus Doldinger', 'Except "Fairy Tale" - Trad. Adpt. By', 'Klaus Doldinger', 'All Titles Composed And Produced By', 'ATLANTIC', '4. Get Yourself A Second Passpo', '3. Fairy Tale (7:32)', '1. Mandragora (3:46)', '2. Nexus (5:23)', 'PASSPORT - SECOND PASSPORT', '40 417 -', 'STEREO', 'A ATLANTIC RECORDING CORP. U.S.A.', 'CTURER AND OF THE OWNER OF THE RECORD', 'ALL RIGHTS OF THE', 'BESSIE SMITH', 'AL STEWART', 'SPIRIT', "The World's Greatest Blues", '68258', 'MOONDOG', 'Singar', 'LEONARD COHEN', 'MOONDOG', 'POCO', 'The Bassie Smith Story Volumes 1-4', 'ARGENT', '52377/78/79/80', 'Argent', 'AMERICAN', 'KALEIDOSCOPE', 'Clear', '83729', 'The Family That Plays Together', '83523', 'argeac', '+', 'Spirit', '83278', 'Zero She Flies', '53848', '63241', "IT'S A", 'Love Chronicles', '83450', 'TIFUL DAY', '64082', 'Bedsitter', '53087', 'TREES', 'MILES DAVIS', 'ROCK WORKSHOP', 'bernice', '84005', 'Marrying Maiden', '64085', 'A Beautiful Day', '#3722', 'AMORY KANE', 'The Garden Of Jane Delawney', 'LAURA NYRO', '63837', 'BLACK WIDOW', 'on', 'AHAL', 'Rask Workshop', '64076', 'CEt', 'BOB DYLAN', 'REDBONE', 'SIM', 'GARFU', 'New York Tandeberry', 'L', 'Ch And The Thirteenth Confession 032', '63510', 'Nashville Skyline', 'Highway 61 Revisited', '88260', 'Giant Stop', 'lapisg it All Back Home', '83601', "The Netch'l blues", '82672', '82516', 'a Metal', '$8228', '83387', 'Just To Be There', 'CHAMBERS BROS', 'EVERLY', 'BROTHERS']
+        data = ['JNYHUIwdxaD sadMI SOYRcedas', 'SIDE asdad1']
         type_record = "Vinyl"
         image_data = True
 
-        result = search_data(data, Test.credentials['discogs_token'], type_record, image_data)
+        result = search_data(data, Test.credentials['api_discogs_token'], type_record, image_data)
 
         self.assertEqual(result, [])
 
@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         type_record = "Vinyl"
         image_data = False
 
-        result = search_data(data, Test.credentials['discogs_token'], type_record, image_data)
+        result = search_data(data, Test.credentials[''], type_record, image_data)
 
         self.assertEqual(result[0]['country'], "US")
         self.assertEqual(result[0]['year'], "1986")
@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
         type_record = "Vinyl"
         image_data = True
 
-        result = search_data(data, Test.credentials['discogs_token'], type_record, image_data)
+        result = search_data(data, Test.credentials['api_discogs_token'], type_record, image_data)
 
         self.assertEqual(result, [])
 
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
         type_record = "CD"
         image_data = False
 
-        result = search_data(data, Test.credentials['discogs_token'], type_record, image_data)
+        result = search_data(data, Test.credentials['api_discogs_token'], type_record, image_data)
 
         self.assertEqual(result[0]['country'], "Russia")
         self.assertEqual(result[0]['year'], "2017")
@@ -75,12 +75,12 @@ class Test(unittest.TestCase):
         type_record = "CD"
         image_data = False
 
-        result = search_data(data, Test.credentials['discogs_token'], type_record, image_data)
+        result = search_data(data, Test.credentials['api_discogs_token'], type_record, image_data)
 
         self.assertEqual(result, [])
 
     def test_preprocess_data_vinyl(self):
-        data = ["Passport - Second Passport.Ł13"]
+        data = ["Passport - Second Passport"]
         type_record = "Vinyl"
         url = ""
         image_data = False
@@ -89,10 +89,10 @@ class Test(unittest.TestCase):
 
         self.assertEqual(result[0]['country'], "Germany")
         self.assertEqual(result[0]['year'], "1972")
-        self.assertEqual(result[0]['label'][0], "Atlantic")
+        self.assertEqual(result[0]['label'], "Atlantic | ATL40417")
         self.assertEqual(result[1]['country'], "US")
         self.assertEqual(result[1]['year'], "1960")
-        self.assertEqual(result[1]['label'][0], "Cook")
+        self.assertEqual(result[1]['label'], "Cook")
 
     def test_preprocess_data_vinyl_wrong(self):
         data = ["becscdsd1as"]
@@ -160,7 +160,7 @@ class Test(unittest.TestCase):
     def test_get_vinyl(self):
         query = "Passport - Second Passport"
 
-        result = get_vinyl(query, Test.credentials['discogs_token'])
+        result = get_vinyl(query, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result['results'][0]['country'], "Germany")
         self.assertEqual(result['results'][0]['year'], "1972")
@@ -169,14 +169,14 @@ class Test(unittest.TestCase):
     def test_get_vinyl_wrong(self):
         query = "asfgg2wdasx"
 
-        result = get_vinyl(query, Test.credentials['discogs_token'])
+        result = get_vinyl(query, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result['results'][0], {})
 
     def test_get_cd(self):
         barcode = "88985479932"
 
-        result = get_cd(barcode, Test.credentials['discogs_token'])
+        result = get_cd(barcode, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result['results'][0]['country'], "Europe")
         self.assertEqual(result['results'][0]['year'], "2017")
@@ -185,35 +185,35 @@ class Test(unittest.TestCase):
     def test_get_cd_wrong(self):
         barcode = "asfdgrwdaxsd"
 
-        result = get_cd(barcode, Test.credentials['discogs_token'])
+        result = get_cd(barcode, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result['results'][0], {})
 
     def test_get_price(self):
         id = "26182769"
 
-        result = get_price(id, Test.credentials['discogs_token'])
+        result = get_price(id, Test.credentials['api_discogs_token'])
 
         self.assertEqual(list(result.keys()), ['Mint (M)', 'Near Mint (NM or M-)', 'Very Good Plus (VG+)', 'Very Good (VG)', 'Good Plus (G+)', 'Good (G)', 'Fair (F)', 'Poor (P)'])
 
     def test_get_price_wrong(self):
         id = "dw1sas"
 
-        result = get_price(id, Test.credentials['discogs_token'])
+        result = get_price(id, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result, {})
 
     def test_get_tracklist(self):
         id = "26182769"
 
-        result = get_tracklist(id, Test.credentials['discogs_token'])
+        result = get_tracklist(id, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result, "<p><b>LISTA UTWORÓW:</b></p><p><b>A1. Cracker Island</b> | <b>A2. Oil</b></p><p><b>A3. The Tired Influencer</b> | <b>A4. Tarantula</b></p><p><b>A5. Silent Running</b> | <b>B1. New Gold</b></p><p><b>B2. Baby Queen</b> | <b>B3. Tormenta</b></p><p><b>B4. Skinny Ape</b> | <b>B5. Posession Island</b></p>")
 
     def test_get_tracklist_wrong(self):
         id = "asdasd"
 
-        result = get_tracklist(id, Test.credentials['discogs_token'])
+        result = get_tracklist(id, Test.credentials['api_discogs_token'])
 
         self.assertEqual(result, "<p><b>LISTA UTWORÓW: -</b></p>")
 

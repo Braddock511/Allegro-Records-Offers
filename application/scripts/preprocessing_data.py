@@ -9,56 +9,56 @@ from azure_api import clear_image
 from discogs_api import get_vinyl, get_cd, get_price
 from imageKit_api import upload_file_imageKit
 
-def search_data(data: list, discogs_token: str, type_record: str, image_data: bool) -> list[dict]: 
-    output_data = []
+def search_data(text_from_image: list, discogs_token: str, type_record: str, data_image: bool) -> list[dict]: 
+    discogs_data_output = []
     punctuation = "<"'"'"'@:^`!#$%&*();?'\'[]{}=+,>"
     remove_punctuation = r"^[a-zA-Z {}]*$".format(re.escape(punctuation))
 
-    for code in data:
-        if 5 < len(code) < 50:
+    for text in text_from_image:
+        if 5 < len(text) < 50:
             # Remove any text within parentheses if data is a image
-            if not image_data:
-                code = re.sub(r'\(', ' (', code)
-                code = re.sub(r'\([^)]*\)', '', code)
+            if not data_image:
+                text = re.sub(r'\(', ' (', text)
+                text = re.sub(r'\([^)]*\)', '', text)
 
-            # Check if the code contains only ASCII characters
-            if not re.search(r'[^\u0000-\u007F]', code):
-                if not re.match(remove_punctuation, code):
+            # Check if the text contains only ASCII characters
+            if not re.search(r'[^\u0000-\u007F]', text):
+                if not re.match(remove_punctuation, text):
                     
-                    # Remove any unwanted characters from the code if data is a image
-                    if image_data:
-                        code = code.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
+                    # Remove any unwanted characters from the text if data is a image
+                    if data_image:
+                        text = text.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
                         
                     if type_record == "Vinyl":
-                        discogs_data = get_vinyl(code, discogs_token)
+                        discogs_data = get_vinyl(text, discogs_token)
                         
                     elif type_record == "CD":
-                        discogs_data = get_cd(code, discogs_token)
+                        discogs_data = get_cd(text, discogs_token)
 
                     if 'results' in discogs_data.keys():
                         for disc_data in discogs_data['results']:
-                            if image_data:
-                                discogs_code = disc_data['catno'].replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
-                                if code == discogs_code:
-                                    output_data.append(disc_data)
+                            if data_image:
+                                discogs_text = disc_data['catno'].replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
+                                if text == discogs_text:
+                                    discogs_data_output.append(disc_data)
                                     break
                                 
                             else:
-                                output_data.append(disc_data)
+                                discogs_data_output.append(disc_data)
 
-    return output_data
+    return discogs_data_output
         
 
-def preprocess_data(data: str|list, credentials: dict, type_record: str, url: str = "", image_data: bool = True) -> dict:
+def preprocess_data(text_from_image: str|list, credentials: dict, type_record: str, url: str = "", data_image: bool = True) -> dict:
     # Get the Discogs API token from the credentials list
     discogs_token = credentials["api_discogs_token"]
 
     # Clean up the input string
-    if isinstance(data, str):
-        data = data.replace("{", "").replace("}", "").split(",")
+    if isinstance(text_from_image, str):
+        text_from_image = text_from_image.replace("{", "").replace("}", "").split(",")
 
-    # Search the Discogs API for vinyl records matching the input codes
-    results = search_data(data, discogs_token, type_record, image_data)
+    # Search the Discogs API for vinyl records matching the input texts
+    results = search_data(text_from_image, discogs_token, type_record, data_image)
 
     id = '-'
     label = '-'
@@ -71,14 +71,14 @@ def preprocess_data(data: str|list, credentials: dict, type_record: str, url: st
     barcode = '-'
 
     # Reshape list to 1
-    if isinstance(data, list):
-        data_temp = []
-        data_temp.append(data)
-        data = data_temp
+    if isinstance(text_from_image, list):
+        text_from_image_temp = []
+        text_from_image_temp.append(text_from_image)
+        text_from_image = text_from_image_temp
 
-    output = {"url": url, "data": []}
+    discogs_information = []
 
-    for _ in range(len(data)):
+    for _ in range(len(text_from_image)):
         information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
 
         for result in results:
@@ -95,9 +95,9 @@ def preprocess_data(data: str|list, credentials: dict, type_record: str, url: st
                 label = result.get('label', [''])[0] + " | " + result.get('catno', '') if result.get('label') else '-'
 
             information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
-            output['data'].append(information)
+            discogs_information.append(information)
 
-    return output
+    return discogs_information
 
 
 def remove_background(image_url: str, credentials: dict) -> str:

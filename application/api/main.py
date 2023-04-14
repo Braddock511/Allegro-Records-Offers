@@ -28,41 +28,41 @@ async def read_image_data(request: Request):
         images = response['images']
         type_record = response['typeRecord']
         number_images = response['numberImages']
-        output = []
+        text_from_images = []
 
         for i in range(0, len(images), number_images):
             if type_record == "Vinyl":
                 # Read first image
                 image_1 = images[i]
-                data_1, image_url_1 = read_image(image_1, credentials)
-                output.append({"data": data_1, "url": image_url_1})
+                text_from_image_1, image_url_1 = read_image(image_1, credentials)
+                text_from_images.append({"text_from_image": text_from_image_1, "url": image_url_1})
 
                 # Other images
                 for j in range(1, number_images):
                     other_image = images[i+j]
                     other_image_url = upload_file_imageKit(other_image, credentials)['url']
-
-                    output.append({"data": "", "url": other_image_url})
+                    text_from_images.append({"text_from_image": "EMPTY", "url": other_image_url})
 
             elif type_record == "CD":
                 # Read second image 
                 image_2 = images[i+1]
-                data, image_url_2 = get_cd_barcode(image_2, credentials)
+                text_from_image, image_url_2 = get_cd_barcode(image_2, credentials)
                 
                 # Other images
                 for j in range(0, number_images-1):
                     other_image = images[i+j]
                     other_image_url = upload_file_imageKit(other_image, credentials)['url']
+                    text_from_images.append({"text_from_image": "EMPTY", "url": other_image_url})
 
-                    output.append({"data": "", "url": other_image_url})
                     if j == 0:
-                        output.append({"data": data, "url": image_url_2})
+                        text_from_images.append({"text_from_image": text_from_image, "url": image_url_2})
 
-        db.post_data_image(output)
-        return {"success": 200}
+        db.post_text_from_image(text_from_images)
+
+        return {"status": 200, "output": text_from_images}
 
     except Exception as e:
-        return {"error": f"Exception in read_image: {str(e)}"}
+        return {"status": 404, "error": f"Exception in read_image: {str(e)}"}
 
 @app.post("/clear-image")
 async def clear_image(request: Request):
@@ -73,10 +73,10 @@ async def clear_image(request: Request):
         
         clear_image_url = remove_background(image, credentials)
         
-        return clear_image_url
+        return {"status": 200, "output": clear_image_url}
 
     except Exception as e:
-        return {"error": f"Exception in clear_image: {str(e)}"}
+        return {"status": 404, "error": f"Exception in clear_image: {str(e)}"}
 
 @app.post("/discogs-information")
 async def discogs_info(request: Request):
@@ -91,53 +91,56 @@ async def discogs_info(request: Request):
             offers_info = allegro.get_offer_info(credentials, allegro_data['offers'][id]['id'])
         else:
             offers_info = allegro.get_offer_info(credentials, allegro_data['id'])
-        output_data = None
+        
+        offer_input_data = None
 
         if type_record == "Vinyl":
             name = offers_info['name']
             name = name.split(".")[0]
             name = name.split("(CD)")[0]
-            output_data = name
+            offer_input_data = name
         elif type_record == "CD":
             parameters = offers_info['productSet'][0]['product']['parameters']
+            
             for x in parameters:
                 if x['name'] == 'EAN (GTIN)':
-                    output_data = x['values'][0]
+                    offer_input_data = x['values'][0]
         
-        discogs_data = preprocess_data(output_data, credentials, type_record, "", False)
+        discogs_data = preprocess_data(offer_input_data, credentials, type_record, "", False)
             
-        return {"offer": offers_info, "discogs": discogs_data}
+        return {"status": 200, "offer": offers_info, "discogs": discogs_data}
+    
     except Exception as e:
-        return {"error": f"Exception in discogs_info: {str(e)}"}
+        return {"status": 404, "error": f"Exception in discogs_info: {str(e)}"}
 
 @app.post("/discogs-information-image")
-async def data_image(request: Request):
+async def image_data(request: Request):
     try:
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
-        data_image = db.get_data_image()
+        image_data = db.get_text_from_image()
         type_record = response['typeRecord']
+        discogs_data = []
 
-        output_data = []    
         # Get data from discogs
-        for i, (data, url) in enumerate(zip(data_image['data'], data_image['url'])):
-            # Discogs limit -> 60 requests per minute (In preprocess_data executing 3 request)
-            if (i+1) % 15 == 0:
-                sleep(60)
-
-            if not data:
-                output_data.append({"input_data": data, "information": "", "url": url})
+        for text_from_image, url in zip(image_data['text_from_image'], image_data['url']):
+            if text_from_image == "EMPTY":
+                discogs_data.append({"input_data": text_from_image, "information": "", "url": url})
             else:
                 if type_record == "Vinyl":
-                    information = preprocess_data(data, credentials, type_record, url)
+                    information = preprocess_data(text_from_image, credentials, type_record, url)   
                 elif type_record == "CD":
-                    information = preprocess_data(data, credentials, type_record, url, False)
-                output_data.append({"input_data": data,"information": information, "url": url})
-        
-        return output_data
+                    information = preprocess_data(text_from_image, credentials, type_record, url, False)
+                
+                discogs_data.append({"input_data": text_from_image, "information": information, "url": url})
+
+                # Discogs limit -> 60 requests per minute (In preprocess_data executing 3 request)
+                sleep(3.5)
+
+        return {"status": 200, "output": discogs_data}
 
     except Exception as e:
-        return {"error": f"Exception in data_image: {str(e)}"}
+        return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
     
 @app.post("/allegro-auth")
 async def allegro_auth(request: Request):
@@ -147,10 +150,10 @@ async def allegro_auth(request: Request):
         user_secret = response['client_secret']
         token_url = allegro.allegro_verification(user_id, user_secret)
 
-        return token_url
+        return {"status": 200, "output": token_url}
 
     except Exception as e:
-        return {"error": f"Exception in allegro_auth: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_auth: {str(e)}"}
 
 @app.post("/allegro-token")
 async def allegro_token(request: Request):
@@ -163,12 +166,12 @@ async def allegro_token(request: Request):
 
         db.post_credentials(user_id, user_secret, user_token)
 
-        return user_token
+        return {"status": 200, "output": user_token}
 
     except Exception as e:
-        return {"error": f"Exception in allegro_token: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_token: {str(e)}"}
 
-@app.post("/allegro-edit-offer")
+@app.post("/allegro-edit-description")
 async def edit_offer(request: Request):
     try:
         credentials = db.get_credentials()
@@ -179,10 +182,10 @@ async def edit_offer(request: Request):
 
         result = allegro.edit_description(credentials, offer_id, images, new_data)
 
-        return result
+        return {"status": 200, "output": result}
         
     except Exception as e:
-        return {"error": f"Exception in edit_offer: {str(e)}"}
+        return {"status": 404, "error": f"Exception in edit_offer: {str(e)}"}
     
 @app.post("/allegro-edit-image")
 async def edit_image(request: Request):
@@ -193,10 +196,10 @@ async def edit_image(request: Request):
         images = response['images']
         result = allegro.edit_images(credentials, offer_id, images)
         
-        return result
+        return {"status": 200, "output": result}
 
     except Exception as e:
-        return {"error": f"Exception in edit-image: {str(e)}"}
+        return {"status": 404, "error": f"Exception in edit-image: {str(e)}"}
     
 @app.post("/allegro-listing")
 async def allegro_listing(request: Request):
@@ -212,9 +215,10 @@ async def allegro_listing(request: Request):
 
         result = allegro.create_offer(credentials, data, carton, condition, images, type, clear)
 
-        return result
+        return {"status": 200, "output": result}
+
     except Exception as e:
-        return {"error": f"Exception in allegro_listing: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_listing: {str(e)}"}
 
 @app.post("/allegro-offers")
 async def allegro_offers(request: Request):
@@ -229,9 +233,10 @@ async def allegro_offers(request: Request):
         
         offers = allegro.get_my_offers(credentials, limit, offset, type_offer, type_record, genre)
         
-        return offers
+        return {"status": 200, "output": offers}
+
     except Exception as e:
-        return {"error": f"Exception in allegro_offers: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_offers: {str(e)}"}
     
 @app.post("/allegro-offer")
 async def allegro_offer(request: Request):
@@ -242,9 +247,10 @@ async def allegro_offer(request: Request):
         
         offers = allegro.get_offer_info(credentials, offer_id)
         
-        return offers
+        return {"status": 200, "output": offers}
+    
     except Exception as e:
-        return {"error": f"Exception in allegro_offer: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_offer: {str(e)}"}
 
 @app.get("/allegro-visitors-viewers")
 async def allegro_visitors_viewers():
@@ -266,10 +272,10 @@ async def allegro_visitors_viewers():
 
         offers = sum(offers, [])
 
-        return offers
+        return {"status": 200, "output": offers}
 
     except Exception as e:
-        return {"error": f"Exception in allegro_visitors_viewers: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_visitors_viewers: {str(e)}"}
     
 @app.get("/allegro-sale")
 async def allegro_sale():
@@ -288,22 +294,22 @@ async def allegro_sale():
 
         offers = sum(offers, [])
 
-        return offers
+        return {"status": 200, "output": offers}
     
     except Exception as e:
-        return {"error": f"Exception in allegro_sale: {str(e)}"}
+        return {"status": 404, "error": f"Exception in allegro_sale: {str(e)}"}
     
 @app.get("/sale-barplot")
 async def sale_barplot():
     try:
         credentials = db.get_credentials()
-        data = await allegro_sale()
-        sale_barplot = annual_sale_barplot(credentials, data)
+        sales = await allegro_sale()
+        sale_barplot = annual_sale_barplot(credentials, sales['output'])
         
-        return {"sale_barplot": sale_barplot}
+        return {"status": 200, "output": sale_barplot}
     
     except Exception as e:
-        return {"error": f"Exception in sale_barplot: {str(e)}"}
+        return {"status": 404, "error": f"Exception in sale_barplot: {str(e)}"}
     
 @app.get("/genre-barplot")
 async def genre_barplot():
@@ -325,8 +331,8 @@ async def genre_barplot():
 
         offers = sum(offers, [])
         genre_barplot = create_genres_barplot(credentials, offers)
-        
-        return {"genre_barplot":  genre_barplot}
+
+        return {"status": 200, "output": genre_barplot}
     
     except Exception as e:
-        return {"error": f"Exception in genre_barplot: {str(e)}"}
+        return {"status": 404, "error": f"Exception in genre_barplot: {str(e)}"}

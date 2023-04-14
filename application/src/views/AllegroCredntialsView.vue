@@ -13,7 +13,7 @@
         </form>
     </section>
     <div id="confirm" v-if="!formDisplay">
-        <a :href="response.data.verification_uri_complete" target="_blank"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('formContainer.confirm') }}</button></a>
+        <a :href="response.verification_uri_complete" target="_blank"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('formContainer.confirm') }}</button></a>
     </div>
 
     <TheAlert :alert="alert" />
@@ -29,29 +29,24 @@
                 user_id: "",
                 user_secret: "",
                 response: "",
-                tokenResponse: "",
                 formDisplay: true,
                 alert: {}
             }
         },
         methods:{
             async allegroToken() {
-                try {
-                    this.response = await axios.post("http://127.0.0.1:8000/allegro-auth", {client_id: this.user_id, client_secret: this.user_secret});
-                    this.formDisplay = false;
-                    this.tokenResponse = await axios.post("http://127.0.0.1:8000/allegro-token", {client_id: this.user_id, client_secret: this.user_secret, device_code: this.response.data["device_code"],});
-                    if (this.tokenResponse.data.error){
-                        this.formDisplay = true
-                        this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")};
-                    }
-                    else{
-                        this.$cookies.set('allegro-cred', true, '12h', '/', '', false, 'Lax');
-                        this.$router.push("/");
-                    }
-                } catch (error) {
+                this.response = (await axios.post("http://127.0.0.1:8000/allegro-auth", {client_id: this.user_id, client_secret: this.user_secret})).data.output
+                this.formDisplay = false
+                const tokenResponse = (await axios.post("http://127.0.0.1:8000/allegro-token", {client_id: this.user_id, client_secret: this.user_secret, device_code: this.response["device_code"],})).data
+                if (tokenResponse.error){
+                    this.formDisplay = true
                     this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")};
                 }
-                },
+                else{
+                    this.$cookies.set('allegro-cred', true, '12h', '/', '', false, 'Lax');
+                    this.$router.push("/");
+                }
+            },
         },
         components:{
             TheAlert,

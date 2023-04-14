@@ -93,7 +93,7 @@
         methods:{
             async getData(edit) {
                 this.loading = true
-                this.allegroData = await axios.post('http://127.0.0.1:8000/allegro-offers', {limit: this.limit, offset: this.offset, typeOffer: this.typeOffer, typeRecord: this.typeRecord, genre: this.genre})
+                this.allegroData = (await axios.post('http://127.0.0.1:8000/allegro-offers', {limit: this.limit, offset: this.offset, typeOffer: this.typeOffer, typeRecord: this.typeRecord, genre: this.genre})).data.output
                 this.typeEdit = edit
                 this.loading = false
             },

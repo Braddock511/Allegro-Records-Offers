@@ -78,13 +78,13 @@
             async getSaleBarplot(){
                 if (this.saleBarplot == ""){
                     this.loading = true
-                    const plot = await axios.get('http://127.0.0.1:8000/sale-barplot')
-                    if ( plot.data.error)
+                    const response = (await axios.get('http://127.0.0.1:8000/sale-barplot')).data
+                    if (response.error || response.errors)
                     {
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
                     else{
-                        this.saleBarplot = plot.data.sale_barplot
+                        this.saleBarplot = response.output
                         this.alert = {variant: "success", message: this.$t("alerts.statistics")}
                     }
                     this.loading = false
@@ -94,14 +94,13 @@
             async getGenreBarplot(){
                 if (this.genreBarplot == ""){
                     this.loading = true
-                    const plot = await axios.get('http://127.0.0.1:8000/genre-barplot')
-                    console.log(plot)
-                    if ( plot.data.error)
+                    const response = (await axios.get('http://127.0.0.1:8000/genre-barplot')).data
+                    if (response.error || response.errors)
                     {
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
                     else{
-                        this.genreBarplot = plot.data.genre_barplot
+                        this.genreBarplot = response.output
                         this.alert = {variant: "success", message: this.$t("alerts.statistics")}
                     }
                     this.loading = false
@@ -110,14 +109,12 @@
         },
         async beforeMount(){
             this.loading = true
-            this.visitors_viewers = await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')
-            this.visitors_viewers = this.visitors_viewers.data
-            
-            if (this.visitors_viewers.error)
-            {
+            const response = (await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')).data
+            if (response.error || response.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
+                this.visitors_viewers = response.output
                 this.alert = {variant: "success", message: this.$t("alerts.statistics")}
             }
             

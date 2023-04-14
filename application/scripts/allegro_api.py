@@ -77,7 +77,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     # Discogs data
     id = data['id']
     title = data['title']
-    label = data['label']
+    label = data['label'].replace("&", "")
     country = data['country']
     released = data['year']
     genre = data['genre']
@@ -230,8 +230,6 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
                 data['productSet'][0]['product']['category']['id'] = new_genre
 
-                errors.append("Existing Product related")
-            
             elif "The provided parameter 'Wykonawca'" in error['message']:
                 # Update artist
                 category = re.findall(r"product parameter .*", error['userMessage'])[0]
@@ -240,8 +238,6 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
                 
                 data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist.strip()]
                 
-                errors.append("The provided parameter 'Wykonawca'")
-                                
             elif "The provided parameter 'Tytuł'" in error['message']:
                 # Update title
                 category = re.findall(r"product parameter .*", error['userMessage'])[0]
@@ -250,9 +246,6 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
                 data['productSet'][0]['product']['parameters'][1]['values'] = [new_title.strip()]
                 
-                errors.append("The provided parameter 'Tytuł'")
-                
-            
             elif "Invalid GTIN" in error['message']:
                 # Update barcode
                 new_barcode = error['message'].split(" - ")[1].split(" in ")[0]
@@ -262,7 +255,22 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
                 data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]         
 
-                errors.append("Invalid GTIN")
+            elif "'Wytwórnia'" in error['userMessage'] or "Wytwórnia" in error['userMessage']:
+                parameters = data['productSet'][0]['product']['parameters']
+
+                for i, parameter in enumerate(parameters):
+                    if parameter['name'] == "Wytwórnia":
+                        del parameters[i]
+
+            elif "'Rok wydania'" in error['userMessage'] or "Rok wydania" in error['userMessage']:
+                parameters = data['productSet'][0]['product']['parameters']
+                for i, parameter in enumerate(parameters):
+                    if parameter['name'] == "Rok wydania":
+                        del parameters[i]
+
+
+            if error['message'] != "Request Timeout":
+                errors.append(error['message'])
 
             # Checking that the given error does not repeating
             count_error = Counter(errors).values()

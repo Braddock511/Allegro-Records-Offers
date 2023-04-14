@@ -64,8 +64,8 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
         "api_allegro_token": allegro_token
     }       
 
-    data_image_instance = Credentials(**data_to_insert)
-    session.add(data_image_instance)
+    credentials_data = Credentials(**data_to_insert)
+    session.add(credentials_data)
     session.commit()
     session.close()
 
@@ -115,53 +115,53 @@ def get_credentials() -> list:
 
     return credentials
 
-def post_data_image(data: dict) -> None:
+def post_text_from_image(text_from_images: list) -> None:
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
     Base = declarative_base()
-
+    
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    class Data_Image(Base):
-        __tablename__ = "data_image"
+    class Image_Data(Base):
+        __tablename__ = "image_data"
         id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-        data = Column(String)
+        text_from_image = Column(String)
         url = Column(String)
 
     # Create the table if it does not exist
     Base.metadata.create_all(engine)
 
-    # Create a dictionary of the data to be inserted into the data_image
-    for data_item in data:
-        session.add(Data_Image(data=data_item['data'], url=data_item['url']))
+    # Create a dictionary of the data to be inserted into the image_data
+    for data_item in text_from_images:
+        session.add(Image_Data(text_from_image=data_item['text_from_image'], url=data_item['url']))
 
     session.commit()
     session.close()
 
-def get_data_image() -> dict:
+def get_text_from_image() -> dict:
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
     Base = declarative_base()
 
     Session = sessionmaker(bind=engine)
     session = Session()
     
-    class Data_Image(Base):
-        __tablename__ = "data_image"
-
+    class Image_Data(Base):
+        __tablename__ = "image_data"
         id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-        data = Column(String)
+        text_from_image = Column(String)
         url = Column(String)
 
-    # Get all rows from the data_image table
-    data_images = session.query(Data_Image).all()
+    # Get all rows from the image_data table
+    rows = session.query(Image_Data).all()
 
-    output = {"data": [], "url": []}
-    for data_image in data_images:
-        output['data'].append(data_image.data)
-        output['url'].append(data_image.url)
+    data_image = {"text_from_image": [], "url": []}
+    
+    for row in rows:
+        data_image['text_from_image'].append(row.text_from_image)
+        data_image['url'].append(row.url)
 
-    session.execute(text('TRUNCATE data_image'))
+    session.execute(text('TRUNCATE image_data'))
     session.commit()
     session.close()
 
-    return output
+    return data_image

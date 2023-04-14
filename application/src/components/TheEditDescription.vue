@@ -1,6 +1,6 @@
 <template>
     <span v-if="offerData">
-        <div class="data" v-if="offerData.data.offer.name.length > 0 && !loading">
+        <div class="data" v-if="offerData.offer.name.length > 0 && !loading">
             <TheSlider :images="img.slice().reverse()"></TheSlider>
             <table>
                 <tr>
@@ -14,14 +14,14 @@
                     <td><h2>{{ $t("editSpecific.editOffer") }}</h2></td>
                 </tr>
                 <tr>
-                    <td>{{ offerData.data.offer.name }}</td>
+                    <td>{{ offerData.offer.name }}</td>
                     <td>{{ $t("table.enter_label") }} <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
                     <td>{{ $t("table.enter_country") }} <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
                     <td>{{ $t("table.enter_year") }} <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
                     <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
-                <tr v-for="data in offerData.data.discogs.data" v-if="offerData && offerData.data.discogs.data">
-                    <td>{{ offerData.data.offer.name  }}</td>
+                <tr v-for="data in offerData.discogs" v-if="offerData && offerData.discogs">
+                    <td>{{ offerData.offer.name  }}</td>
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
@@ -71,8 +71,8 @@
                         year: this.year ? this.year : "-",
                     }
                 this.loading = true
-                const response = await axios.post("http://127.0.0.1:8000/allegro-edit-offer", {offerId: this.allegroData.data.offers[this.offerIndex].id, images: this.offerData.data.offer.images, data: selectedData})
-                if (response.data.error || response.data.errors){
+                const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {offerId: this.allegroData.offers[this.offerIndex].id, images: this.offerData.offer.images, data: selectedData})).data
+                if (response.error || response.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                     this.loading = false
                 }
@@ -85,30 +85,33 @@
             async next(){
                 this.loading = true
                 this.offerIndex += 1
-                if (this.offerIndex >= this.allegroData.data.offers.length){
+                if (this.offerIndex >= this.allegroData.offers.length){
                     this.$router.push("/")
-                }
-                this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
-                if (this.allegroData.data.error || this.allegroData.data.errors){
-                    this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+                    return ""
                 }
                 else{
-                    this.label = "",
-                    this.country = "",
-                    this.year = "",
-                    this.img = this.offerData.data.offer.images
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData, typeRecord: this.typeRecord})).data
+                    if (this.allegroData.error || this.allegroData.errors){
+                        this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+                    }
+                    else{
+                        this.label = "",
+                        this.country = "",
+                        this.year = "",
+                        this.img = this.offerData.offer.images
+                    }
                 }
                 this.loading = false
             }
         },
         async beforeMount() {
             this.loading = true
-            this.offerData = await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData.data, typeRecord: this.typeRecord})
-            if (this.allegroData.data.error || this.allegroData.data.errors){
+            this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData, typeRecord: this.typeRecord})).data
+            if (this.allegroData.error || this.allegroData.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
-                this.img = this.offerData.data.offer.images
+                this.img = this.offerData.offer.images
             }
             this.loading = false
         },
