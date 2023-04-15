@@ -17,17 +17,12 @@ if not user:
     port = "5432"
     db = "postgres"
 
-# Define the database URL
+# Create database
 SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+Base = declarative_base()
 
-def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -> None:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
-    Base = declarative_base()
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    class Credentials(Base):
+class Credentials(Base):
         __tablename__ = "credentials"
 
         id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -47,9 +42,20 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
         api_allegro_secret = Column(String)
         api_allegro_token = Column(String)
 
-    # Create the table if it does not exist
-    Base.metadata.create_all(engine)
-    
+class Image_Data(Base):
+    __tablename__ = "image_data"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    text_from_image = Column(String)
+    url = Column(String)
+
+Base.metadata.create_all(engine)
+
+# Database scripts
+
+def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -> None:
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
     data_to_insert = {
         "api_imagekit_id": environ.get("API_IMAGEKIT_ID"),
         "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
@@ -70,31 +76,8 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
     session.close()
 
 def get_credentials() -> list:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
-    Base = declarative_base()
-
     Session = sessionmaker(bind=engine)
     session = Session()
-
-    class Credentials(Base):
-        __tablename__ = "credentials"
-
-        id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-
-        api_imagekit_id = Column(String)
-        api_imagekit_secret = Column(String)
-        api_imagekit_endpoint = Column(String)
-
-        api_azure_subscription_key = Column(String)
-        api_azure_endpoint = Column(String)
-
-        api_discogs_id = Column(String)
-        api_discogs_secret = Column(String)
-        api_discogs_token = Column(String)
-
-        api_allegro_id = Column(String)
-        api_allegro_secret = Column(String)
-        api_allegro_token = Column(String)
     
     # Get credentials from database
     row = session.query(Credentials).order_by(Credentials.id.desc()).limit(1).first()
@@ -116,20 +99,8 @@ def get_credentials() -> list:
     return credentials
 
 def post_text_from_image(text_from_images: list) -> None:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
-    Base = declarative_base()
-    
     Session = sessionmaker(bind=engine)
     session = Session()
-
-    class Image_Data(Base):
-        __tablename__ = "image_data"
-        id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-        text_from_image = Column(String)
-        url = Column(String)
-
-    # Create the table if it does not exist
-    Base.metadata.create_all(engine)
 
     # Create a dictionary of the data to be inserted into the image_data
     for data_item in text_from_images:
@@ -139,29 +110,27 @@ def post_text_from_image(text_from_images: list) -> None:
     session.close()
 
 def get_text_from_image() -> dict:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
-    Base = declarative_base()
-
     Session = sessionmaker(bind=engine)
     session = Session()
-    
-    class Image_Data(Base):
-        __tablename__ = "image_data"
-        id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-        text_from_image = Column(String)
-        url = Column(String)
 
     # Get all rows from the image_data table
     rows = session.query(Image_Data).all()
 
-    data_image = {"text_from_image": [], "url": []}
+    data_image = [] 
     
     for row in rows:
-        data_image['text_from_image'].append(row.text_from_image)
-        data_image['url'].append(row.url)
+        data_image.append({"text_from_image": row.text_from_image, "url": row.url})
+
+    session.commit()
+    session.close()
+
+    return data_image
+
+def truncate_image_data():
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
     session.execute(text('TRUNCATE image_data'))
     session.commit()
     session.close()
 
-    return data_image

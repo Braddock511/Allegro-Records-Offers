@@ -1,8 +1,8 @@
 <template>
     <TheHeader/>
-    <span v-if="!discogsData">
+    <span v-if="!read">
         <section class="form-container" v-if="!loading">
-            <form @submit.prevent="getDataImage">
+            <form @submit.prevent="getImageData">
                 <div class="title">{{ $t("listingView.upload") }}</div>
                 <div class="input-container">
                     <label for="files">{{ $t("listingView.images") }} &nbsp;</label>
@@ -22,14 +22,14 @@
                 <p>{{ $t("listingView.imageOrder") }}</p>
                 <p>{{ $t("listingView.paymentLocationDelivery") }}</p>
                 <p>{{ $t("listingView.description") }}</p>
-                <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="getDataImage">{{ $t("listingView.sendImages") }}</button>
+                <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;">{{ $t("listingView.sendImages") }}</button>
             </form>
         </section>
         <div id="loading" v-if="loading">
             <img src="../assets/spinner.gif" alt="loading">
         </div>
     </span>
-    <TheListingData v-if="discogsData" :discogsData="discogsData" :type="type" :clear="clear" :numberImages="numberImages"/>
+    <TheListingData v-if="read" :type="type" :clear="clear" :numberImages="numberImages" :numberFiles="files.length"/>
 </template>
 
 <script>
@@ -42,7 +42,8 @@
             return{
                 images: [],
                 numberImages: 3,
-                discogsData: "",
+                read: "",
+                files: "",
                 type: "Vinyl",
                 clear: false,
                 loading: false,
@@ -52,6 +53,7 @@
             handleFiles(event) {
                 // Get an array of the selected files and sort them by name
                 const files = Array.from(event.target.files)
+                this.files = files
                 let loadedCount = 0
 
                 // Loop through the files and read each one as a data URL
@@ -68,11 +70,10 @@
                     }
                 }
             },
-            async getDataImage() {
+            async getImageData() {
                 this.loading = true
-                await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.type, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
-                this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type}, {headers: {'Content-Type': 'application/json'}})).data.output
-                console.log(this.discogsData)
+                this.read = await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.type, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
+                console.log(this.read)
                 this.loading = false
             },
         },

@@ -1,5 +1,5 @@
 <template>
-    <span v-if="!cartonFlag" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
+    <span v-if="!cartonFlag && !loading" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
     <div class="data" v-if="cartonFlag && !failedFlag && !loading">
         <TheSlider :images="img"></TheSlider>
         <table>
@@ -69,7 +69,7 @@
                 <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
             </tr>
             <tbody>
-            <tr v-for="data in discogsData[currentIndex].information">
+            <tr v-for="data in discogsData[0].information">
                 <td>{{ data.title }}</td>
                 <td>{{ data.label }}</td>
                 <td>{{ data.country }}</td>
@@ -192,28 +192,24 @@
                     }
                 }
             },
-            next(){
+            async next(){
                 this.loading = true
                 this.currentIndex += this.numberImages
-                if (this.currentIndex >= this.discogsData.length) {
+                if (this.currentIndex >= this.numberFiles) {
                     if(this.failed.img.length != 0){
                         this.failedFlag = true
                     }
                     else{
+                        await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
                         this.$router.push('/')
                     }
                 }
                 else{
                     this.img = []
-                    let data
-                    if (this.type == "CD"){
-                        data = this.discogsData.slice(this.currentIndex-1, this.currentIndex+this.numberImages-1)
-                    }
-                    else{
-                        data = this.discogsData.slice(this.currentIndex, this.currentIndex+this.numberImages)
-                    }
-                    for (let i = 0; i < data.length; i++) {
-                        this.img.push(data[i].url)
+                    this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type, index: this.currentIndex}, {headers: {'Content-Type': 'application/json'}})).data.output
+                   
+                    for (let i = 0; i < this.discogsData.length; i++) {
+                        this.img.push(this.discogsData[i].url)
                     }
                     this.img.reverse()
                 }
@@ -245,12 +241,13 @@
                 this.visible = false
             }
         },
-        beforeMount() {
+        async beforeMount() {
             this.loading =  true
+            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type, index: 0}, {headers: {'Content-Type': 'application/json'}})).data.output
+
             try{
-                let data = this.discogsData.slice(0, this.numberImages)
-                for (let i = 0; i < data.length; i++) {
-                    this.img.push(data[i].url)
+                for (let i = 0; i < this.discogsData.length; i++) {
+                    this.img.push(this.discogsData[i].url)
                 }
                 if (this.type == "CD"){
                     this.currentIndex = 1
@@ -263,9 +260,6 @@
             this.loading =  false
         },
         props: {
-            discogsData: {
-                required: true
-            },
             type:{
                 required: true
             },
@@ -273,6 +267,9 @@
                 required: true
             },
             numberImages:{
+                required: true
+            },
+            numberFiles:{
                 required: true
             }
         },
@@ -296,7 +293,7 @@
 
     @media screen and (max-width: 1700px) {
     tr{
-        td:nth-child(3){
+        &:nth-child(3){
             display: block !important;
         }
         td:nth-child(5)::before{

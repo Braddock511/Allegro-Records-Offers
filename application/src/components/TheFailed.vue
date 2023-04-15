@@ -30,11 +30,13 @@
         </table>
 
         <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;"><a href="https://allegro.pl/offer/" style="color: white" target="_blank">{{ $t("table.allegroForm") }}</a></button>
-        <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="this.$router.push('/')">{{ $t("table.back") }}</button>
+        <button class="btn btn-primary w-50" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="back">{{ $t("table.back") }}</button>
     </div>
 </template>
 
 <script>
+    import axios from 'axios';
+
     export default {
         props:{
             dataFailed:{
@@ -44,6 +46,12 @@
             type:{
                 type: String,
                 requried: true
+            }
+        },
+        methods:{
+            async back(){
+                await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
+                this.$router.push('/')
             }
         }
     }

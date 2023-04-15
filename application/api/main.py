@@ -118,12 +118,17 @@ async def image_data(request: Request):
     try:
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
-        image_data = db.get_text_from_image()
+        index = response['index']
         type_record = response['typeRecord']
         discogs_data = []
+        image_data = db.get_text_from_image()
+        image_data = image_data[index:index+3]
 
         # Get data from discogs
-        for text_from_image, url in zip(image_data['text_from_image'], image_data['url']):
+        for data in image_data:
+            text_from_image = data['text_from_image'] 
+            url = data['url']
+            
             if text_from_image == "EMPTY":
                 discogs_data.append({"input_data": text_from_image, "information": "", "url": url})
             else:
@@ -134,14 +139,22 @@ async def image_data(request: Request):
                 
                 discogs_data.append({"input_data": text_from_image, "information": information, "url": url})
 
-                # Discogs limit -> 60 requests per minute (In preprocess_data executing 3 request)
-                sleep(3.5)
-
+                
         return {"status": 200, "output": discogs_data}
 
     except Exception as e:
         return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
-    
+
+@app.get("/truncate")
+async def truncate():
+    try:
+        db.truncate_image_data()
+
+        return {"status": 200}
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
+
+
 @app.post("/allegro-auth")
 async def allegro_auth(request: Request):
     try:

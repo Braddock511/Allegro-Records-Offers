@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from pyzbar import pyzbar
 from io import BytesIO
+from time import sleep
 from azure_api import clear_image
 from discogs_api import get_vinyl, get_cd, get_price
 from imageKit_api import upload_file_imageKit
@@ -59,6 +60,9 @@ def preprocess_data(text_from_image: str|list, credentials: dict, type_record: s
 
     # Search the Discogs API for vinyl records matching the input texts
     results = search_data(text_from_image, discogs_token, type_record, data_image)
+    
+    # Discogs limit -> 1 request per second
+    sleep(1)
 
     id = '-'
     label = '-'
