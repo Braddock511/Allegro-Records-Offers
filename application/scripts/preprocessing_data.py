@@ -10,7 +10,7 @@ from azure_api import clear_image
 from discogs_api import get_vinyl, get_cd, get_price
 from imageKit_api import upload_file_imageKit
 
-def search_data(text_from_image: list, discogs_token: str, type_record: str, data_image: bool) -> list[dict]: 
+def search_data(text_from_image: list, discogs_token: str, type_record: str, image_data: bool) -> list[dict]: 
     discogs_data_output = []
     punctuation = "<"'"'"'@:^`!#$%&*();?'\'[]{}=+,>"
     remove_punctuation = r"^[a-zA-Z {}]*$".format(re.escape(punctuation))
@@ -18,7 +18,7 @@ def search_data(text_from_image: list, discogs_token: str, type_record: str, dat
     for text in text_from_image:
         if 5 < len(text) < 50:
             # Remove any text within parentheses if data is a image
-            if not data_image:
+            if not image_data:
                 text = re.sub(r'\(', ' (', text)
                 text = re.sub(r'\([^)]*\)', '', text)
 
@@ -27,7 +27,7 @@ def search_data(text_from_image: list, discogs_token: str, type_record: str, dat
                 if not re.match(remove_punctuation, text):
                     
                     # Remove any unwanted characters from the text if data is a image
-                    if data_image:
+                    if image_data:
                         text = text.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
                         
                     if type_record == "Vinyl":
@@ -38,7 +38,7 @@ def search_data(text_from_image: list, discogs_token: str, type_record: str, dat
 
                     if 'results' in discogs_data.keys():
                         for disc_data in discogs_data['results']:
-                            if data_image:
+                            if image_data:
                                 discogs_text = disc_data['catno'].replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
                                 if text == discogs_text:
                                     discogs_data_output.append(disc_data)
@@ -50,7 +50,7 @@ def search_data(text_from_image: list, discogs_token: str, type_record: str, dat
     return discogs_data_output
         
 
-def preprocess_data(text_from_image: str|list, credentials: dict, type_record: str, url: str = "", data_image: bool = True) -> dict:
+def preprocess_data(text_from_image: str|list, credentials: dict, type_record: str, image_data: bool = True) -> dict:
     # Get the Discogs API token from the credentials list
     discogs_token = credentials["api_discogs_token"]
 
@@ -59,7 +59,7 @@ def preprocess_data(text_from_image: str|list, credentials: dict, type_record: s
         text_from_image = text_from_image.replace("{", "").replace("}", "").split(",")
 
     # Search the Discogs API for vinyl records matching the input texts
-    results = search_data(text_from_image, discogs_token, type_record, data_image)
+    results = search_data(text_from_image, discogs_token, type_record, image_data)
     
     # Discogs limit -> 1 request per second
     sleep(1)

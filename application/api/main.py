@@ -4,9 +4,9 @@ from json import loads
 from time import sleep
 import database as db
 import allegro_api as allegro
-from  azure_api import read_image
-from  preprocessing_data import preprocess_data, remove_background, get_cd_barcode
-from  imageKit_api import upload_file_imageKit
+from azure_api import read_image
+from preprocessing_data import preprocess_data, remove_background, get_cd_barcode
+from imageKit_api import upload_file_imageKit
 from plots import annual_sale_barplot, create_genres_barplot
 
 app = FastAPI()
@@ -106,7 +106,7 @@ async def discogs_info(request: Request):
                 if x['name'] == 'EAN (GTIN)':
                     offer_input_data = x['values'][0]
         
-        discogs_data = preprocess_data(offer_input_data, credentials, type_record, "", False)
+        discogs_data = preprocess_data(offer_input_data, credentials, type_record, False)
             
         return {"status": 200, "offer": offers_info, "discogs": discogs_data}
     
@@ -133,9 +133,9 @@ async def image_data(request: Request):
                 discogs_data.append({"input_data": text_from_image, "information": "", "url": url})
             else:
                 if type_record == "Vinyl":
-                    information = preprocess_data(text_from_image, credentials, type_record, url)   
+                    information = preprocess_data(text_from_image, credentials, type_record)   
                 elif type_record == "CD":
-                    information = preprocess_data(text_from_image, credentials, type_record, url, False)
+                    information = preprocess_data(text_from_image, credentials, type_record, False)
                 
                 discogs_data.append({"input_data": text_from_image, "information": information, "url": url})
 

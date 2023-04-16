@@ -38,13 +38,13 @@ def read_image(image: str, credentials: dict) -> tuple[list, str]:
 
     return output_text, read_image_url
 
-def clear_image(image: str, credentials: dict) -> str:
+def clear_image(image_url: str, credentials: dict) -> str:
     try:
         subscription_key = credentials["api_azure_subscription_key"]
         endpoint = credentials["api_azure_endpoint"]
         headers = {"Content-Type": "application/json", "Ocp-Apim-Subscription-Key": subscription_key}
 
-        response = requests.post(f"{endpoint}/computervision/imageanalysis:segment?api-version=2023-02-01-preview&mode=backgroundRemoval", headers=headers, json={"url": image})
+        response = requests.post(f"{endpoint}/computervision/imageanalysis:segment?api-version=2023-02-01-preview&mode=backgroundRemoval", headers=headers, json={"url": image_url})
         
         return response.content
     
