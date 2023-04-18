@@ -49,10 +49,11 @@ async def read_image_data(request: Request):
                 text_from_image, image_url_2 = get_cd_barcode(image_2, credentials)
                 
                 # Other images
-                for j in range(0, number_images-1):
-                    other_image = images[i+j]
-                    other_image_url = upload_file_imageKit(other_image, credentials)['url']
-                    text_from_images.append({"text_from_image": "EMPTY", "url": other_image_url})
+                for j in range(0, number_images):
+                    if j != 1:
+                        other_image = images[i+j]
+                        other_image_url = upload_file_imageKit(other_image, credentials)['url']
+                        text_from_images.append({"text_from_image": "EMPTY", "url": other_image_url})
 
                     if j == 0:
                         text_from_images.append({"text_from_image": text_from_image, "url": image_url_2})
@@ -222,11 +223,13 @@ async def allegro_listing(request: Request):
         carton = response['carton']
         condition = response['condition']
         images = response['images']
-        type = response['type']
+        type_record = response['typeRecord']
+        type_offer = response['typeOffer']
+        duration = response['duration']
         clear = response['clear']
         credentials = db.get_credentials()
 
-        result = allegro.create_offer(credentials, data, carton, condition, images, type, clear)
+        result = allegro.create_offer(credentials, data, carton, condition, images, type_record, type_offer, duration, clear)
 
         return {"status": 200, "output": result}
 

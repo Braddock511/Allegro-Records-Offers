@@ -9,7 +9,7 @@
                 <td><h2>{{ $t("table.country") }}</h2></td>
                 <td><h2>{{ $t("table.year") }}</h2></td>
                 <td><h2>{{ $t("table.genre") }}</h2></td>
-                <td v-if="type == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
+                <td v-if="typeRecord == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
                 <td><h2>{{ $t("table.condition") }}</h2></td>
                 <td><h2>{{ $t("table.price") }}</h2></td>
             </tr>
@@ -22,7 +22,7 @@
                     <td>{{ dataFailed.data[index-1].country }}</td>
                     <td>{{ dataFailed.data[index-1].year }}</td>
                     <td>{{ dataFailed.data[index-1].genre }}</td>
-                    <td v-if="type == 'CD'">{{ dataFailed.data[index-1].barcode }}</td>
+                    <td v-if="typeRecord == 'CD'">{{ dataFailed.data[index-1].barcode }}</td>
                     <td>{{ dataFailed.condition[index-1] }}</td>
                     <td>{{ dataFailed.data[index-1].price }}</td>
                 </tr>
@@ -43,7 +43,7 @@
                 type: Object,
                 requried: true
             },
-            type:{
+            typeRecord:{
                 type: String,
                 requried: true
             }

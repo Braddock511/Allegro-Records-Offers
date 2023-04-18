@@ -14,7 +14,7 @@
                 <td><h2>{{ $t("table.country") }}</h2></td>
                 <td><h2>{{ $t("table.year") }}</h2></td>
                 <td><h2>{{ $t("table.genre") }}</h2></td>
-                <td v-if="type == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
+                <td v-if="typeRecord == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
                 <td>
                     <h2>{{ $t("table.condition") }}</h2>
                     <select v-model="condition">
@@ -64,18 +64,18 @@
                         <option value="sets">{{ $t("genre_options.sets") }}</option>
                     </select>
                 </td>
-                <td v-if="type == 'CD'">{{ $t("table.enter_barcode") }} <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
+                <td v-if="typeRecord == 'CD'">{{ $t("table.enter_barcode") }} <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
                 <td>{{ $t("table.enter_price") }} <input type="number" name="price" class="custom" min="1" v-model="price"></td>
                 <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
             </tr>
             <tbody>
-            <tr v-for="data in discogsData[0].information">
+            <tr v-for="data in discogsData[recordIndex].information">
                 <td>{{ data.title }}</td>
                 <td>{{ data.label }}</td>
                 <td>{{ data.country }}</td>
                 <td>{{ data.year }}</td>
                 <td>{{ data.genre }}</td>
-                <td v-if="type == 'CD'">{{ data.barcode }}</td>
+                <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
                 <td v-if="data.price[condition] !== undefined">
                     {{ roundedPrice(data.price[condition])}}
                 </td>
@@ -92,7 +92,7 @@
     </div>
     <TheAlert :alert="alert" />
 
-    <TheFailed :dataFailed="failed" :type="type" v-if="failedFlag"/>
+    <TheFailed :dataFailed="failed" :typeRecord="typeRecord" v-if="failedFlag"/>
 </template>
   
 <script>
@@ -113,6 +113,7 @@
                 barcode: "",
                 price: "",
                 currentIndex: 0,
+                recordIndex: this.typeRecord == "Vinyl" ? 0 : 1, 
                 img: [],
                 failed: {"data": [], "condition": [], "img": []},
                 alert: {},
@@ -163,8 +164,7 @@
                 if (Object.keys(selectedData).length !== 0){
                     // Send data
                     this.loading = true
-                    const response = (await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, type: this.type, clear: this.clear}, { headers: { 'Content-Type': 'application/json' }})).data
-                    console.log(response)
+                    const response = (await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, typeRecord: this.typeRecord, typeOffer: this.typeOffer, duration: this.duration, clear: this.clear}, { headers: { 'Content-Type': 'application/json' }})).data
                     if (response.error || response.output.errors){
                         this.failed.data.push(selectedData)
                         this.failed.condition.push(this.condition)
@@ -206,9 +206,9 @@
                 }
                 else{
                     this.img = []
-                    this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type, index: this.currentIndex}, {headers: {'Content-Type': 'application/json'}})).data.output
+                    this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: this.currentIndex}, {headers: {'Content-Type': 'application/json'}})).data.output
                    
-                    for (let i = 0; i < this.discogsData.length; i++) {
+                    for (let i = 0; i < this.numberImages; i++) {
                         this.img.push(this.discogsData[i].url)
                     }
                     this.img.reverse()
@@ -243,14 +243,10 @@
         },
         async beforeMount() {
             this.loading =  true
-            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.type, index: 0}, {headers: {'Content-Type': 'application/json'}})).data.output
-
+            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0}, {headers: {'Content-Type': 'application/json'}})).data.output
             try{
-                for (let i = 0; i < this.discogsData.length; i++) {
+                for (let i = 0; i < this.numberImages; i++) {
                     this.img.push(this.discogsData[i].url)
-                }
-                if (this.type == "CD"){
-                    this.currentIndex = 1
                 }
                 this.img.reverse()
             }
@@ -260,17 +256,31 @@
             this.loading =  false
         },
         props: {
-            type:{
+            typeRecord:{
+                type: String,
+                required: true
+            },
+            typeOffer:{
+                type: String,
+                required: true
+            },
+            duration:{
+                type: String,
                 required: true
             },
             clear:{
+                type: Boolean,
                 required: true
             },
             numberImages:{
-                required: true
+                type: Number,
+                required: true,
+                integer: true
             },
             numberFiles:{
-                required: true
+                type: Number,
+                required: true,
+                integer: true
             }
         },
         components:{

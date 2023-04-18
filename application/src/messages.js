@@ -37,6 +37,9 @@ export default {
         paymentLocationDelivery: 'Payment, location and delivery settings are taken from the last offer',
         description: 'Description is in polish language',
         sendImages: 'Send images',
+        buyNow: "Buy now",
+        auction: "Auction",
+        day: "Day"
       },
       editView:{
         many: "Edit many offers",
@@ -180,7 +183,10 @@ export default {
         imageOrder: 'Zdjęcia muszą być w następującej kolejności: 1. Płyta 2. Okładka tylna',
         paymentLocationDelivery: 'Ustawienia płatności, lokalizacji i dostawy zostaną pobrane z ostatniej oferty',
         description: 'Opis jest w języku polskim',
-        sendImages: 'Wyślij zdjęcia'
+        sendImages: 'Wyślij zdjęcia',
+        buyNow: "Kup teraz",
+        auction: "Licytacja",
+        day: "Dzień"
       },
       editView:{
         many: "Edytuj wiele ofert",

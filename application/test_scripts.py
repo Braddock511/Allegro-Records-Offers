@@ -417,7 +417,7 @@ class TestPlots:
             {'category': {'id': '1411'}}
         ]
 
-        result = annual_sale_barplot(TestPlots.credentials, data)
+        result = create_genres_barplot(TestPlots.credentials, data)
 
         assert isinstance(result, str)
         assert result.startswith("https://ik.imagekit.io/")

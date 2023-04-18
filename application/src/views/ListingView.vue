@@ -8,10 +8,23 @@
                     <label for="files">{{ $t("listingView.images") }} &nbsp;</label>
                     <input @change="handleFiles" id="files" type="file" multiple required style="font-size: 14px;"/>
                 </div>
-                <select v-model="type" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
+                <select v-model="typeRecord" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
                         <option value="Vinyl">{{ $t("vinyl") }}</option>
                         <option value="CD">CD</option>
                 </select>
+                <span>
+                    <select v-model="typeOffer" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
+                            <option value="BUY_NOW">{{ $t("listingView.buyNow") }}</option>
+                            <option value="AUCTION">{{ $t("listingView.auction") }}</option>
+                    </select>
+                    <select v-if="typeOffer == 'AUCTION'" v-model="duration" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
+                            <option value="P1D">1 {{ $t("listingView.day") }}</option>
+                            <option value="P3D">3 {{ $t("listingView.day") }}</option>
+                            <option value="P5D">5 {{ $t("listingView.day") }}</option>
+                            <option value="P7D">7 {{ $t("listingView.day") }}</option>
+                            <option value="P10D">10 {{ $t("listingView.day") }}</option>
+                    </select>
+                </span>
                 <span>
                     {{ $t("listingView.clearFirstImage") }} &nbsp;<input type="checkbox" v-model="clear">
                 </span>
@@ -29,7 +42,7 @@
             <img src="../assets/spinner.gif" alt="loading">
         </div>
     </span>
-    <TheListingData v-if="read" :type="type" :clear="clear" :numberImages="numberImages" :numberFiles="files.length"/>
+    <TheListingData v-if="read" :typeRecord="typeRecord" :typeOffer="typeOffer" :duration="duration" :clear="clear" :numberImages="numberImages" :numberFiles="files.length"/>
 </template>
 
 <script>
@@ -44,7 +57,9 @@
                 numberImages: 3,
                 read: "",
                 files: "",
-                type: "Vinyl",
+                typeRecord: "Vinyl",
+                typeOffer: "BUY_NOW",
+                duration: "P1D",
                 clear: false,
                 loading: false,
             }
@@ -72,8 +87,7 @@
             },
             async getImageData() {
                 this.loading = true
-                this.read = await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.type, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
-                console.log(this.read)
+                this.read = await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.typeRecord, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
                 this.loading = false
             },
         },

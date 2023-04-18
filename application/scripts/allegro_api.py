@@ -66,7 +66,7 @@ def get_offer_info(credentials: dict, offer_id: int) -> dict:
     
     return result.json()
 
-def create_offer(credentials: dict, data: dict, carton: str, condition: str, images: list, type_record: str, clear: bool) -> dict:
+def create_offer(credentials: dict, data: dict, carton: str, condition: str, images: list, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
     if type_record == "Vinyl":
         categories = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "classical": 9536, "new": 284, "opera": 261156, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
     elif type_record == "CD":
@@ -93,11 +93,30 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     payments = offer_info['payments']
     location = offer_info['location']
     delivery = allegro_offer['delivery']
+    duration_offer = None
+    selling = {
+        "format": type_offer,
+        "price": {
+            "amount": price,
+            "currency": "PLN"
+        }
+    }
     category = categories.get(genre.lower())
     condition = conditions.get(condition)
-    author, name = title.split("-")[:2]
+    author = title.split("-")[0]
+    name = " ".join(title.split("-")[1:])
     full_name = f'{author.strip()}.{carton}' if len(f'{author} - {name}.{carton}') > 50 else f'{author} - {name}.{carton}'
     allegro_condition = ["Nowy", "11323_1"] if condition == "M" else ["Używany", "11323_2"]
+    
+    if type_offer == "AUCTION":
+        duration_offer = duration
+        selling = {
+            "format": type_offer,
+            "startingPrice": {
+                "amount": price,
+                "currency": "PLN"
+            }
+        }
 
     if clear:
         first_image = images[0]
@@ -111,7 +130,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
         "productSet": [{
             "product": {
-                "name": f'{author.strip()} - {name.strip()}',
+                "name": title.strip(),
                 "category": {
                     "id": category
                 },
@@ -136,11 +155,10 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
         "parameters": [{'id': '11323', 'name': 'Stan', 'values': [allegro_condition[0]], 'valuesIds': [allegro_condition[1]], 'rangeValue': None}],
         
-        "sellingMode": {
-            "price": {
-                "amount": price,
-                "currency": "PLN"
-            }
+        "sellingMode": selling,
+
+        "publication": {
+            "duration": duration_offer
         },
 
         "images": images,
@@ -160,7 +178,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
             "productSet": [{
                 "product": {
-                    "name": f'{author.strip()} - {name.strip()}',
+                    "name": title.strip(),
                     "category": {
                         "id": category
                     },
@@ -189,11 +207,10 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
 
             "parameters": [{'id': '11323', 'name': 'Stan', 'values': [allegro_condition[0]], 'valuesIds': [allegro_condition[1]], 'rangeValue': None}],
             
-            "sellingMode": {
-                "price": {
-                    "amount": price,
-                    "currency": "PLN"
-                }
+            "sellingMode": selling,
+
+            "publication": {
+                "duration": duration_offer
             },
 
             "images": images,
@@ -294,6 +311,8 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
 
     name = product['name']
     carton = f'.{name.split(".")[-1]}'
+    if len(carton) > 4:
+        carton = f'.{name.split(")")[-1]}'
     description = product['description']
 
     conditions = ['M', 'MINT', '-M', 'M-', 'MINT-', '-MINT', 'MINT-.', '  MINT-', 'MINT, FOLIA',
