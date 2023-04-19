@@ -40,6 +40,7 @@
         </section>
         <div id="loading" v-if="loading">
             <img src="../assets/spinner.gif" alt="loading">
+            <h3>{{ $t('loading.readImage') }}</h3>
         </div>
     </span>
     <TheListingData v-if="read" :typeRecord="typeRecord" :typeOffer="typeOffer" :duration="duration" :clear="clear" :numberImages="numberImages" :numberFiles="files.length"/>
@@ -88,6 +89,7 @@
             async getImageData() {
                 this.loading = true
                 this.read = await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.typeRecord, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
+                console.log(this.read)
                 this.loading = false
             },
         },

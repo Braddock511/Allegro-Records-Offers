@@ -1,6 +1,6 @@
 <template>
-    <span v-if="!cartonFlag && !loading" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
-    <div class="data" v-if="cartonFlag && !failedFlag && !loading">
+    <span v-if="!cartonFlag && !loading.flag" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
+    <div class="data" v-if="cartonFlag && !failedFlag && !loading.flag">
         <TheSlider :images="img"></TheSlider>
         <table>
             <tr style="border: none;">
@@ -87,8 +87,9 @@
             </tbody>
         </table>
     </div>
-    <div id="loading" v-if="loading">
+    <div id="loading" v-if="loading.flag">
         <img src="../assets/spinner.gif" alt="loading">
+        <h2>{{ loading.message }}</h2>
     </div>
     <TheAlert :alert="alert" />
 
@@ -120,7 +121,7 @@
                 cartonFlag: false,
                 visible: false,
                 failedFlag: false,
-                loading: false
+                loading: {"flag": false, "message": ""}
             }
         },
         methods:{
@@ -163,7 +164,8 @@
                 }
                 if (Object.keys(selectedData).length !== 0){
                     // Send data
-                    this.loading = true
+                    this.loading.flag = true
+                    this.loading.message = this.$t("loading.listingOffer")
                     const response = (await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, typeRecord: this.typeRecord, typeOffer: this.typeOffer, duration: this.duration, clear: this.clear}, { headers: { 'Content-Type': 'application/json' }})).data
                     if (response.error || response.output.errors){
                         this.failed.data.push(selectedData)
@@ -193,7 +195,8 @@
                 }
             },
             async next(){
-                this.loading = true
+                this.loading.flag = true
+                this.loading.message = this.$t("loading.loadData")
                 this.currentIndex += this.numberImages
                 if (this.currentIndex >= this.numberFiles) {
                     if(this.failed.img.length != 0){
@@ -213,7 +216,7 @@
                     }
                     this.img.reverse()
                 }
-                setTimeout(() => {this.loading = false}, 100)
+                setTimeout(() => {this.loading.message = ""; this.loading.flag = false}, 100)
             },
             roundedPrice(price) {
                 let finalValue
@@ -227,9 +230,7 @@
                 return finalValue
             },
             confirmCarton(){
-                this.loading = true
                 this.cartonFlag = true
-                this.loading = false
             },
             showImage() {
                 this.show()
@@ -242,7 +243,8 @@
             }
         },
         async beforeMount() {
-            this.loading =  true
+            this.loading.flag =  true
+            this.loading.message = this.$t("loading.loadData")
             this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0}, {headers: {'Content-Type': 'application/json'}})).data.output
             try{
                 for (let i = 0; i < this.numberImages; i++) {
@@ -253,7 +255,8 @@
             catch{
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
-            this.loading =  false
+            this.loading.message = ""
+            this.loading.flag =  false
         },
         props: {
             typeRecord:{

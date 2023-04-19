@@ -41,6 +41,7 @@
     </span>
     <div id="loading" v-if="loading">
         <img src="../assets/spinner.gif" alt="loading">
+        <h3>{{ $t('loading.loadData') }}</h3>
     </div>
     <TheAlert :alert="alert" />
 </template>

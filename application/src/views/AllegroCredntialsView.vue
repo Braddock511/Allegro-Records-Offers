@@ -15,9 +15,9 @@
     <div id="confirm" v-if="!formDisplay && !loading">
         <a :href="response.verification_uri_complete" target="_blank"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('formContainer.confirm') }}</button></a>
     </div>
-    <div id="loading" v-if="loading" style="flex-direction: column;">
-            <img src="../assets/spinner.gif" alt="loading">
-            <h3>Loading data...</h3>
+    <div id="loading" v-if="loading">
+        <img src="../assets/spinner.gif" alt="loading">
+        <h3>{{ $t('loading.loadData') }}</h3>
     </div>
     <TheAlert :alert="alert" />
 </template>

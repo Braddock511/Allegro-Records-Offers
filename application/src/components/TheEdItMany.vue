@@ -66,6 +66,7 @@
         </section>
         <div id="loading" v-if="loading">
             <img src="../assets/spinner.gif" alt="loading">
+            <h3>{{ $t('loading.loadData') }}</h3>
         </div>
     </span>
     <TheEditDescription v-if="allegroData && typeEdit=='desc'" :allegroData="allegroData" :typeRecord="typeRecord"/>

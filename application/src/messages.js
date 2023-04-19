@@ -37,11 +37,13 @@ export default {
       paymentLocationDelivery: 'Payment, location and delivery settings are taken from the last offer',
       description: 'Description is in polish language',
       sendImages: 'Send images',
+      buyNow: "Buy now",
+      auction: "Auction",
+      day: "Day"
     },
     editView:{
       many: "Edit many offers",
       specific: "Edit specific offer",
-      renew: 'Renew offers "Buy now"'
     },
     editMany:{
       offerType: "Offer Types",
@@ -65,10 +67,6 @@ export default {
       cleared: "Cleared image",
       editImage: "Edit image",
       clear: "Clear"
-    },
-    renew:{
-      renew: "Renew",
-      info: 'If you click "Renew" all buy now offers will be ended and then listed similarly. Thanks to this, they will have new id numbers on Allegro. This operation cannot be undone'
     },
     carton: {
       enter_carton: 'Enter carton',
@@ -149,6 +147,12 @@ export default {
       toLong: "Title length must be less than 50",
       offersFailed: "Load offers - failed",
       paymentsFailed: "Load sales - failed"
+    },
+    loading:{
+      loadData: "Loading data...",
+      readImage: "Reading image...",
+      loadImages: "Loading images...",
+      listingOffer: "Listing offer..."
     }
   },
   pl: {
@@ -187,12 +191,14 @@ export default {
       imageOrder: 'Zdjęcia muszą być w następującej kolejności: 1. Płyta 2. Okładka tylna',
       paymentLocationDelivery: 'Ustawienia płatności, lokalizacji i dostawy zostaną pobrane z ostatniej oferty',
       description: 'Opis jest w języku polskim',
-      sendImages: 'Wyślij zdjęcia'
+      sendImages: 'Wyślij zdjęcia',
+      buyNow: "Kup teraz",
+      auction: "Licytacja",
+      day: "Dzień"
     },
     editView:{
       many: "Edytuj wiele ofert",
       specific: "Edytuj konkretną ofertę",
-      renew: 'Odnów oferty "Kup teraz"'
     },
     editMany:{
       offerType: "Rodzaje ofert",
@@ -216,10 +222,6 @@ export default {
       cleared: "Zdjęcie bez tła",
       editImage: "Edytuj zdjęcie",
       clear: "Wyczyść tło"
-    },
-    renew:{
-      renew: "Odnów",
-      info: 'Jeśli klikniesz "Odnów" wszystkie oferty z kup teraz zostaną zakończone, a następnie wystawione podobnie. Dzięki temu będą miały nowe numery id na Allegro. Tej operacji nie można cofnąć'
     },
     carton: {
       enter_carton: 'Karton',
@@ -300,6 +302,12 @@ export default {
       toLong: "Długość tytułu musi być mniejsza niż 50",
       offersFailed: "Wczytanie ofert - niepowodzenie",
       paymentsFailed: "Wczytanie sprzedaży - niepowodzenie"
+    },
+    loading:{
+      loadData: "Wczytywanie danych...",
+      readImage: "Pobieranie danych ze zdjęcia...",
+      loadImages: "Wczytywanie zdjęć...",
+      listingOffer: "Wystawianie oferty..."
     }
 }
 }
