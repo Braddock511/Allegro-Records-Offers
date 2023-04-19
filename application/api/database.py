@@ -53,6 +53,7 @@ class AllegroOffers(Base):
     __tablename__ = "allegro_offers"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     offer_id = Column(String)
+    offer_data = Column(String)
 
 class AllegroPayments(Base):
     __tablename__ = "allegro_payments"
@@ -149,7 +150,8 @@ def post_allegro_offers(offers: list) -> None:
         if session.query(AllegroOffers).limit(1).count() == 0:
             for offer in offers:
                 id = offer['id']
-                session.add(AllegroOffers(offer_id=id))
+                offer_data = json.dumps(offer)
+                session.add(AllegroOffers(offer_id=id, offer_data=offer_data))
 
             flags = get_flags()
 
@@ -166,8 +168,7 @@ def get_allegro_offers() -> dict:
 
     with Session() as session:
         rows = session.query(AllegroOffers).all()
-        allegro_offers = [row.offer_id for row in rows]
-        
+        allegro_offers = [{"offer_id": row.offer_id, "offer_data": row.offer_data} for row in rows]
         session.commit()
 
     return allegro_offers

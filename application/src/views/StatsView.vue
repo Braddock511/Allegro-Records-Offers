@@ -79,6 +79,7 @@
                 if (this.saleBarplot == ""){
                     this.loading = true
                     const response = (await axios.get('http://127.0.0.1:8000/sale-barplot')).data
+                    console.log(response)
                     if (response.error || response.errors)
                     {
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
@@ -109,17 +110,17 @@
             }
         },
         async beforeMount(){
-            // this.loading = true
-            // const response = (await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')).data
-            // if (response.error || response.errors){
-            //     this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
-            // }
-            // else{
-            //     this.visitors_viewers = response.output
-            //     this.alert = {variant: "success", message: this.$t("alerts.statistics")}
-            // }
+            this.loading = true
+            const response = (await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')).data
+            if (response.error || response.errors){
+                this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+            }
+            else{
+                this.visitors_viewers = response.output
+                this.alert = {variant: "success", message: this.$t("alerts.statistics")}
+            }
             
-            // this.loading = false
+            this.loading = false
         },
         components:{
             TheHeader,
