@@ -89,11 +89,12 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     allegro_offer = get_my_offers(credentials, 1, 0, "all", "Vinyl", "all")['offers'][0]
     allegro_id = allegro_offer['id']
     offer_info = get_offer_info(credentials, allegro_id)
-
+    
     payments = offer_info['payments']
     location = offer_info['location']
     delivery = allegro_offer['delivery']
     duration_offer = None
+    republish = False
     selling = {
         "format": type_offer,
         "price": {
@@ -110,6 +111,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
     
     if type_offer == "AUCTION":
         duration_offer = duration
+        republish = True
         selling = {
             "format": type_offer,
             "startingPrice": {
@@ -158,6 +160,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
         "sellingMode": selling,
 
         "publication": {
+            "republish": republish,
             "duration": duration_offer
         },
 
@@ -210,6 +213,7 @@ def create_offer(credentials: dict, data: dict, carton: str, condition: str, ima
             "sellingMode": selling,
 
             "publication": {
+                "republish": republish,
                 "duration": duration_offer
             },
 
