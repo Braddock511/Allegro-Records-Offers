@@ -268,59 +268,66 @@ async def allegro_offer(request: Request):
     except Exception as e:
         return {"status": 404, "error": f"Exception in allegro_offer: {str(e)}"}
 
-@app.get("/allegro-visitors-viewers")
-async def allegro_visitors_viewers():
+@app.get("/store-all-offers")
+async def store_all_offers():
     try:
         credentials = db.get_credentials()
+        flags = db.get_flags()
         offers = []
         i = 0
-
-        while True:
-            vinyls = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "Vinyl", "all")
-            cds = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "CD", "all")
-            offers.append(vinyls['offers'])
-            offers.append(cds['offers'])
-
-            if not vinyls['offers'] and not cds['offers']:
-                break 
         
-            i+=1
+        if not flags['load_offers']:
+            while True:
+                vinyls = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "Vinyl", "all")
+                cds = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "CD", "all")
+                offers.append(vinyls['offers'])
+                offers.append(cds['offers'])
 
-        offers = sum(offers, [])
+                if not vinyls['offers'] and not cds['offers']:
+                    break 
+            
+                i+=1
+
+            offers = sum(offers, [])
+
+            db.post_allegro_offers(offers)
 
         return {"status": 200, "output": offers}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_visitors_viewers: {str(e)}"}
-    
-@app.get("/allegro-sale")
-async def allegro_sale():
+        return {"status": 404, "error": f"Exception in store_all_offers: {str(e)}"}
+
+@app.get("/store-all-payments")
+async def store_all_payments():
     try:
         credentials = db.get_credentials()
-        offers = []
+        flags = db.get_flags()
+        payments = []
         i = 0
+        if not flags['load_payment']:
+            while True:
+                payment_history = allegro.get_payment_history(credentials, 100, 100*i)
+                payments.append(payment_history['paymentOperations'])
 
-        while True:
-            payment_history = allegro.get_payment_history(credentials, 100, 100*i)
-            offers.append(payment_history['paymentOperations'])
+                if not payment_history['paymentOperations']:
+                    break
+                i+=1
 
-            if not payment_history['paymentOperations']:
-                break
-            i+=1
+            payments = sum(payments, [])
 
-        offers = sum(offers, [])
+            db.post_payments(payments)
 
-        return {"status": 200, "output": offers}
+        return {"status": 200, "output": payments}
     
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_sale: {str(e)}"}
+        return {"status": 404, "error": f"Exception in store_all_payments: {str(e)}"}
     
 @app.get("/sale-barplot")
 async def sale_barplot():
     try:
         credentials = db.get_credentials()
-        sales = await allegro_sale()
-        sale_barplot = annual_sale_barplot(credentials, sales['output'])
+        sales = db.get_payments()
+        sale_barplot = annual_sale_barplot(credentials, sales)
         
         return {"status": 200, "output": sale_barplot}
     
@@ -331,24 +338,45 @@ async def sale_barplot():
 async def genre_barplot():
     try:
         credentials = db.get_credentials()
-        offers = []
-        i = 0
-
-        while True:
-            vinyls = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "Vinyl", "all")
-            cds = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "CD", "all")
-            offers.append(vinyls['offers'])
-            offers.append(cds['offers'])
-
-            if not vinyls['offers'] and not cds['offers']:
-                break 
-        
-            i+=1
-
-        offers = sum(offers, [])
+        offers = db.get_allegro_offers()
         genre_barplot = create_genres_barplot(credentials, offers)
 
-        return {"status": 200, "output": genre_barplot}
+        return {"status": 200, "output": offers}
     
     except Exception as e:
         return {"status": 404, "error": f"Exception in genre_barplot: {str(e)}"}
+
+@app.post("/end-all-offers")
+async def end_all_offers():
+    try:
+        credentials = db.get_credentials()
+        offers = db.get_allegro_offers()
+        results = []
+
+        for offer in offers:
+            offer_id = offer['offer_id']
+            result = allegro.end_offer(credentials, offer_id)
+            result.append(result) 
+
+        return {"status": 200, "output": results}
+    
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in end_all_offers: {str(e)}"}
+
+@app.post("/renew-all-offers")
+async def renew_all_offers():
+    try:
+        credentials = db.get_credentials()
+        
+        offers = db.get_allegro_offers()
+        results = []
+
+        for offer in offers:
+            offer_id = offer['offer_id']
+            result = allegro.renew_offer(credentials, offer_id)
+            result.append(result) 
+
+        return {"status": 200, "output": results}
+    
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in renew_all_offers: {str(e)}"}

@@ -2,6 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
 import os
+import json
 from datetime import datetime
 from imageKit_api import upload_file_imageKit
 
@@ -11,6 +12,7 @@ def annual_sale_barplot(credentials: dict, sales: list) -> str:
 
     # Sorting prices by month
     for sale in sales:
+        sale = json.loads(sale)
         if sale['group'] == "INCOME":
             date = datetime.strptime(sale['occurredAt'][:7], '%Y-%m')
             price = float(sale['value']['amount'])

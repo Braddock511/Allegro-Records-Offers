@@ -3,15 +3,19 @@
     <span v-if="edit == ''" style="height: 500px; display: flex; flex-direction: column; justify-content: center;  align-items: center; gap: 20px;">
             <button class="btn btn-primary" type="button" style="width: 30%; padding: 0.5rem; font-size: 20px;" @click="edit='many'">{{ $t("editView.many") }}</button>
             <button class="btn btn-primary" type="button" style="width: 30%; padding: 0.5rem; font-size: 20px;" @click="edit='specific'">{{ $t("editView.specific") }}</button>
+            <button class="btn btn-primary" type="button" style="width: 30%; padding: 0.5rem; font-size: 20px;" @click="edit='renew'">{{ $t("editView.renew") }}</button>
     </span>
     <TheEditMany v-if="edit=='many'"/>
     <TheEditSpecific v-if="edit=='specific'"/>
+    <TheRenew v-if="edit=='renew'"/>
 </template>
 
 <script>
     import TheHeader from '@/components/TheHeader.vue'
-    import TheEditMany from '@/components/TheEdItMany.vue'
+    import TheEditMany from '@/components/TheEditMany.vue'
     import TheEditSpecific from '@/components/TheEditSpecific.vue'
+    import TheRenew from '@/components/TheRenew.vue'
+
     export default {
         data(){
             return{
@@ -22,7 +26,8 @@
         components:{
             TheHeader,
             TheEditMany,
-            TheEditSpecific
+            TheEditSpecific,
+            TheRenew
         }
     }
 </script>

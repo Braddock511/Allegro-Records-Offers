@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Integer
+import json
+from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.sql import text
@@ -48,9 +49,30 @@ class Image_Data(Base):
     text_from_image = Column(String)
     url = Column(String)
 
+class AllegroOffers(Base):
+    __tablename__ = "allegro_offers"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    offer_id = Column(String)
+
+class AllegroPayments(Base):
+    __tablename__ = "allegro_payments"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    payment = Column(String)
+
+class Flags(Base):
+    __tablename__ = "flags"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    load_offers = Column(Boolean)
+    load_payment = Column(Boolean)
+
 Base.metadata.create_all(engine)
 
 # Database scripts
+Session = sessionmaker(bind=engine)
+with Session() as session:
+    if session.query(Flags).limit(1).count() == 0:
+        session.add(Flags(load_offers=False, load_payment=False))
+        session.commit() 
 
 def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -> None:
     if not all([allegro_id, allegro_secret, allegro_token]):
@@ -119,4 +141,68 @@ def truncate_image_data():
     with Session() as session:
         session.execute(text('TRUNCATE image_data'))
         session.commit()
+
+def post_allegro_offers(offers: list) -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        if session.query(AllegroOffers).limit(1).count() == 0:
+            for offer in offers:
+                id = offer['id']
+                session.add(AllegroOffers(offer_id=id))
+
+            flags = get_flags()
+
+            if not flags['load_payment']:
+                session.add(Flags(load_offers=True, load_payment=False))
+            else:
+                last_row = session.query(Flags).order_by(Flags.id.desc()).first()
+                last_row.load_offers = True
+
+            session.commit()
+
+def get_allegro_offers() -> dict:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        rows = session.query(AllegroOffers).all()
+        allegro_offers = [row.offer_id for row in rows]
+        
+        session.commit()
+
+    return allegro_offers
+
+def post_payments(payments: list) -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        if session.query(AllegroPayments).limit(1).count() == 0:
+            for payment in payments:
+                payment = json.dumps(payment)
+                session.add(AllegroPayments(payment=payment))
+            
+            last_row = session.query(Flags).order_by(Flags.id.desc()).first()
+            last_row.load_payment = True
+            session.commit()
+
+def get_payments() -> dict:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        rows = session.query(AllegroPayments).all()
+        allegro_payments = [row.payment for row in rows]
+        
+        session.commit()
+
+    return allegro_payments
+
+def get_flags() -> dict:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        row = session.query(Flags).order_by(Flags.id.desc()).limit(1).first()
+        flags = {"load_offers": row.load_offers, "load_payment": row.load_payment}        
+        session.commit()
+
+    return flags
 
