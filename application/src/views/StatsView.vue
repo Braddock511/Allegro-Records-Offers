@@ -40,15 +40,15 @@
         </div>
     </span>
     <div id="loading" v-if="loading">
-        <img src="../assets/spinner.gif" alt="loading">
+        <img src="@/assets/spinner.gif" alt="loading">
         <h3>{{ $t('loading.loadData') }}</h3>
     </div>
     <TheAlert :alert="alert" />
 </template>
 
 <script>
-    import TheHeader from '@/components/TheHeader.vue'
-    import TheAlert from '../components/TheAlert.vue'
+    import TheHeader from '@/components/Global/TheHeader.vue'
+    import TheAlert from '../components/Global/TheAlert.vue'
     import axios from 'axios'
 
     export default {
@@ -80,7 +80,6 @@
                 if (this.saleBarplot == ""){
                     this.loading = true
                     const response = (await axios.get('http://127.0.0.1:8000/sale-barplot')).data
-                    console.log(response)
                     if (response.error || response.errors)
                     {
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}

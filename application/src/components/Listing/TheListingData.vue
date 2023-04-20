@@ -77,7 +77,7 @@
                 <td>{{ data.genre }}</td>
                 <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
                 <td v-if="data.price[condition] !== undefined">
-                    {{ roundedPrice(data.price[condition])}}
+                    <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition])" v-model="price" @click="price = roundedPrice(data.price[condition])">
                 </td>
                 <td v-else>
                     <input type="number" name="price" class="custom" min="1" v-model="price">
@@ -88,7 +88,7 @@
         </table>
     </div>
     <div id="loading" v-if="loading.flag">
-        <img src="../assets/spinner.gif" alt="loading">
+        <img src="@/assets/spinner.gif" alt="loading">
         <h2>{{ loading.message }}</h2>
     </div>
     <TheAlert :alert="alert" />
@@ -97,9 +97,9 @@
 </template>
   
 <script>
-    import TheSlider from '@/components/TheSlider.vue'
-    import TheAlert from '../components/TheAlert.vue'
-    import TheFailed from './TheFailed.vue'
+    import TheSlider from '@/components/Global/TheSlider.vue'
+    import TheAlert from '@/components/Global/TheAlert.vue'
+    import TheFailed from '@/components/Listing/TheFailed.vue'
     import axios from 'axios'
     export default {
         data(){
@@ -136,7 +136,7 @@
                         country: data.country,
                         year: data.year,
                         genre: data.genre,
-                        price: data.price[this.condition] !== undefined ? this.roundedPrice(data.price[this.condition]) : data.price,
+                        price: this.price,
                         barcode: data.barcode
                     }
                 }

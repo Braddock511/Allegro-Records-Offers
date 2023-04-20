@@ -65,7 +65,7 @@
             </form>
         </section>
         <div id="loading" v-if="loading">
-            <img src="../assets/spinner.gif" alt="loading">
+            <img src="@/assets/spinner.gif" alt="loading">
             <h3>{{ $t('loading.loadData') }}</h3>
         </div>
     </span>
@@ -74,8 +74,8 @@
 </template>
 
 <script>
-    import TheEditDescription from '@/components/TheEditDescription.vue'
-    import TheEditImages from '@/components/TheEditImages.vue'
+    import TheEditDescription from '@/components/Edit/TheEditDescription.vue'
+    import TheEditImages from '@/components/Edit/TheEditImages.vue'
     import axios from 'axios'
     export default {
         data(){

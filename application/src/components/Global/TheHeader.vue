@@ -1,10 +1,9 @@
 <template>
     <header>
         <router-link to="/" id="home"><h1><span>Allegro Offers</span></h1></router-link>
-        <a href="https://github.com/Braddock511/Allegro-Offers" target="_blank" id="github"><img src="../assets/github.svg" /></a>
         <div id="languages">
-            <img src="../assets/poland.png" alt="poland" @click="changeLanguage('pl')">
-            <img src="../assets/uk.png" alt="uk" @click="changeLanguage('en')">
+            <img src="@/assets/poland.png" alt="poland" @click="changeLanguage('pl')">
+            <img src="@/assets/uk.png" alt="uk" @click="changeLanguage('en')">
         </div>
     </header>
 </template>

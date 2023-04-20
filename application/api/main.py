@@ -5,7 +5,7 @@ from time import sleep
 import database as db
 import allegro_api as allegro
 from azure_api import read_image
-from preprocessing_data import preprocess_data, remove_background, get_cd_barcode
+from preprocessing_data import preprocess_data_parallel, remove_background, get_cd_barcode
 from imageKit_api import upload_file_imageKit
 from plots import annual_sale_barplot, create_genres_barplot
 
@@ -365,3 +365,13 @@ async def genre_barplot():
     except Exception as e:
         return {"status": 404, "error": f"Exception in genre_barplot: {str(e)}"}
 
+@app.get("/refresh-database")
+async def refresh_database():
+    try:
+        db.truncate_allegro_offers()
+        db.truncate_allegro_payments()
+        db.post_false_flags()
+
+        return {"status": 200}
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in refresh_database: {str(e)}"}

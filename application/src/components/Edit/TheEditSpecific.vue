@@ -66,14 +66,14 @@
         </div>
     </span>
     <div id="loading" v-if="loading">
-        <img src="../assets/spinner.gif" alt="loading">
+        <img src="@/assets/spinner.gif" alt="loading">
     </div>
     <TheAlert :alert="alert" />
 </template>
 
 <script>
-    import TheAlert from '../components/TheAlert.vue'
-    import TheSlider from '@/components/TheSlider.vue'
+    import TheAlert from '@/components/Global/TheAlert.vue'
+    import TheSlider from '@/components/Global/TheSlider.vue'
     import axios from 'axios'
     export default {
         data(){
@@ -112,6 +112,7 @@
                         }
                     }
                     this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData, typeRecord: typeRecord})).data
+                    console.log(this.offerData)
                     this.img = this.offerData.offer.images
                 }
                 this.loading = false

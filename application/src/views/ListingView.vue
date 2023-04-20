@@ -39,7 +39,7 @@
             </form>
         </section>
         <div id="loading" v-if="loading">
-            <img src="../assets/spinner.gif" alt="loading">
+            <img src="@/assets/spinner.gif" alt="loading">
             <h3>{{ $t('loading.readImage') }}</h3>
         </div>
     </span>
@@ -47,8 +47,8 @@
 </template>
 
 <script>
-    import TheHeader from '@/components/TheHeader.vue'
-    import TheListingData from '@/components/TheListingData.vue'
+    import TheHeader from '@/components/Global/TheHeader.vue'
+    import TheListingData from '@/components/Listing/TheListingData.vue'
     import VueCookies from 'vue-cookies'
     import axios from 'axios'
     export default {        

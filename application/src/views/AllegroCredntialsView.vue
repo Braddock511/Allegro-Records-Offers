@@ -16,15 +16,15 @@
         <a :href="response.verification_uri_complete" target="_blank"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('formContainer.confirm') }}</button></a>
     </div>
     <div id="loading" v-if="loading">
-        <img src="../assets/spinner.gif" alt="loading">
+        <img src="@/assets/spinner.gif" alt="loading">
         <h3>{{ $t('loading.loadData') }}</h3>
     </div>
     <TheAlert :alert="alert" />
 </template>
 
 <script>
-    import TheHeader from '@/components/TheHeader.vue'
-    import TheAlert from "@/components/TheAlert.vue"
+    import TheHeader from '@/components/Global/TheHeader.vue'
+    import TheAlert from "@/components/Global/TheAlert.vue"
     import axios from 'axios'
     export default {
         data(){

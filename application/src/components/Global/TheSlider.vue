@@ -18,7 +18,7 @@
         </div>
     </span>
     <div id="loading" v-if="loading">
-        <img src="../assets/spinner.gif" alt="loading">
+        <img src="@/assets/spinner.gif" alt="loading">
         <h3>{{ $t('loading.loadImages') }}</h3>
     </div>
 </template>

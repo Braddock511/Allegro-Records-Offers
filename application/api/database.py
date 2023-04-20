@@ -94,7 +94,7 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
             "api_allegro_id": allegro_id,
             "api_allegro_secret": allegro_secret,
             "api_allegro_token": allegro_token
-        }       
+        }      
 
         credentials_data = Credentials(**data_to_insert)
         session.add(credentials_data)
@@ -136,7 +136,7 @@ def get_text_from_image() -> dict:
 
     return data_image
 
-def truncate_image_data():
+def truncate_image_data() -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -197,6 +197,13 @@ def get_payments() -> dict:
 
     return allegro_payments
 
+def post_false_flags() -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        session.add(Flags(load_offers=False, load_payment=False))
+        session.commit()
+        
 def get_flags() -> dict:
     Session = sessionmaker(bind=engine)
 
@@ -206,4 +213,18 @@ def get_flags() -> dict:
         session.commit()
 
     return flags
+
+def truncate_allegro_offers() -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        session.execute(text('TRUNCATE allegro_offers'))
+        session.commit()
+
+def truncate_allegro_payments() -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        session.execute(text('TRUNCATE allegro_payments'))
+        session.commit()
 

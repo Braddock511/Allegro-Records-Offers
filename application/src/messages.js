@@ -10,6 +10,7 @@ export default {
       listingOffers: "Listing offers",
       editOffers: "Edit offers",
       statistics: "Statistics",
+      refresh: "Refresh offers and payments",
       enterAllegroCredentials: "Connect with Allegro"
     },
     formContainer:{
@@ -166,6 +167,7 @@ export default {
       listingOffers: "Wystaw oferty",
       editOffers: "Edytuj oferty",
       statistics: "Statystyki",
+      refresh: "Odśwież oferty i sprzedaż",
       enterAllegroCredentials: "Połącz z Allegro"
     },
     formContainer:{

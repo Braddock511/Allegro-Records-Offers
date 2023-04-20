@@ -31,14 +31,14 @@
         </div>
     </span>
     <div id="loading" v-if="loading">
-        <img src="../assets/spinner.gif" alt="loading">
+        <img src="@/assets/spinner.gif" alt="loading">
     </div>
     <TheAlert :alert="alert" />
 </template>
 
 <script>
-    import TheSlider from '@/components/TheSlider.vue'
-    import TheAlert from '../components/TheAlert.vue'
+    import TheSlider from '@/components/Global/TheSlider.vue'
+    import TheAlert from '@/components/Global/TheAlert.vue'
     import axios from 'axios'
     export default {
         data(){

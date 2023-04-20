@@ -9,9 +9,9 @@
 </template>
 
 <script>
-    import TheHeader from '@/components/TheHeader.vue'
-    import TheEditMany from '@/components/TheEditMany.vue'
-    import TheEditSpecific from '@/components/TheEditSpecific.vue'
+    import TheHeader from '@/components/Global/TheHeader.vue'
+    import TheEditMany from '@/components/Edit/TheEditMany.vue'
+    import TheEditSpecific from '@/components/Edit/TheEditSpecific.vue'
 
     export default {
         data(){
