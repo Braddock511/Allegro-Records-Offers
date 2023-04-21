@@ -56,3 +56,21 @@
         }
     }
 </script>
+
+<style lang="scss" scoped>
+    @media screen and (max-width: 1800px) {
+    tr:nth-child(1){
+        display: none;
+    }
+
+    tbody{
+        tr{
+            display: block !important;
+
+            td:nth-child(n)::before{
+                content: "";
+            }
+        }
+    }
+}
+</style>

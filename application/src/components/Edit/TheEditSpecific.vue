@@ -34,9 +34,11 @@
                         <select v-model="condition" @change="this.price = ''">
                             <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
                             <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                            <option value="Excellent (EX)">{{ $t("table.ex") }}</option>
                             <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
                             <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
                             <option value="Good (G)">{{ $t("table.good") }}</option>
+                            <option value="Fair (F)">{{ $t("table.fair") }}</option>
                         </select>
                     </td>
                     <td><h2>{{ $t("editSpecific.editOffer") }}</h2></td>
@@ -54,10 +56,10 @@
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
-                    <td v-if="data.price[condition] !== undefined && allegroData.sellingMode.format=='BUY_NOW'">
-                        <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition])" v-model="price" @click="price = roundedPrice(data.price[condition])">
+                    <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined && allegroData.sellingMode.format=='BUY_NOW'">
+                        <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
                     </td>
-                    <td v-if="data.price[condition] === undefined && allegroData.sellingMode.format=='BUY_NOW'">
+                    <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] === undefined && allegroData.sellingMode.format=='BUY_NOW'">
                         <input type="number" name="price" class="custom" min="1" v-model="price">
                     </td>
                     <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>

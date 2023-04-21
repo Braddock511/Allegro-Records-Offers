@@ -20,9 +20,11 @@
                     <select v-model="condition">
                         <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
                         <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                        <option value="Excellent (EX)">{{ $t("table.ex") }}</option>
                         <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
                         <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
                         <option value="Good (G)">{{ $t("table.good") }}</option>
+                        <option value="Fair (F)">{{ $t("table.fair") }}</option>
                     </select>
                 </td>
                 <td><h2>{{ $t("table.listing_offer") }}</h2></td>
@@ -76,8 +78,8 @@
                 <td>{{ data.year }}</td>
                 <td>{{ data.genre }}</td>
                 <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
-                <td v-if="data.price[condition] !== undefined">
-                    <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition])" v-model="price" @click="price = roundedPrice(data.price[condition])">
+                <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined">
+                    <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
                 </td>
                 <td v-else>
                     <input type="number" name="price" class="custom" min="1" v-model="price">
@@ -310,7 +312,7 @@
         margin-top: 10px;
     }
 
-    @media screen and (max-width: 1700px) {
+    @media screen and (max-width: 1800px) {
     tr{
         &:nth-child(3){
             display: block !important;
