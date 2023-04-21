@@ -43,9 +43,11 @@ def clear_image(image_url: str, credentials: dict) -> str:
         subscription_key = credentials["api_azure_subscription_key"]
         endpoint = credentials["api_azure_endpoint"]
         headers = {"Content-Type": "application/json", "Ocp-Apim-Subscription-Key": subscription_key}
-
-        response = requests.post(f"{endpoint}/computervision/imageanalysis:segment?api-version=2023-02-01-preview&mode=backgroundRemoval", headers=headers, json={"url": image_url})
-        
+        payload = {
+            "url": image_url,
+            "visualFeatures": "Background"
+        }
+        response = requests.post(f"{endpoint}/computervision/imageanalysis:segment?api-version=2023-02-01-preview&mode=backgroundRemoval", headers=headers, json=payload)
         return response.content
     
     except Exception as e:

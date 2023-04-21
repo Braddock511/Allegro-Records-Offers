@@ -127,41 +127,47 @@
         methods:{
             async listingOffer(data) {
                 let selectedData = {}
-                // Get data
-                if (data.title !== undefined){
-                    selectedData = {
-                        id: data.id,
-                        title: data.title,
-                        label: data.label,
-                        country: data.country,
-                        year: data.year,
-                        genre: data.genre,
-                        price: this.price,
-                        barcode: data.barcode
-                    }
-                }
-                else{
-                    if (this.title !== "" && this.price !== ""){
-                        if (this.title.length+3 < 50){
-                            selectedData = {
-                                id: "",
-                                title: this.title,
-                                label: this.label ? this.label : "-",
-                                country: this.country ? this.country : "-",
-                                year: this.year ? this.year : "-",
-                                genre: this.genre,
-                                price: this.price,
-                                barcode: this.barcode ? this.barcode : "-"
-                            }
-                        }
-                        else{
-                            this.alert = {variant: "warning", message: this.$t("alerts.toLong")}
+                if (this.price !== ""){
+                    // Get data
+                    if (data.title !== undefined){
+                        selectedData = {
+                            id: data.id,
+                            title: data.title,
+                            label: data.label,
+                            country: data.country,
+                            year: data.year,
+                            genre: data.genre,
+                            price: this.price,
+                            barcode: data.barcode
                         }
                     }
                     else{
-                        this.alert = {variant: "warning", message: this.$t("alerts.complete")}
+                        if (this.title !== "" && this.price !== ""){
+                            if (this.title.length+3 < 50){
+                                selectedData = {
+                                    id: "",
+                                    title: this.title,
+                                    label: this.label ? this.label : "-",
+                                    country: this.country ? this.country : "-",
+                                    year: this.year ? this.year : "-",
+                                    genre: this.genre,
+                                    price: this.price,
+                                    barcode: this.barcode ? this.barcode : "-"
+                                }
+                            }
+                            else{
+                                this.alert = {variant: "warning", message: this.$t("alerts.toLong")}
+                            }
+                        }
+                        else{
+                            this.alert = {variant: "warning", message: this.$t("alerts.complete")}
+                        }
                     }
                 }
+                else{
+                    this.alert = {variant: "warning", message: this.$t("alerts.complete")}
+                }
+                
                 if (Object.keys(selectedData).length !== 0){
                     // Send data
                     this.loading.flag = true
