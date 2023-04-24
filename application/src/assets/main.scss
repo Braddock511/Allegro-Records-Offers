@@ -141,75 +141,75 @@ select{
   gap: 10px;
 
   table {
-      border-collapse: collapse;
-      color: white;
-      background-color: #21454e75;;
-      text-align: center;
-      margin-bottom: 50px;
-      width: 100%;
+    border-collapse: collapse;
+    color: white;
+    background-color: #21454e75;
+    text-align: center;
+    margin-bottom: 50px;
+    width: 100%;
+    tr{
+      border-bottom: 2px solid #222423;
       td {
-          border: 1px solid #ddd;
-          padding: 10px;
-          font-size: 18px;
-          .custom{
-              text-align: center;
-          }
+        padding: 0.5rem;
+        .custom{
+          text-align: center;
+        }
       }
       a {
-          display: inline-block;
-          width: 100%;
-          padding: 5px 10px;
-          border-radius: 4px;
-          cursor: pointer;
-          background-color: #4CAF50;
-          transition: background-color 0.3s ease;
-          &:hover{
-              background-color: #3e8e41;
-          }
+        display: inline-block;
+        width: 100%;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        transition: background-color 0.3s ease;
+        &:hover{
+          background-color: #3e8e41;
+        }
       }
+    }
   }
 }
 
-@media screen and (max-width: 1800px) {
+@media screen and (max-width: 1650px) {
+  tbody{
+    tr{
+      display: block !important;
+    }
+  }
+
   table {
     border: 0;
-
     tr {
       border-bottom: 3px solid #ddd;
       display: block;
       margin-bottom: .625em;
 
       &:nth-child(1){
-        border: 0px;
-      }
-      &:nth-child(2){
           display: none;
       }
-      &:nth-child(3){
-          display: none;
-      }
-    }
-    
-    td {
-        display: block;
-        font-size: .8em;
-        text-align: left;
 
+      td {
+        display: block;
+        font-size: 18px;
+        text-align: left;
+        
+        &:nth-child(1)::before{
+          content: "Label: ";
+        }
         &:nth-child(2)::before{
-            content: "Label: ";
+          content: "Country: ";
         }
         &:nth-child(3)::before{
-            content: "Country: ";
+          content: "Year: ";
         }
         &:nth-child(4)::before{
-            content: "Year: ";
+          content: "Price: ";
         }
-        &:nth-child(5)::before{
-            content: "Price: ";
-        }
-
+        
         select{
           width: 30% !important;
+        }
       }
     }
   }

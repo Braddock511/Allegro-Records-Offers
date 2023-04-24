@@ -50,8 +50,9 @@ def preprocess_data(chunk: list, discogs_token: str) -> list:
     title = '-'
     price = '-'
     barcode = '-'
+    community_want_have = {}
     discogs_information = []
-    information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
+    information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have}
 
     for result in chunk:
         if isinstance(result, dict):
@@ -65,8 +66,10 @@ def preprocess_data(chunk: list, discogs_token: str) -> list:
             year = result.get('year') or result.get('released') if (result.get('year') or result.get('released')) else '-'
             barcode = result.get('barcode', [''])[0].replace(" ", "") if result.get('barcode') else '-'
             label = result.get('label', [''])[0] + " | " + result.get('catno', '') if result.get('label') else '-'
+            community_want_have = result['community']
 
-        information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode}
+        information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, 
+        "community": community_want_have}
         discogs_information.append(information)
 
     return discogs_information

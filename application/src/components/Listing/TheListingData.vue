@@ -1,22 +1,20 @@
 <template>
-    <span v-if="!cartonFlag && !loading.flag" id="carton"><h2>{{ $t("carton.enter_carton") }}</h2> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
+    <span v-if="!cartonFlag && !loading.flag" id="carton"><h3>{{ $t("carton.enter_carton") }}</h3> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
     <div class="data" v-if="cartonFlag && !failedFlag && !loading.flag">
         <TheSlider :images="img"></TheSlider>
+        <div style="width: 100%; text-align: center;">
+                <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="failed.data.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-'}); failed.condition.push(this.condition); failed.img.push(this.img[0]); next()">{{ $t("table.next") }}</button>
+        </div>
         <table>
-            <tr style="border: none;">
-                <td colspan="8" style="border: none; text-align: center; background-color: #202833;">
-                    <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="failed.data.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-'}); failed.condition.push(this.condition); failed.img.push(this.img[0]); next()">{{ $t("table.next") }}</button>
-                </td>
-            </tr>
-            <tr>
-                <td><h2>{{ $t("table.title") }}</h2></td>
-                <td><h2>{{ $t("table.label") }}</h2></td>
-                <td><h2>{{ $t("table.country") }}</h2></td>
-                <td><h2>{{ $t("table.year") }}</h2></td>
-                <td><h2>{{ $t("table.genre") }}</h2></td>
-                <td v-if="typeRecord == 'CD'"><h2>{{ $t("table.barcode") }}</h2></td>
+            <tr style="background-color: rgb(34, 36, 35); border-bottom: 0px;">
+                <td><h3>{{ $t("table.title") }}</h3></td>
+                <td><h3>{{ $t("table.label") }}</h3></td>
+                <td><h3>{{ $t("table.country") }}</h3></td>
+                <td><h3>{{ $t("table.year") }}</h3></td>
+                <td><h3>{{ $t("table.genre") }}</h3></td>
+                <td v-if="typeRecord == 'CD'"><h3>{{ $t("table.barcode") }}</h3></td>
                 <td>
-                    <h2>{{ $t("table.condition") }}</h2>
+                    <h3>{{ $t("table.condition") }}</h3>
                     <select v-model="condition">
                         <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
                         <option value="Mint (M)">{{ $t("table.mint") }}</option>
@@ -27,7 +25,8 @@
                         <option value="Fair (F)">{{ $t("table.fair") }}</option>
                     </select>
                 </td>
-                <td><h2>{{ $t("table.listing_offer") }}</h2></td>
+                <td><h3>Allegro</h3></td>
+                <td><h3>Discogs</h3></td>
             </tr>
             <tr>
                 <td>{{ $t("table.enter_title") }} <input type="text" name="title" class="custom" v-model="title"></td>
@@ -68,30 +67,34 @@
                 </td>
                 <td v-if="typeRecord == 'CD'">{{ $t("table.enter_barcode") }} <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
                 <td>{{ $t("table.enter_price") }} <input type="number" name="price" class="custom" min="1" v-model="price"></td>
-                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
+                <td><button class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="listingOfferAllegro">{{ $t("table.send") }}</button></td>
+                <td><button class="btn btn-primary w-100 discogs" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
             </tr>
             <tbody>
             <tr v-for="data in discogsData[recordIndex].information">
-                <td>{{ data.title }}</td>
+                <td><a :href="data.uri" style="background-color: #203640; " target="_blank">{{ data.title }}</a></td>
                 <td>{{ data.label }}</td>
                 <td>{{ data.country }}</td>
                 <td>{{ data.year }}</td>
                 <td>{{ data.genre }}</td>
                 <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
                 <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined">
+                    Want: {{ data.community.want }} | Have: {{ data.community.have }}<br><br>
                     <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
                 </td>
                 <td v-else>
+                    Want: ? | Have: ?<br><br>
                     <input type="number" name="price" class="custom" min="1" v-model="price">
                 </td>
-                <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="listingOffer(data)">{{ $t("table.send") }}</button></td>
+                <td><button  class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="listingOfferAllegro(data)">{{ $t("table.send") }}</button></td>
+                <td><button  class="btn btn-primary w-100 discogs" type="submit" style="padding: 0.5rem;" @click="listingOfferDiscogs(data)">{{ $t("table.send") }}</button></td>
             </tr>
             </tbody>
         </table>
     </div>
     <div id="loading" v-if="loading.flag">
         <img src="@/assets/spinner.gif" alt="loading">
-        <h2>{{ loading.message }}</h2>
+        <h3>{{ loading.message }}</h3>
     </div>
     <TheAlert :alert="alert" />
 
@@ -127,7 +130,7 @@
             }
         },
         methods:{
-            async listingOffer(data) {
+            async listingOfferAllegro(data) {
                 let selectedData = {}
                 if (this.price !== ""){
                     // Get data
@@ -201,6 +204,9 @@
                         this.next()
                     }
                 }
+            },
+            async listingOfferDiscogs(data) {
+                // get data
             },
             async next(){
                 this.loading.flag = true
@@ -312,17 +318,56 @@
         margin-top: 10px;
     }
 
-    @media screen and (max-width: 1800px) {
-    tr{
-        &:nth-child(3){
-            display: block !important;
+    @media screen and (max-width: 1650px) {
+        tr{
+            td{
+                &:nth-child(1)::before{
+                    content: "";
+                }
+                &:nth-child(2)::before{
+                    content: "";
+                }
+                &:nth-child(3)::before{
+                    content: "";
+                }
+                &:nth-child(4)::before{
+                    content: "";
+                }
+                &:nth-child(5)::before{
+                    content: "";
+                }
+            }
         }
-        td:nth-child(5)::before{
-            content: "Genre: " !important;
+        tbody{
+            tr{
+                td{
+                &:nth-child(1){
+                    display: flex;
+                    align-items: center;
+                }
+                &:nth-child(1)::before{
+                    content: "Title: ";
+                }
+                &:nth-child(2)::before{
+                    content: "Label: ";
+                }
+                &:nth-child(3)::before{
+                    content: "Country: ";
+                }
+                &:nth-child(4)::before{
+                    content: "Year: ";
+                }
+                &:nth-child(5)::before{
+                    content: "Genre: ";
+                }
+            }
         }
-        td:nth-child(6)::before{
-            content: "Price: " !important;
-        }
+    }
+    .allegro::after{
+        content: " Allegro";
+    }
+    .discogs::after{
+        content: " Discogs";
     }
 }
 </style>

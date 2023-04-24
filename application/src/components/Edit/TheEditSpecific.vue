@@ -13,24 +13,19 @@
     <span v-if="offerData">
         <div class="data" v-if="offerData.offer && !loading">
             <TheSlider :images="img.slice().reverse()"></TheSlider>
+            <div style="width: 100%;">
+                <span style="display: flex; flex-direction: column; align-items: center; gap: 10px;">    
+                    <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">{{ $t("editSpecific.clearImage") }}</button>
+                    <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="offerData = ''; alert = {}">{{ $t("table.back") }}</button>
+                </span>
+            </div>
             <table>
-                <tr>
-                    <td colspan="6"  style="border: none; background-color: #202833;">
-                        <span style="display: flex; flex-direction: column; align-items: center; gap: 10px;">    
-                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">{{ $t("editSpecific.clearImage") }}</button>
-                            <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="offerData = ''; alert = {}">{{ $t("table.back") }}</button>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                </tr>
-                <tr>
-                    <td><h2>{{ $t("table.title") }}</h2></td>
-                    <td><h2>{{ $t("table.label") }}</h2></td>
-                    <td><h2>{{ $t("table.country") }}</h2></td>
-                    <td><h2>{{ $t("table.year") }}</h2></td>
+                <tr style="background-color: rgb(34, 36, 35); border-bottom: 0px;">
+                    <td><h3>{{ $t("table.label") }}</h3></td>
+                    <td><h3>{{ $t("table.country") }}</h3></td>
+                    <td><h3>{{ $t("table.year") }}</h3></td>
                     <td v-if="allegroData.sellingMode.format=='BUY_NOW'">
-                        <h2>{{ $t("table.price") }}</h2>
+                        <h3>{{ $t("table.price") }}</h3>
                         <select v-model="condition" @change="this.price = ''">
                             <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
                             <option value="Mint (M)">{{ $t("table.mint") }}</option>
@@ -41,28 +36,28 @@
                             <option value="Fair (F)">{{ $t("table.fair") }}</option>
                         </select>
                     </td>
-                    <td><h2>{{ $t("editSpecific.editOffer") }}</h2></td>
+                    <td><h3>{{ $t("editSpecific.editOffer") }}</h3></td>
                 </tr>
                 <tr>
-                    <td>{{ offerData.offer.name }}</td>
                     <td><input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
                     <td><input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
                     <td><input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
                     <td v-if="allegroData.sellingMode.format=='BUY_NOW'"><input type="text" name="price" class="custom" placeholder="-" v-model="price"></td>
-                    <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
+                    <td><button class="btn btn-primary w-100" type="type" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
                 <tr v-for="data in offerData.discogs" v-if="offerData && offerData.discogs">
-                    <td>{{ offerData.offer.name  }}</td>
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
                     <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined && allegroData.sellingMode.format=='BUY_NOW'">
+                        Want: {{ data.community.want }} | Have: {{ data.community.have }}<br><br>
                         <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
                     </td>
                     <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] === undefined && allegroData.sellingMode.format=='BUY_NOW'">
+                        Want: ? | Have: ?<br><br>
                         <input type="number" name="price" class="custom" min="1" v-model="price">
                     </td>
-                    <td><button class="btn btn-primary w-100" type="type" style="padding: 0.5rem;" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>
+                    <td><button class="btn btn-primary w-100" type="type" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
             </table>
         </div>

@@ -16,7 +16,7 @@
     <span v-if="!loading && activeOption == 'visitors'">
         <div class="data">
             <table v-if="visitors_viewers">
-                <tr>
+                <tr style="background-color: rgb(34, 36, 35);">
                     <td>{{ $t("statistics.name") }}</td>
                     <td @click="sortVisitors" style="cursor: pointer;"><span class="arrow">{{ $t("statistics.visitors") }}&#8595</span></td>
                     <td @click="sortWatchers" style="cursor: pointer;"><span class="arrow">{{ $t("statistics.watchers") }}&#8595</span></td>

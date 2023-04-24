@@ -2,26 +2,23 @@
     <span v-if="offerData">
         <div class="data" v-if="offerData.offer.name.length > 0 && !loading">
             <TheSlider :images="img.slice().reverse()"></TheSlider>
+            <div style="width: 100%; text-align: center;">
+                <button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem; font-size: 20px;" @click="next">{{ $t("table.next") }}</button>
+            </div>
             <table>
-                <tr>
-                    <td colspan="7" style="border: none; background-color: #202833;"><button class="btn btn-primary" type="submit" style="width: 45%; padding: 0.5rem; font-size: 20px;" @click="next">{{ $t("table.next") }}</button></td>
-                </tr>
-                <tr>
-                    <td><h2>{{ $t("table.title") }}</h2></td>
+                <tr style="background-color: rgb(34, 36, 35);">
                     <td><h2>{{ $t("table.label") }}</h2></td>
                     <td><h2>{{ $t("table.country") }}</h2></td>
                     <td><h2>{{ $t("table.year") }}</h2></td>
                     <td><h2>{{ $t("editSpecific.editOffer") }}</h2></td>
                 </tr>
                 <tr>
-                    <td>{{ offerData.offer.name }}</td>
                     <td>{{ $t("table.enter_label") }} <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
                     <td>{{ $t("table.enter_country") }} <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
                     <td>{{ $t("table.enter_year") }} <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
                     <td><button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
                 <tr v-for="data in offerData.discogs" v-if="offerData && offerData.discogs">
-                    <td>{{ offerData.offer.name  }}</td>
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
