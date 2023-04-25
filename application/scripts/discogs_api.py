@@ -58,3 +58,17 @@ def get_tracklist(id: str, discogs_token: str) -> dict:
     except KeyError:
         return "<p><b>LISTA UTWORÓW: -</b></p>"
 
+def create_offer(listing_id: int, condition: str, sleeve_condition: str, carton: str, price: float, discogs_token: str) -> dict:
+    offer = {
+        "listing_id": listing_id,
+        "release_id": listing_id,
+        "condition": condition,
+        "sleeve_condition": sleeve_condition,
+        "price": price,
+        "location": carton
+    }
+    headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
+    url = f"https://api.discogs.com//marketplace/listings"
+    response = requests.post(url, headers=headers, json=offer)
+
+    return response.json()

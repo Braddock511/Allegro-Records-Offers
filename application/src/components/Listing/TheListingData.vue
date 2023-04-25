@@ -68,7 +68,18 @@
                 <td v-if="typeRecord == 'CD'">{{ $t("table.enter_barcode") }} <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
                 <td>{{ $t("table.enter_price") }} <input type="number" name="price" class="custom" min="1" v-model="price"></td>
                 <td><button class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="listingOfferAllegro">{{ $t("table.send") }}</button></td>
-                <td><button class="btn btn-primary w-100 discogs" type="submit" style="padding: 0.5rem;" @click="listingOffer">{{ $t("table.send") }}</button></td>
+                <td>
+                    {{ $t("table.sleeveCondition") }}
+                    <select v-model="sleeveCondition">
+                        <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
+                        <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                        <option value="Excellent (EX)">{{ $t("table.ex") }}</option>
+                        <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
+                        <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
+                        <option value="Good (G)">{{ $t("table.good") }}</option>
+                        <option value="Fair (F)">{{ $t("table.fair") }}</option>
+                    </select>
+                </td>
             </tr>
             <tbody>
             <tr v-for="data in discogsData[recordIndex].information">
@@ -79,8 +90,8 @@
                 <td>{{ data.genre }}</td>
                 <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
                 <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined">
-                    Want: {{ data.community.want }} | Have: {{ data.community.have }}<br><br>
-                    <input type="number" name="price" class="custom" min="1" :placeholder="roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPrice(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
+                    Want: {{ data.community.want }} | Have: {{ data.community.have }}<br>
+                    <input type="number" name="price" class="custom" min="1" :placeholder="roundedPriceToPLN(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPriceToPLN(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
                 </td>
                 <td v-else>
                     Want: ? | Have: ?<br><br>
@@ -110,6 +121,7 @@
         data(){
             return{
                 condition: "Near Mint (NM or M-)",
+                sleeveCondition: "Near Mint (NM or M-)",
                 carton: "",
                 title: "",
                 label: "",
@@ -206,7 +218,51 @@
                 }
             },
             async listingOfferDiscogs(data) {
-                // get data
+                let selectedData = {}
+                if (this.price !== ""){
+                    // Get data
+                    selectedData = {
+                        id: data.id,
+                        condition: this.condition,
+                        price: this.price,
+                    }
+                    
+                    if (Object.keys(selectedData).length !== 0){
+                        // Send data
+                        this.loading.flag = true
+                        this.loading.message = this.$t("loading.listingOffer")
+                        const response = (await axios.post('http://127.0.0.1:8000/discogs-listing', {listing_id: data.id, mediaCondition: this.condition, carton: this.carton, sleeveCondition: this.sleeveCondition, price: this.roundedPriceToEUR(this.price)}, { headers: { 'Content-Type': 'application/json' }})).data
+                        console.log(response)
+                        if (response.error || response.output.errors){
+                            this.failed.data.push(selectedData)
+                            this.failed.condition.push(this.condition)
+                            this.failed.img.push(this.img[0])
+                            this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
+                            this.title = "",
+                            this.label = "",
+                            this.country = "",
+                            this.year = "",
+                            this.price = "",
+                            this.condition = "Near Mint (NM or M-)"
+                            // Next offer   
+                            this.next()
+                        }
+                        else{
+                            this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
+                            this.title = "",
+                            this.label = "",
+                            this.country = "",
+                            this.year = "",
+                            this.price = "",
+                            this.condition = "Near Mint (NM or M-)"
+                            // Next offer
+                            this.next()
+                        }
+                    }
+                }
+                else{
+                    this.alert = {variant: "warning", message: this.$t("alerts.complete")}
+                }
             },
             async next(){
                 this.loading.flag = true
@@ -232,11 +288,22 @@
                 }
                 setTimeout(() => {this.loading.message = ""; this.loading.flag = false}, 100)
             },
-            roundedPrice(price) {
+            roundedPriceToPLN(price) {
                 let finalValue
                 if (price){
                     const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01
                     finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
+                }
+                else{
+                    finalValue = 0
+                }
+                return finalValue
+            },
+            roundedPriceToEUR(price) {
+                let finalValue
+                if (price){
+                    const roundedValue = Math.round((price * 0.3) / 10) * 10 - 0.01
+                    finalValue = (roundedValue < 3.99) ? 3.99 : roundedValue 
                 }
                 else{
                     finalValue = 0

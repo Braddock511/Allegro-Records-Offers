@@ -8,6 +8,7 @@ from azure_api import read_image
 from preprocessing_data import preprocess_data_parallel, remove_background, get_cd_barcode
 from imageKit_api import upload_file_imageKit
 from plots import annual_sale_barplot, create_genres_barplot
+from discogs_api import create_offer
 
 app = FastAPI()
 
@@ -375,3 +376,21 @@ async def refresh_database():
         return {"status": 200}
     except Exception as e:
         return {"status": 404, "error": f"Exception in refresh_database: {str(e)}"}
+    
+@app.post("/discogs-listing")
+async def discogs_listing(request: Request):
+    try:
+        credentials = db.get_credentials()
+        discogs_token = credentials['api_discogs_token']
+        response = loads((await request.body()).decode('utf-8'))
+        listing_id = response['listing_id']
+        media_condition = response['mediaCondition']
+        sleeve_condition = response['sleeveCondition']
+        carton = response['carton']
+        price = response['price']
+
+        result = create_offer(listing_id, media_condition, sleeve_condition, carton, price, discogs_token)
+
+        return {"status": 200, "output": result}
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in discogs_listing: {str(e)}"}
