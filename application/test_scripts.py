@@ -2,14 +2,14 @@ import base64
 import json
 from unittest.mock import patch
 from fastapi.testclient import TestClient
-from sqlalchemy import Column, String, Integer, create_engine
+from sqlalchemy import Column, String, Integer, Boolean, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from api.main import app
-from api.database import post_credentials, get_credentials, post_text_from_image, get_text_from_image
-from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description, get_payment_history
+from api.database import post_credentials, get_credentials, post_text_from_image, get_text_from_image, post_allegro_offers, get_allegro_offers, post_payments, get_payments, post_false_flags, get_flags, truncate_allegro_offers, truncate_allegro_payments
+from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description, get_payment_history, edit_images
 from scripts.azure_api import read_image, clear_image
-from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist
+from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist, create_offer
 from scripts.imageKit_api import upload_file_imageKit
 from scripts.plots import annual_sale_barplot, create_genres_barplot
 from scripts.preprocessing_data import search_data, get_cd_barcode, preprocess_data, remove_background
@@ -41,6 +41,23 @@ class Image_Data(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     text_from_image = Column(String)
     url = Column(String)
+    
+class AllegroOffers(Base):
+    __tablename__ = "allegro_offers"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    offer_id = Column(String)
+    offer_data = Column(String)
+
+class AllegroPayments(Base):
+    __tablename__ = "allegro_payments"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    payment = Column(String)
+
+class Flags(Base):
+    __tablename__ = "flags"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    load_offers = Column(Boolean)
+    load_payment = Column(Boolean)
 
 class TestDatabase:
     SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:admin@localhost:5432/postgres"
@@ -87,6 +104,82 @@ class TestDatabase:
 
         assert result['text_from_image'][0] == 'test'
         assert result['url'][0] == 'test.png'
+        
+    def test_post_allegro_offers(self):
+        allegro_offers = [{"id": 12456, "name": "test1"},
+                          {"id": 92251, "name": "test2"},
+                          {"id": 95253, "name": "test3"}]
+        
+        post_allegro_offers(allegro_offers)
+        
+        rows = self.session.query(AllegroOffers).all()
+
+        assert rows[0].id == 12456
+        assert rows[0].name == 'test1'
+        
+    def test_get_allegro_offers(self):
+        allegro_offers = [{"id": 12456, "name": "test1"},
+                          {"id": 92251, "name": "test2"},
+                          {"id": 95253, "name": "test3"}]
+        
+        post_allegro_offers(allegro_offers)
+        result = get_allegro_offers()
+
+        assert result[0].id == 12456
+        assert result[0].name == 'test1'
+        
+    def test_post_payments(self):
+        payments = [{"id": 12456, "price": 39.99},
+                    {"id": 92251, "price": 69.99},
+                    {"id": 95253, "price": 99.99}]
+        
+        post_payments(payments)
+        
+        rows = self.session.query(AllegroPayments).all()
+
+        assert rows[0].id == 12456
+        assert rows[0].price == 39.99
+        
+    def test_get_payments(self):
+        payments = [{"id": 12456, "price": 39.99},
+                    {"id": 92251, "price": 69.99},
+                    {"id": 95253, "price": 99.99}]
+        
+        post_payments(payments)
+        result = get_payments()        
+
+        assert result[0].id == 12456
+        assert result[0].price == 39.99
+        
+    def test_post_false_flags(self):
+        post_false_flags()
+        
+        rows = self.session.query(Flags).all()
+
+        assert rows[0].load_offers == False
+        assert rows[0].load_payment == False
+        
+    def test_get_flags(self):
+        post_false_flags()
+        result = get_flags()
+        
+        assert result[0].load_offers == False
+        assert result[0].load_payment == False
+        
+        
+    def test_truncate_allegro_offers(self):
+        truncate_allegro_offers()
+        
+        result = get_allegro_offers()
+        
+        assert result is None
+        
+    def test_truncate_allegro_payments(self):
+        truncate_allegro_payments()
+        
+        result = truncate_allegro_payments()
+        
+        assert result is None
 
 class TestAPI:
     client = TestClient(app)
@@ -217,7 +310,23 @@ class TestAPI:
         assert "output" in response.json()
 
         assert isinstance(response.json()["output"], str)
+        
+    def test_store_all_offers(self):
+        response = TestAPI.client.get("/store-all-offers")
 
+        assert response.status_code == 200
+        assert "output" in response.json()
+
+        assert isinstance(response.json()["output"], list)
+        
+    def test_pstore_all_payments(self):
+        response = TestAPI.client.get("/store-all-payments")
+
+        assert response.status_code == 200
+        assert "output" in response.json()
+
+        assert isinstance(response.json()["output"], list)
+    
 class TestAllegroApi:
     credentials = {"api_allegro_token": "", "api_discogs_token": ""}
 
@@ -313,6 +422,14 @@ class TestAllegroApi:
             result = edit_description(TestAllegroApi.credentials, offer_id, images, information)
             
             assert "name" in result.keys() 
+            
+    def test_edit_images(self):
+        offer_id = "13565874294"
+        images = ["http://example.com/image1.jpg", "http://example.com/image2.jpg"]
+        
+        result = edit_images(TestAllegroApi.credentials, offer_id, images)
+        
+        assert "name" in result.keys()
 
 class TestAzureApi:
     credentials = {"api_azure_subscription_key": "", 
@@ -369,6 +486,17 @@ class TestDiscogsApi:
         result = get_tracklist(id, TestDiscogsApi.discogs_token)
 
         assert "<p><b>LISTA UTWORÓW: -</b></p>" in result
+        
+    def test_create_offer(self):
+        listing_id = 2491654691
+        condition = "Mint (M)"
+        sleeve_condition = "Mint (M)"
+        carton = "Test"
+        price = 299.99
+        
+        result = create_offer(listing_id, condition, sleeve_condition, carton, price, TestDiscogsApi.discogs_token)
+        
+        assert "url" in result.keys()
 
 class TestImageKitApi:
     credentials = {"api_imagekit_id": "", 
@@ -482,3 +610,40 @@ class TestPreprocessingData:
         
         assert isinstance(barcode, str)
         assert isinstance(image_url, str)
+        
+    def test_search_data_parallel(self):
+        # Test case 1: Text data - vinyl
+        result = search_data(["Pink Floyd - The Dark Side Of The Moon"], TestPreprocessingData.credentials, "Vinyl", False)
+        assert len(result) == 1
+        assert result[0]['title'] == "The Dark Side Of The Moon"
+
+        # Test case 2: Text data - cd
+        result = search_data(["0602557156317"], TestPreprocessingData.credentials, "CD", False)
+        assert len(result) == 1
+        assert result[0]['title'] == "Hardwired...To Self-Destruct"
+
+        # Test case 3: Image data - vinyl
+        result = search_data(['JNYHUID MI SOYR', 'SIDE 1', 'LICENSEE TRADE MARK', 'sport (4:03)', 'GEMA', 'INAUTHORIZED PUBLIC PERFORMANCE BROAD', 'HAMBURG', '33', 'ATL 40 417', '1972 Atlantic Records', 'Klaus Doldinger', 'Except "Fairy Tale" - Trad. Adpt. By', 'Klaus Doldinger', 'All Titles Composed And Produced By', 'ATLANTIC', '4. Get Yourself A Second Passpo', '3. Fairy Tale (7:32)', '1. Mandragora (3:46)', '2. Nexus (5:23)', 'PASSPORT - SECOND PASSPORT', '40 417 -', 'STEREO', 'A ATLANTIC RECORDING CORP. U.S.A.', 'CTURER AND OF THE OWNER OF THE RECORD', 'ALL RIGHTS OF THE', 'BESSIE SMITH', 'AL STEWART', 'SPIRIT', "The World's Greatest Blues", '68258', 'MOONDOG', 'Singar', 'LEONARD COHEN', 'MOONDOG', 'POCO', 'The Bassie Smith Story Volumes 1-4', 'ARGENT', '52377/78/79/80', 'Argent', 'AMERICAN', 'KALEIDOSCOPE', 'Clear', '83729', 'The Family That Plays Together', '83523', 'argeac', '+', 'Spirit', '83278', 'Zero She Flies', '53848', '63241', "IT'S A", 'Love Chronicles', '83450', 'TIFUL DAY', '64082', 'Bedsitter', '53087', 'TREES', 'MILES DAVIS', 'ROCK WORKSHOP', 'bernice', '84005', 'Marrying Maiden', '64085', 'A Beautiful Day', '#3722', 'AMORY KANE', 'The Garden Of Jane Delawney', 'LAURA NYRO', '63837', 'BLACK WIDOW', 'on', 'AHAL', 'Rask Workshop', '64076', 'CEt', 'BOB DYLAN', 'REDBONE', 'SIM', 'GARFU', 'New York Tandeberry', 'L', 'Ch And The Thirteenth Confession 032', '63510', 'Nashville Skyline', 'Highway 61 Revisited', '88260', 'Giant Stop', 'lapisg it All Back Home', '83601', "The Netch'l blues", '82672', '82516', 'a Metal', '$8228', '83387', 'Just To Be There', 'CHAMBERS BROS', 'EVERLY', 'BROTHERS'], TestPreprocessingData.credentials, "Vinyl", True)
+        assert len(result) == 1
+        assert result[0]['title'] == "Passport - Second Passport"
+
+        # Test case 4: Empty data
+        result = search_data([""], TestPreprocessingData.credentials, "Vinyl", False)
+        assert len(result) == 0
+    
+    def test_preprocess_data_parallel(self):
+        # Test case 1: Image data
+        input_text = "ATL40417"
+        result = preprocess_data(input_text, TestPreprocessingData.credentials, "Vinyl")
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert isinstance(result[0], dict)
+        assert result[0]['title'] == "Second Passport"
+
+        # Test case 2: Non-image data
+        input_text = "Pink Floyd - The Dark Side Of The Moon"
+        result = preprocess_data(input_text, TestPreprocessingData.credentials, "CD", False)
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert isinstance(result[0], dict)
+        assert result[0]['title'] == "The Dark Side Of The Moon"
