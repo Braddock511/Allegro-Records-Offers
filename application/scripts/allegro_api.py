@@ -6,6 +6,7 @@ from collections import Counter
 from time import sleep
 from discogs_api import get_tracklist
 from preprocessing_data import remove_background
+from database import get_allegro_offers
 
 urllib3.disable_warnings()
 
@@ -35,10 +36,16 @@ def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, t
     if type_record == "Vinyl":
         categories_lp = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
         genre = categories_lp.get(genre)
+        genre = f"&category.id={genre}"
     
     elif type_record == "CD":
         categories_cd = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
         genre = categories_cd.get(genre)
+        genre = f"&category.id={genre}"
+        
+    elif type_offer == "all":
+        genre = ""
+    
 
     if type_offer == "all":
         type_offer = ""
@@ -50,8 +57,7 @@ def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, t
         type_offer = "&sellingMode.format=AUCTION"
 
     headers = {'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
-    url = f"https://api.allegro.pl/sale/offers?publication.status=ACTIVE&limit={limit}&offset={offset}&category.id={genre}{type_offer}"
-
+    url = f"https://api.allegro.pl/sale/offers?publication.status=ACTIVE&limit={limit}&offset={offset}{genre}{type_offer}"
     result = requests.get(url, headers=headers, verify=False)
     
     return result.json()
@@ -68,9 +74,9 @@ def get_offer_info(credentials: dict, offer_id: int) -> dict:
 
 def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: str, images: list, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
     if type_record == "Vinyl":
-        categories = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "classical": 9536, "new": 284, "opera": 261156, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
+        categories = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
     elif type_record == "CD":
-        categories = {"all": 175, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "rap": 261040, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
+        categories = {"all": 175, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261127, "hip hop": 261044, "reggae": 182, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
 
     conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
 
@@ -78,15 +84,15 @@ def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: 
     id = discogs_data['id']
     title = discogs_data['title']
     label = discogs_data['label'].replace("&", "")
-    country = discogs_data['country']
+    country = discogs_data['country'].replace("&", ", ")
     released = discogs_data['year']
     genre = discogs_data['genre']
     price = discogs_data['price']
-    barcode = discogs_data['barcode']
+    barcode = "".join(re.findall('\d+', discogs_data['barcode']))
     tracklist = get_tracklist(id, credentials["api_discogs_token"])
 
     # Allegro data
-    allegro_offer = get_my_offers(credentials, 1, 0, "all", "Vinyl", "all")['offers'][0]
+    allegro_offer = json.loads(get_allegro_offers()[0]['offer_data'])
     allegro_id = allegro_offer['id']
     offer_info = get_offer_info(credentials, allegro_id)
     
@@ -166,7 +172,7 @@ def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: 
 
         "images": images,
 
-        'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
+        'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
 
         "stock": {"available": 1},
 
@@ -219,7 +225,7 @@ def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: 
 
             "images": images,
 
-            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
+            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
 
             "stock": {"available": 1},
 
@@ -384,7 +390,7 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
                     {
                         'items': [
                             {'type': 'IMAGE', 'url': images[1]}, 
-                            {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
+                            {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
                         ]
                     },
                     {
@@ -418,4 +424,37 @@ def get_payment_history(credentials: dict, limit: int, offset: int) -> dict:
     url = f"https://api.allegro.pl/payments/payment-operations?limit={limit}&offset={offset}"
     result = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, verify=False)
     
+    return result.json()
+
+def swap_cartons(credentials: dict, change_carton: str, change_to_carton: str) -> dict:
+    allegro_token = credentials["api_allegro_token"]
+    
+    offers = get_allegro_offers()
+    filter_offers = []
+    for offer in offers:
+        offer = json.loads(offer['offer_data'])
+        name = offer['name']
+        carton = name.split(".")[-1]
+        
+        if carton == change_carton:
+            filter_offers.append(offer)
+         
+    for filter_offer in filter_offers:
+        # change carton in name
+        offer = get_offer_info(credentials, filter_offer['id'])
+        name = offer['name']
+        without_carton = name[:len(name)-len(change_carton)] # name without old carton
+        new_name = f"{without_carton}{change_to_carton}"
+        offer['name'] = new_name
+        
+        # change carton in description if exist      
+        description = offer['description']
+        for i, section in enumerate(description['sections']):
+            for j, item in enumerate(section['items']):
+                if item.get("content") and change_carton in item['content']:
+                    offer['description']['sections'][i]['items'][j]['content'] = item['content'].replace(change_carton, change_to_carton)
+                            
+        url = f"https://api.allegro.pl/sale/product-offers/{offer['id']}"
+        result = requests.patch(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
+        
     return result.json()

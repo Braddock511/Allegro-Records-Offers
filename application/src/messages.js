@@ -3,7 +3,7 @@ export default {
     vinyl: 'Vinyl',
     info: {
       title: "Allegro Records Offers",
-      description: "The Allegro Records Offers application is a tool designed to help users effectively manage their records offers on Allegro, one of the largest online marketplaces in Poland. Thanks to this application, users can easily list their products on Allegro and edit existing offers. The application features a user-friendly interface that allows you to quickly and easily upload your products to the Allegro platform. Users can add product photos, descriptions, prices, and other important details to create engaging and informative listings that will appeal to potential buyers. In addition, the user can clear the background of the image and view the statistics of the offers."
+      description: 'The "Allegro Records Offers" application is a tool to help users effectively manage their record offers on Allegro, one of the largest Internet portals in Poland. The user can send photos of the discs from which there is a read text, and then get data from the Discogs website, and in this way users can list their vinyl records or CDs on Allegro and edit existing offers. In addition, the user can clear the background of the image and view the statistics of offers. You can also list your records on discogs'
     },
     buttons: {
       options: "Options",
@@ -45,6 +45,7 @@ export default {
     editView:{
       many: "Edit many offers",
       specific: "Edit specific offer",
+      swap: "Swap carton labels",
     },
     editMany:{
       offerType: "Offer Types",
@@ -68,6 +69,13 @@ export default {
       cleared: "Cleared image",
       editImage: "Edit image",
       clear: "Clear"
+    },
+    swap:{
+      info: "You will replace the plate carton designation with another one",
+      title: "Swap cartons",
+      swap: "Carton you want to change",
+      with: "Carton you want to change to",
+      buttonSwap: "Swap"
     },
     carton: {
       enter_carton: 'Enter carton',
@@ -136,6 +144,7 @@ export default {
       sets: 'Sets, packages',
     },
     alerts:{
+      success: "Success",
       someWrong: "Something went wrong",
       complete: "Complete title and price",
       completePrice: "Complete price",
@@ -204,6 +213,7 @@ export default {
     editView:{
       many: "Edytuj wiele ofert",
       specific: "Edytuj konkretną ofertę",
+      swap: "Zamień oznaczenie kartonów"
     },
     editMany:{
       offerType: "Rodzaje ofert",
@@ -227,6 +237,13 @@ export default {
       cleared: "Zdjęcie bez tła",
       editImage: "Edytuj zdjęcie",
       clear: "Wyczyść tło"
+    },
+    swap:{
+      title: "Zamień kartony",
+      info: "Zamienisz oznaczenie kartonu płyt na inne",
+      swap: "Oznaczenie kartonu, który chcesz zmienić",
+      with: "Oznaczenie kartonu, na który chcesz zmienić",
+      buttonSwap: "Zamień"
     },
     carton: {
       enter_carton: 'Karton',
@@ -295,6 +312,7 @@ export default {
       sets: 'Zestawy'
     },
     alerts:{
+      success: "Sukces",
       someWrong: "Coś poszło nie tak",
       complete: "Uzupełnij tytuł i cenę",
       completePrice: "Uzupełnij cenę",

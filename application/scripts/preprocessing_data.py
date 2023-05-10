@@ -7,9 +7,9 @@ from PIL import Image
 from pyzbar import pyzbar
 from io import BytesIO
 from time import sleep
-from azure_api import clear_image
-from imageKit_api import upload_file_imageKit
-from chunks import search_data, preprocess_data
+from .azure_api import clear_image
+from .imageKit_api import upload_file_imageKit
+from .chunks import search_data, preprocess_data
 
 def search_data_parallel(text_from_image: list, discogs_token: str, type_record: str, image_data: bool) -> list[dict]:
     # Split the text_from_image list into chunks

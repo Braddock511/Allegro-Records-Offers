@@ -20,6 +20,7 @@
                 <div class="input-container">
                     {{ $t("editMany.typeRecord") }}
                     <select v-model="typeRecord">
+                        <option value="all">{{ $t("genre_options.all") }}</option>
                         <option value="Vinyl">{{ $t("vinyl") }}</option>
                         <option value="CD">CD</option>
                     </select>
@@ -69,8 +70,8 @@
             <h3>{{ $t('loading.loadData') }}</h3>
         </div>
     </span>
-    <TheEditDescription v-if="allegroData && typeEdit=='desc'" :allegroData="allegroData" :typeRecord="typeRecord"/>
-    <TheEditImages v-if="allegroData && typeEdit=='images'" :allegroData="allegroData" :typeRecord="typeRecord"/>
+    <TheEditDescription v-if="allegroData && typeEdit=='desc'" :allegroData="allegroData"/>
+    <TheEditImages v-if="allegroData && typeEdit=='images'" :allegroData="allegroData"/>
 </template>
 
 <script>
@@ -86,7 +87,7 @@
                 limit: 1,
                 offset: 0,
                 typeOffer: "all",
-                typeRecord: "Vinyl",
+                typeRecord: "all",
                 genre: "all",
                 loading: false,
             }

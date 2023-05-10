@@ -3,7 +3,7 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from msrest.authentication import CognitiveServicesCredentials
 from time import sleep
-from imageKit_api import upload_file_imageKit
+from .imageKit_api import upload_file_imageKit
 
 def read_image(image: str, credentials: dict) -> tuple[list, str]:
     subscription_key = credentials["api_azure_subscription_key"]

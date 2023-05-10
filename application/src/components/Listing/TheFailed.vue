@@ -51,7 +51,7 @@
         methods:{
             async back(){
                 await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
-                this.$router.push('/')
+                window.location.reload()
             }
         }
     }

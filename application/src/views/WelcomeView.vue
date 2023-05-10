@@ -1,5 +1,6 @@
 <template>
-    <span v-if="!loading">
+    <TheNavBar/>
+    <!-- <span v-if="!loading">
         <TheHeader />
         <main>
             <div id="info" v-if="!isCookieSet">
@@ -20,12 +21,13 @@
         <img src="@/assets/spinner.gif" alt="loading">
         <h3>{{ $t('loading.loadData') }}</h3>
     </div>
-    <TheAlert :alert="alert" />
+    <TheAlert :alert="alert" /> -->
 </template>
 
 <script>
     import TheHeader from "@/components/Global/TheHeader.vue"
     import TheAlert from "@/components/Global/TheAlert.vue"
+    import TheNavBar from "@/components/Global/TheNavBar.vue"
     import axios from 'axios'
     export default {
         data(){
@@ -61,30 +63,31 @@
         },
         components: {
             TheHeader,
-            TheAlert
+            TheAlert,
+            TheNavBar
         }
     }
 </script>
 
 <style lang="scss" scoped>
-    main{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        width: 100%;
-        margin-top: 100px;
-        #info{
-            width: 40%;
-            p{
-                font-size: large;
-            }
-        }
+    // main{
+    //     display: flex;
+    //     justify-content: center;
+    //     align-items: center;
+    //     flex-direction: column;
+    //     width: 100%;
+    //     margin-top: 100px;
+    //     #info{
+    //         width: 40%;
+    //         p{
+    //             font-size: large;
+    //         }
+    //     }
 
-        #buttons{
-            width: 22.5%;
-        }
-    }
+    //     #buttons{
+    //         width: 22.5%;
+    //     }
+    // }
     @media only screen and (max-width: 1200px){
         main{
             #info{

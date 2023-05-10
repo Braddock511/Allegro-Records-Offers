@@ -1,6 +1,6 @@
 <template>
     <header>
-        <router-link to="/" id="home"><h1><span>Allegro Offers</span></h1></router-link>
+        <span>Allegro Offers</span>
         <div id="languages">
             <img src="@/assets/poland.png" alt="poland" @click="changeLanguage('pl')">
             <img src="@/assets/uk.png" alt="uk" @click="changeLanguage('en')">

@@ -2,7 +2,7 @@
     <div class="data" v-if="!loading">
         <h1 v-if="!clearImage">{{ $t("editImages.firstImage") }}</h1>
         <TheSlider :images="allegroImages" v-if="!clearImage"></TheSlider>
-        <img id="clear-image" :src="clearImage" alt="clear-image" v-if="clearImage" style="width: 750px; height: 750px; border: 3px solid black;">
+        <img id="clear-image" :src="clearImage" alt="clear-image" v-if="clearImage" style="width: 750px; height: 564px; border: 3px solid black;">
         <h2 v-if="clearImage">{{ $t("editImages.cleared") }}</h2>
         <span id="buttons" style="width: 50%; display: flex; flex-direction: column; gap: 10px;">
             <button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;" @click="editImages" v-if="clearImage">{{ $t("editImages.editImage") }}</button>
@@ -65,13 +65,13 @@
                     return ""
                 }
                 else{
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData, typeRecord: this.typeRecord})).data
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/allegro-offer', {offerId: this.allegroData.offers[this.offerIndex].id})).data
                     if (this.offerData.error || this.offerData.errors){
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
                     else{    
                         this.clearImage = ""
-                        this.allegroImages = this.offerData.offer.images
+                        this.allegroImages = this.offerData.output.images
                     }
                 }
                 this.loading = false
@@ -79,22 +79,19 @@
         },
         async beforeMount() {
             this.loading = true
-            this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData, typeRecord: this.typeRecord})).data
+            this.offerData = (await axios.post('http://127.0.0.1:8000/allegro-offer', {offerId: this.allegroData.offers[0].id})).data
             if (this.offerData.error || this.offerData.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
-                this.allegroImages = this.offerData.offer.images
+                this.allegroImages = this.offerData.output.images
             }
             this.loading = false
         },
         props: {
             allegroData: {
                 required: true
-            },
-            typeRecord: {
-                required: true
-            },
+            }
         },
         components:{
             TheSlider,

@@ -97,18 +97,7 @@
                 }
                 else{
                     this.allegroData = this.allegroData.output
-                    let parameters = this.allegroData.productSet[0].product.parameters
-                    let typeRecord
-                    for (let i = 0; i<parameters.length; i++){
-                        if (parameters[i].name == "Nośnik"){
-                            typeRecord = parameters[i].values[0]
-                            if (typeRecord == "Winyl"){
-                                typeRecord = "Vinyl"
-                            }  
-                            break
-                        }
-                    }
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData, typeRecord: typeRecord})).data
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData})).data
                     console.log(this.offerData)
                     this.img = this.offerData.offer.images
                 }

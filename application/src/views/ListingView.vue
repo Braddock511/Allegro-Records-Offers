@@ -1,5 +1,4 @@
 <template>
-    <TheHeader/>
     <span v-if="!read">
         <section class="form-container" v-if="!loading">
             <form @submit.prevent="getImageData">

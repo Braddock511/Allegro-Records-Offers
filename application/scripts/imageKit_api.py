@@ -1,4 +1,5 @@
 from imagekitio import ImageKit
+from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
 
 def upload_file_imageKit(image: str, credentials: dict):
     imageKit_config = {
@@ -7,8 +8,11 @@ def upload_file_imageKit(image: str, credentials: dict):
         "url_endpoint": credentials["api_imagekit_endpoint"]
     }
 
+    image_options = UploadFileRequestOptions(
+        folder='/',
+    )
+    
     imagekit = ImageKit(**imageKit_config)
 
-    result = imagekit.upload_file(file=image, file_name=f'{image[:10]}.png')
-
+    result = imagekit.upload_file(file=image, file_name=f'{image[:10]}.png', options=image_options)
     return result.response_metadata.raw
