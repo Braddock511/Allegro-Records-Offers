@@ -83,7 +83,8 @@
                 this.loading = true
                 this.offerIndex += 1
                 if (this.offerIndex >= this.allegroData.offers.length){
-                    this.$router.push("/")
+                    console.log(1)
+                    window.location.reload()
                     return ""
                 }
                 else{

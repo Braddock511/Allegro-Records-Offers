@@ -126,10 +126,11 @@ async def image_data(request: Request):
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         index = response['index']
+        number_images = response['numberImages']
         type_record = response['typeRecord']
         discogs_data = []
         image_data = db.get_text_from_image()
-        image_data = image_data[index:index+3]
+        image_data = image_data[index:index+number_images]
 
         # Get data from discogs
         for data in image_data:

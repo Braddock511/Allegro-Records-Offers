@@ -15,13 +15,13 @@
         </li>
         <hr>
         <li>
-          <span>{{ $t('statistics.visitorsViewers') }}</span>
-          <span>{{ $t('statistics.sales') }}</span>
-          <span>{{ $t('statistics.genres') }}</span>
+          <span @click="option='visitors'">{{ $t('statistics.visitorsViewers') }}</span>
+          <span @click="option='sales'">{{ $t('statistics.sales') }}</span>
+          <span @click="option='genres'">{{ $t('statistics.genres') }}</span>
         </li>
         <hr>
         <li>
-          <span>{{ $t('buttons.refresh') }}</span>
+          <span @click="refreshDatabase">{{ $t('buttons.refresh') }}</span>
         </li>
         <hr>
         <li style="display: flex; gap: 10px; padding: 10px;">
@@ -33,10 +33,13 @@
 
     
     <main v-if="!loading">
-      <ListingView v-if="option='listing'"/>
+      <TheListingOptions v-if="option=='listing'"/>
       <TheEditMany v-if="option=='many'"/>
       <TheEditSpecific v-if="option=='specific'"/>
       <TheSwap v-if="option=='swap'"/>
+      <TheVisitors v-if="option=='visitors'"/>
+      <TheSales v-if="option=='sales'"/>
+      <TheGenres v-if="option=='genres'"/>
     </main>
 
     <div id="loading" v-if="loading">
@@ -48,11 +51,14 @@
 
 <script>
     import axios from 'axios'
-    import ListingView from '@/views/ListingView.vue'
+    import TheAlert from "@/components/Global/TheAlert.vue"
+    import TheListingOptions from '@/components/Listing/TheListingOptions.vue'
     import TheEditMany from '@/components/Edit/TheEditMany.vue'
     import TheEditSpecific from '@/components/Edit/TheEditSpecific.vue'
-    import TheAlert from "@/components/Global/TheAlert.vue"
     import TheSwap from '@/components/Edit/TheSwap.vue'
+    import TheVisitors from '@/components/Stats/TheVisitors.vue'
+    import TheGenres from '@/components/Stats/TheGenres.vue'
+    import TheSales from '@/components/Stats/TheSales.vue'
 
     export default {
         data(){
@@ -86,11 +92,14 @@
             }
         },
         components: {
-          ListingView,
+          TheAlert,
+          TheListingOptions,
           TheEditMany,
           TheEditSpecific,
           TheSwap,
-          TheAlert,
+          TheVisitors,
+          TheGenres,
+          TheSales,
         }
     }
 </script>
@@ -103,40 +112,39 @@
       width: 250px;
       background-color: #202020;
       transition: all .3s ease;
-      cursor: pointer;
       box-shadow:4px 7px 10px rgba(0,0,0,.4);
-      
       h2{
         margin-top: 5px;
         text-align: center;
       }
       
-        ul {
-          color:white;
-          list-style-type:none;
-          padding:0px;
-          margin:0px;  
+      ul {
+        color:white;
+        list-style-type:none;
+        padding:0px;
+        margin:0px;  
 
-          li {
-            padding-bottom: 5px;
-            span {
-              display: block;
-              padding: 15px;
-              transition: all .3s ease;
-              font-size: 20px;
+        li {
+          padding-bottom: 5px;
+          cursor: pointer;
+          span {
+            display: block;
+            padding: 15px;
+            transition: all .3s ease;
+            font-size: 24px;
 
-              &:hover{
-                background-color: #303030;
-              }
+            &:hover{
+              background-color: #303030;
             }
-            
-            img{
-              width: 50px;
+          }
+          
+          img{
+            width: 50px;
 
-              &:hover{
-                opacity: .8;
-              }
+            &:hover{
+              opacity: .8;
             }
+          }
 
           }
         }
@@ -146,7 +154,7 @@
         display: flex;
         justify-content: center;
         width: 100%;
-        margin-bottom: 1000px;
+        margin-bottom: 250px;
       }
     }
 
@@ -158,6 +166,7 @@
     nav {
       display: flex;
       width: 100%;
+      height: auto;
       h2{
         display: none;
       }

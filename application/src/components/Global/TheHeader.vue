@@ -1,6 +1,6 @@
 <template>
     <header>
-        <span>Allegro Offers</span>
+        <h1><span>Allegro Offers</span></h1>
         <div id="languages">
             <img src="@/assets/poland.png" alt="poland" @click="changeLanguage('pl')">
             <img src="@/assets/uk.png" alt="uk" @click="changeLanguage('en')">
@@ -32,15 +32,6 @@
                 opacity: 0.8;
             }
         }
-        #github{
-            position: absolute;
-            top: 0;
-            left: 0;
-            padding: 20px;
-            &:hover{
-                opacity: 0.8;
-            }
-        }
         #languages{
             position: absolute;
             right: 0;
@@ -50,7 +41,6 @@
                 cursor: pointer;
                 width: 50px;
                 height: 50px;
-
                 &:hover{
                     opacity: 0.9;
                 }
@@ -60,11 +50,9 @@
     @media only screen and (max-width: 500px){
         header{
             width: 500px;
-
             #languages{
                 position: static;
             }
         }
     }
 </style>
-  

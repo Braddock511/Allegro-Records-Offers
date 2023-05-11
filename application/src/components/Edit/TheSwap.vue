@@ -1,5 +1,5 @@
 <template>
-    <section class="form-container" v-if="!loading">
+    <section class="form-container" v-if="!loading" style="height: 500px;">
         <form>
             <div class="title">{{ $t("swap.title") }}</div>
             <h5>{{ $t('swap.info') }}</h5>

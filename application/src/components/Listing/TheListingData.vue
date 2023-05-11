@@ -1,8 +1,8 @@
 <template>
     <span v-if="!cartonFlag && !loading.flag" id="carton">
-        <h3>{{ $t("carton.enter_carton") }}</h3> 
-        <input type="text" name="carton" v-model="carton" style="padding: 7.5px;"> 
-        <button class="btn btn-primary" type="button" @click="confirmCarton" style="width: 200px; padding: 0.5rem; font-size: 20px;">{{ $t("carton.confirm") }}</button>
+        <h1>{{ $t("carton.enter_carton") }}</h1> 
+        <input type="text" name="carton" v-model="carton" style="padding: 5px;"> 
+        <button class="btn btn-primary" type="button" @click="confirmCarton" style="width: 300px; padding: 0.5rem; font-size: 20px;">{{ $t("carton.confirm") }}</button>
     </span>
     <div class="data" v-if="cartonFlag && !failedFlag && !loading.flag">
         <TheSlider :images="img"></TheSlider>
@@ -281,7 +281,7 @@
                     }
                     else{
                         await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
-                        this.$router.push('/')
+                        window.location.reload()
                     }
                 }
                 else{
@@ -333,7 +333,7 @@
         async beforeMount() {
             this.loading.flag =  true
             this.loading.message = this.$t("loading.loadData")
-            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0}, {headers: {'Content-Type': 'application/json'}})).data.output
+            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
             try{
                 for (let i = 0; i < this.numberImages; i++) {
                     this.img.push(this.discogsData[i].url)
@@ -387,7 +387,9 @@
         display: flex;
         align-items: center;
         flex-direction: column;
+        justify-content: center;
         gap: 10px;
+        font-size: 24px;
         margin-top: 50px;
     }
 

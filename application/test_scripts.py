@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from api.main import app
 from api.database import post_credentials, get_credentials, post_text_from_image, get_text_from_image, post_allegro_offers, get_allegro_offers, post_payments, get_payments, post_false_flags, get_flags, truncate_allegro_offers, truncate_allegro_payments
-from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description, get_payment_history, edit_images
+from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description, get_payment_history, edit_images, swap_cartons
 from scripts.azure_api import read_image, clear_image
 from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist, create_offer
 from scripts.imageKit_api import upload_file_imageKit
@@ -431,6 +431,13 @@ class TestAllegroApi:
         
         assert "name" in result.keys()
 
+    def test_swap_cartons(self):
+        change_carton = "A1"
+        change_to_carton = "A2"
+        result = swap_cartons(TestAllegroApi.credentials, change_carton, change_to_carton)
+
+        assert result == "test.A2"
+
 class TestAzureApi:
     credentials = {"api_azure_subscription_key": "", 
                    "api_azure_endpoint": "", 
@@ -449,7 +456,7 @@ class TestAzureApi:
         assert isinstance(result, list)
         assert isinstance(url, str)
 
-    def test_clear_image(credentials):
+    def test_clear_image(self):
         image_url = "https://example.com/image.png"
         result = clear_image(image_url, TestAzureApi.credentials)
 
