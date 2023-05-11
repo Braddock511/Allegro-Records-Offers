@@ -20,23 +20,27 @@ def search_data(chunk: list, discogs_token: str, type_record: str, image_data: b
                     # Remove any unwanted characters from the text if data is a image
                     if image_data:
                         text = text.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
-
-                    if type_record == "Vinyl":
+                    
+                    if type_record == "Vinyl" or type_record == "Winyl":
                         discogs_data = get_vinyl(text, discogs_token)
 
                     elif type_record == "CD":
                         discogs_data = get_cd(text, discogs_token)
 
-                    if 'results' in discogs_data.keys():
-                        for disc_data in discogs_data['results']:
-                            if image_data:
-                                discogs_text = disc_data['catno'].replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
-                                if text == discogs_text:
-                                    discogs_data_output.append(disc_data)
-                                    break
+                    try:
+                        if 'results' in discogs_data.keys():
+                            for disc_data in discogs_data['results']:
+                                if image_data:
+                                    discogs_text = disc_data['catno'].replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
+                                    if text == discogs_text:
+                                        discogs_data_output.append(disc_data)
+                                        break
 
-                            else:
-                                discogs_data_output.append(disc_data)
+                                else:
+                                    discogs_data_output.append(disc_data)
+                    
+                    except UnboundLocalError:
+                        pass
 
     return discogs_data_output
 
