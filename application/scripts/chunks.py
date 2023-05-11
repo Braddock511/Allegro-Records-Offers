@@ -1,5 +1,5 @@
 import re
-from discogs_api import get_vinyl, get_cd, get_price
+from .discogs_api import get_vinyl, get_cd, get_price
 
 def search_data(chunk: list, discogs_token: str, type_record: str, image_data: bool) -> list:
     discogs_data_output = []

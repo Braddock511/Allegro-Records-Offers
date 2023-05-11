@@ -1,5 +1,4 @@
 <template>
-    <TheHeader/>
     <span v-if="!read">
         <section class="form-container" v-if="!loading">
             <form @submit.prevent="getImageData">
@@ -47,7 +46,6 @@
 </template>
 
 <script>
-    import TheHeader from '@/components/Global/TheHeader.vue'
     import TheListingData from '@/components/Listing/TheListingData.vue'
     import VueCookies from 'vue-cookies'
     import axios from 'axios'
@@ -94,7 +92,6 @@
             },
         },
         components:{
-            TheHeader,
             TheListingData,
             VueCookies 
         }

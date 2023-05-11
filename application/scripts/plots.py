@@ -4,7 +4,7 @@ import base64
 import os
 import json
 from datetime import datetime
-from imageKit_api import upload_file_imageKit
+from .imageKit_api import upload_file_imageKit
 
 def annual_sale_barplot(credentials: dict, sales: list) -> str:
     dates = {}
@@ -55,7 +55,8 @@ def annual_sale_barplot(credentials: dict, sales: list) -> str:
     return image_url['url']
 
 def create_genres_barplot(credentials: dict, offers: list) -> str:
-    categories = {1410: 'ballad', 1411: 'blues', 5639: 'ethno', 1145: 'country', 5638: 'dance', 5626: 'kids', 289: 'jazz', 5625: 'carols', 260981: 'metal', 10830: 'alternative', 261112: 'electronic', 322237: 'film', 286: 'classical', 261156: 'opera', 261039: 'pop', 261040: 'rap', 1413: 'reggae', 261043: 'rock', 5623: "rock'n'roll", 261041: 'single', 1419: 'compilations', 1420: 'soul', 321961: 'synth-pop', 293: 'other', 9531: 'sets', 1361: 'ballad', 261036: 'blues', 261100: 'folk, world & country', 261035: 'dance', 89757: 'disco', 261128: 'metal', 261111: 'electronic', 9536: 'classical', 89751: 'religious', 261042: 'new', 9537: 'opera', 261044: 'hip-hop', 5607: 'carols', 261110: 'rock', 5605: "rock'n'roll", 322236: 'single', 261102: 'compilations', 181: 'soul', 321960: 'synth-pop', 191: 'other', 9530: 'sets'}
+    categories = {1410: 'Ballad', 1411: 'Blues', 1145: "Country", 5638: 'Dance', 0: 'Disco', 5639: 'Ethno, Folk, World music', 5626: 'For kids', 289: 'Jazz', 5625: 'Carols', 260981: 'Metal', 10830: 'Alternative', 261112: 'Electronic', 322237: 'Film', 286: 'Classical', 261156: 'Opera', 261039: 'Pop', 261040: 'Rap, Hip-Hop', 1413: 'Reggae', 261043: 'Rock', 5623: "Rock'n'roll", 261041: 'Single', 284: 'New sounds', 1419: 'Compilations', 1420: 'Soul', 321961: 'Synth-pop', 293: 'Other', 9531: 'Sets', 
+                  1361: 'Ballad', 261036: 'Blues', 1143: "Country", 261035: 'Dance', 89757: 'Disco', 261100: "Ethno, Folk, World music",  261028: "For kids", 260: 'Jazz', 5607: 'Carols',  261128: 'Metal', 261029: 'Alternative', 261111: 'Electronic', 322237: 'Film', 9536: 'Classical', 9537: 'Opera', 261127: 'Pop', 261044: 'Rap, Hip-Hop', 182: 'Reggae',  261110: 'Rock', 5605: "Rock'n'roll", 322236: 'Single', 261042: 'New sounds',261102: 'Compilations', 181: 'Soul', 321960: 'Synth-pop', 9530: 'Sets', 191: 'Other', 89751: 'Religious', }
     genres = [categories.get(int(offer['category']['id'])) for offer in offers]
     genres = sorted(genres, key=lambda x: genres.count(x), reverse=True)
 

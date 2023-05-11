@@ -24,6 +24,7 @@ app.add_middleware(
 @app.post("/read-image")
 async def read_image_data(request: Request):
     try:
+        db.truncate_image_data()
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         images = response['images']
@@ -87,16 +88,20 @@ async def discogs_info(request: Request):
         response = loads((await request.body()).decode('utf-8'))
         id = response['id']
         allegro_data = response['allegroData']
-        type_record = response['typeRecord']
-
+        type_record = None
+        offer_input_data = None
+        
         if "offers" in allegro_data.keys():
             offers_info = allegro.get_offer_info(credentials, allegro_data['offers'][id]['id'])
         else:
             offers_info = allegro.get_offer_info(credentials, allegro_data['id'])
         
-        offer_input_data = None
-
-        if type_record == "Vinyl":
+        parameters = offers_info['productSet'][0]['product']['parameters']
+        for x in parameters:
+            if x['name'] == 'Nośnik':
+                type_record = x['values'][0]
+                
+        if type_record == "Vinyl" or type_record == "Winyl":
             name = offers_info['name']
             name = name.split(".")[0]
             name = name.split("(CD)")[0]
@@ -121,10 +126,11 @@ async def image_data(request: Request):
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         index = response['index']
+        number_images = response['numberImages']
         type_record = response['typeRecord']
         discogs_data = []
         image_data = db.get_text_from_image()
-        image_data = image_data[index:index+3]
+        image_data = image_data[index:index+number_images]
 
         # Get data from discogs
         for data in image_data:
@@ -279,12 +285,10 @@ async def store_all_offers():
         
         if not flags['load_offers']:
             while True:
-                vinyls = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "Vinyl", "all")
-                cds = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "CD", "all")
-                offers.append(vinyls['offers'])
-                offers.append(cds['offers'])
+                allegro_offers = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "all", "all")
+                offers.append(allegro_offers['offers'])
 
-                if not vinyls['offers'] and not cds['offers']:
+                if not allegro_offers['offers']:
                     break 
             
                 i+=1
@@ -394,3 +398,17 @@ async def discogs_listing(request: Request):
         return {"status": 200, "output": result}
     except Exception as e:
         return {"status": 404, "error": f"Exception in discogs_listing: {str(e)}"}
+    
+@app.post("/swap-cartons")
+async def swap(request: Request):
+    try:
+        credentials = db.get_credentials()
+        response = loads((await request.body()).decode('utf-8'))
+        swap_carton = response['swapCarton']
+        with_carton = response['withCarton']
+
+        result = allegro.swap_cartons(credentials, swap_carton, with_carton)
+
+        return {"status": 200, "output": result}
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in swap: {str(e)}"}

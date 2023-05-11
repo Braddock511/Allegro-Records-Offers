@@ -1,5 +1,9 @@
 <template>
-    <span v-if="!cartonFlag && !loading.flag" id="carton"><h3>{{ $t("carton.enter_carton") }}</h3> <input type="text" name="carton" v-model="carton" style="width: 17%; padding: 7.5px;"> <button class="btn btn-primary w-30" type="button" @click="confirmCarton" style="width: 17%; padding: 0.5rem;  font-size: 20px;">{{ $t("carton.confirm") }}</button></span>
+    <span v-if="!cartonFlag && !loading.flag" id="carton">
+        <h1>{{ $t("carton.enter_carton") }}</h1> 
+        <input type="text" name="carton" v-model="carton" style="padding: 5px;"> 
+        <button class="btn btn-primary" type="button" @click="confirmCarton" style="width: 300px; padding: 0.5rem; font-size: 20px;">{{ $t("carton.confirm") }}</button>
+    </span>
     <div class="data" v-if="cartonFlag && !failedFlag && !loading.flag">
         <TheSlider :images="img"></TheSlider>
         <div style="width: 100%; text-align: center;">
@@ -155,7 +159,8 @@
                             year: data.year,
                             genre: data.genre,
                             price: this.price,
-                            barcode: data.barcode
+                            barcode: data.barcode,
+                            quantity: data.quantity
                         }
                     }
                     else{
@@ -169,7 +174,8 @@
                                     year: this.year ? this.year : "-",
                                     genre: this.genre,
                                     price: this.price,
-                                    barcode: this.barcode ? this.barcode : "-"
+                                    barcode: this.barcode ? this.barcode : "-",
+                                    quantity: ""
                                 }
                             }
                             else{
@@ -200,6 +206,7 @@
                         this.country = "",
                         this.year = "",
                         this.price = "",
+                        this.barcode = ""
                         this.condition = "Near Mint (NM or M-)"
                         // Next offer   
                         this.next()
@@ -211,6 +218,7 @@
                         this.country = "",
                         this.year = "",
                         this.price = "",
+                        this.barcode = ""
                         this.condition = "Near Mint (NM or M-)"
                         // Next offer
                         this.next()
@@ -232,7 +240,6 @@
                         this.loading.flag = true
                         this.loading.message = this.$t("loading.listingOffer")
                         const response = (await axios.post('http://127.0.0.1:8000/discogs-listing', {listing_id: data.id, mediaCondition: this.condition, carton: this.carton, sleeveCondition: this.sleeveCondition, price: this.roundedPriceToEUR(this.price)}, { headers: { 'Content-Type': 'application/json' }})).data
-                        console.log(response)
                         if (response.error || response.output.errors){
                             this.failed.data.push(selectedData)
                             this.failed.condition.push(this.condition)
@@ -274,7 +281,7 @@
                     }
                     else{
                         await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
-                        this.$router.push('/')
+                        window.location.reload()
                     }
                 }
                 else{
@@ -326,7 +333,7 @@
         async beforeMount() {
             this.loading.flag =  true
             this.loading.message = this.$t("loading.loadData")
-            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0}, {headers: {'Content-Type': 'application/json'}})).data.output
+            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
             try{
                 for (let i = 0; i < this.numberImages; i++) {
                     this.img.push(this.discogsData[i].url)
@@ -378,11 +385,12 @@
 <style lang="scss" scoped>
     #carton{
         display: flex;
-        justify-content: center;
         align-items: center;
         flex-direction: column;
+        justify-content: center;
         gap: 10px;
-        margin-top: 10px;
+        font-size: 24px;
+        margin-top: 50px;
     }
 
     @media screen and (max-width: 1650px) {

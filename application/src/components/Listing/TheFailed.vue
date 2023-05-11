@@ -1,6 +1,6 @@
 <template>
-    <h1 style="width: 100%; margin-top: 10px; text-align: center;">{{ $t("table.unlisted") }}</h1>
     <div class="data">
+        <h1 style="width: 100%; margin-top: 10px; text-align: center;">{{ $t("table.unlisted") }}</h1>
         <table v-if="dataFailed">
             <tr>
                 <td><h2>{{ $t("table.image") }}</h2></td>
@@ -51,7 +51,7 @@
         methods:{
             async back(){
                 await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
-                this.$router.push('/')
+                window.location.reload()
             }
         }
     }
