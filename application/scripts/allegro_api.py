@@ -5,8 +5,8 @@ import re
 from collections import Counter
 from time import sleep
 from discogs_api import get_tracklist
-from preprocessing_data import remove_background
 from database import get_allegro_offers
+from preprocessing_image import remove_background
 
 urllib3.disable_warnings()
 
@@ -32,20 +32,18 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
         
 def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str) -> dict:
     allegro_token = credentials["api_allegro_token"]
-
-    if type_record == "Vinyl":
-        categories_lp = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
-        genre = categories_lp.get(genre)
-        genre = f"&category.id={genre}"
     
-    elif type_record == "CD":
-        categories_cd = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
-        genre = categories_cd.get(genre)
-        genre = f"&category.id={genre}"
+    if type_record == "Vinyl":
+        categories = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
         
-    elif type_offer == "all":
+    elif type_record == "CD":
+        categories = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
+    else:
         genre = ""
     
+    if genre:
+        genre = categories.get(genre)
+        genre = f"&category.id={genre}"
 
     if type_offer == "all":
         type_offer = ""
@@ -57,7 +55,7 @@ def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, t
         type_offer = "&sellingMode.format=AUCTION"
 
     headers = {'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
-    url = f"https://api.allegro.pl/sale/offers?publication.status=ACTIVE&limit={limit}&offset={offset}{genre}{type_offer}"
+    url = f"https://api.allegro.pl/sale/offers?publication.status=ACTIVE&limit={limit}&offset={offset}{type_offer}{genre}"
     result = requests.get(url, headers=headers, verify=False)
     
     return result.json()
@@ -73,10 +71,10 @@ def get_offer_info(credentials: dict, offer_id: int) -> dict:
     return result.json()
 
 def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: str, images: list, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
-    if type_record == "Vinyl":
-        categories = {"all": 279, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
+    if type_record == "Vinyl" or type_record == "Winyl":
+        categories = {"all": 279, "latin": 286, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
     elif type_record == "CD":
-        categories = {"all": 175, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261127, "hip hop": 261044, "reggae": 182, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
+        categories = {"all": 175, "latin": 9536, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261127, "hip hop": 261044, "reggae": 182, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
 
     conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
 
@@ -344,13 +342,13 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
         # Remove any html tags
         condition = re.sub(r"<.*", '', condition[0])
     except IndexError:
-        return False
+        return ("", "")
 
     # Get the actual condition
     condition = condition.split(": ")[-1]
 
     if condition.upper() not in conditions:
-        return False
+        return ("", "")
 
     return condition, carton
 
@@ -358,7 +356,7 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
     condition_carton = get_condition_and_carton(credentials, offer_id)
 
     if not condition_carton:
-        return False
+        return {}
 
     condition, carton = condition_carton
     id = new_information['id']

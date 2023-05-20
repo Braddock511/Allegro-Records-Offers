@@ -7,7 +7,7 @@ The "Allegro Records Offers" application is a tool to help users effectively man
 # Configuration
   
   1. Get allegro client id and client secret (https://developer.allegro.pl/tutorials/jak-zaczac-prace-z-rest-api-4RAvV2bgwtj)
-  2. Complete all environment in application/compose.yml (https://docs.imagekit.io/api-reference/api-introduction, https://azure.microsoft.com/pl-pl/products/app-service/api/, https://www.discogs.com/developers)
+  2. Complete all environment in application/compose.yml (https://docs.imagekit.io/api-reference/api-introduction, https://ocr.space/OCRAPI, https://www.discogs.com/developers)
   3. In terminal -> cd application, docker-compose up --build
   4. The application should run on localhost:8080
 
@@ -15,9 +15,10 @@ The "Allegro Records Offers" application is a tool to help users effectively man
 
 - Docker 20.10.16
 - Allegro API - communication with Allegro
-- Azure API - model OCR and clear background image
+- OCR Space API - model OCR
 - ImageKit API - image upload 
 - Discogs API  - get records data
 - FastAPI - own API
 - PostgreSQL - database
+- Rembg - clear background image
 - Vue.js - interface

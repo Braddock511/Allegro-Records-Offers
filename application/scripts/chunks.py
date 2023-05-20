@@ -1,8 +1,9 @@
 import re
-from .discogs_api import get_vinyl, get_cd, get_price
+from discogs_api import get_vinyl, get_cd, get_price
 
-def search_data(chunk: list, discogs_token: str, type_record: str, image_data: bool) -> list:
+def search_data(chunk: list[str], discogs_token: str, type_record: str, image_data: bool) -> list[dict[str, str]]:
     discogs_data_output = []
+    discogs_data = {}
     punctuation = "<"'"'"'@:^`!#$%&*();?'\'[]{}=+,>"
     remove_punctuation = re.compile(r"^[a-zA-Z {}]*$".format(re.escape(punctuation)))
 
@@ -45,15 +46,7 @@ def search_data(chunk: list, discogs_token: str, type_record: str, image_data: b
     return discogs_data_output
 
 def preprocess_data(chunk: list, discogs_token: str) -> list:
-    id = '-'
-    label = '-'
-    country = '-'
-    year = '-'
-    uri = '-'
-    genre = '-'
-    title = '-'
-    price = '-'
-    barcode = '-'
+    id, label, country, year, uri, genre, title, price, barcode = '-', '-', '-', '-', '-', '-', '-', '-', '-'
     community_want_have = {}
     discogs_information = []
     information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have}

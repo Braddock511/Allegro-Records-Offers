@@ -1,5 +1,3 @@
-import re
-import base64
 import requests
 import numpy as np
 import multiprocessing
@@ -7,11 +5,10 @@ from PIL import Image
 from pyzbar import pyzbar
 from io import BytesIO
 from time import sleep
-from .azure_api import clear_image
-from .imageKit_api import upload_file_imageKit
-from .chunks import search_data, preprocess_data
+from imageKit_api import upload_file_imageKit
+from chunks import search_data, preprocess_data
 
-def search_data_parallel(text_from_image: list, discogs_token: str, type_record: str, image_data: bool) -> list[dict]:
+def search_data_parallel(text_from_image: list[str], discogs_token: str, type_record: str, image_data: bool) -> list[dict[str, str]]:
     # Split the text_from_image list into chunks
     num_chunks = multiprocessing.cpu_count()
     chunk_size = len(text_from_image) // num_chunks
@@ -25,7 +22,7 @@ def search_data_parallel(text_from_image: list, discogs_token: str, type_record:
     return [item for sublist in results for item in sublist]
         
 
-def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_record: str, image_data: bool = True) -> dict:
+def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_record: str, image_data: bool = True) -> list[dict[str, str]]:
     # Get the Discogs API token from the credentials list
     discogs_token = credentials["api_discogs_token"]
 
@@ -50,18 +47,7 @@ def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_
 
     return [item for sublist in discogs_information for item in sublist]
 
-
-def remove_background(image_url: str, credentials: dict) -> str:
-    # Clear the image background
-    encoded_image = base64.b64encode(clear_image(image_url, credentials)).decode()
-    
-    # Upload the cleared image to ImageKit
-    upload_image = upload_file_imageKit(encoded_image, credentials)
-    clear_image_url = upload_image['url']
-
-    return clear_image_url
-
-def get_cd_barcode(image: str, credentials: dict):
+def get_cd_barcode(image: bytes, credentials: dict):
     upload_image = upload_file_imageKit(image, credentials)
     image_url = upload_image['url']
     response = requests.get(image_url).content

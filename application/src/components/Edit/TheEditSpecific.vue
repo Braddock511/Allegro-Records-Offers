@@ -12,7 +12,7 @@
     </span>
     <span v-if="offerData">
         <div class="data" v-if="offerData.offer && !loading">
-            <TheSlider :images="img.slice().reverse()"></TheSlider>
+            <TheSlider :images="img.slice()"></TheSlider>
             <div style="width: 100%;">
                 <span style="display: flex; flex-direction: column; align-items: center; gap: 10px;">    
                     <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">{{ $t("editSpecific.clearImage") }}</button>
@@ -98,7 +98,6 @@
                 else{
                     this.allegroData = this.allegroData.output
                     this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData})).data
-                    console.log(this.offerData)
                     this.img = this.offerData.offer.images
                 }
                 this.loading = false

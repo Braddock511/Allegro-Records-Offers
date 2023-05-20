@@ -32,11 +32,8 @@ class Credentials(Base):
         api_imagekit_secret = Column(String)
         api_imagekit_endpoint = Column(String)
 
-        api_azure_subscription_key = Column(String)
-        api_azure_endpoint = Column(String)
+        api_ocr_space = Column(String)
 
-        api_discogs_id = Column(String)
-        api_discogs_secret = Column(String)
         api_discogs_token = Column(String)
 
         api_allegro_id = Column(String)
@@ -86,10 +83,7 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
             "api_imagekit_id": environ.get("API_IMAGEKIT_ID"),
             "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
             "api_imagekit_endpoint": environ.get("API_IMAGEKIT_ENDPOINT"),
-            "api_azure_subscription_key": environ.get("API_AZURE_SUBSCRIPTION_KEY"),
-            "api_azure_endpoint": environ.get("API_AZURE_ENDPOINT"),
-            "api_discogs_id": environ.get("API_DISCOGS_ID"),
-            "api_discogs_secret": environ.get("API_DISCOGS_SECRET"),
+            "api_ocr_space": environ.get("API_OCR_SPACE"),
             "api_discogs_token": environ.get("API_DISCOGS_TOKEN"),
             "api_allegro_id": allegro_id,
             "api_allegro_secret": allegro_secret,
@@ -101,7 +95,7 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
         session.commit()
 
 
-def get_credentials() -> list:
+def get_credentials() -> dict[str, str]:
     Session = sessionmaker(bind=engine)
     
     with Session() as session:
@@ -112,7 +106,7 @@ def get_credentials() -> list:
 
     return credentials
 
-def post_text_from_image(text_from_images: list) -> None:
+def post_text_from_image(text_from_images: list[dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -125,7 +119,7 @@ def post_text_from_image(text_from_images: list) -> None:
 
         session.commit()
 
-def get_text_from_image() -> dict:
+def get_text_from_image() -> list[dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -143,7 +137,7 @@ def truncate_image_data() -> None:
         session.execute(text('TRUNCATE image_data'))
         session.commit()
 
-def post_allegro_offers(offers: list) -> None:
+def post_allegro_offers(offers: list[dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -163,7 +157,7 @@ def post_allegro_offers(offers: list) -> None:
 
             session.commit()
 
-def get_allegro_offers() -> dict:
+def get_allegro_offers() -> list[dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -173,7 +167,7 @@ def get_allegro_offers() -> dict:
 
     return allegro_offers
 
-def post_payments(payments: list) -> None:
+def post_payments(payments: list[dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -186,7 +180,7 @@ def post_payments(payments: list) -> None:
             last_row.load_payment = True
             session.commit()
 
-def get_payments() -> dict:
+def get_payments() -> list[Column[str]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -204,12 +198,12 @@ def post_false_flags() -> None:
         session.add(Flags(load_offers=False, load_payment=False))
         session.commit()
         
-def get_flags() -> dict:
+def get_flags() -> dict[str, Column[bool]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         row = session.query(Flags).order_by(Flags.id.desc()).limit(1).first()
-        flags = {"load_offers": row.load_offers, "load_payment": row.load_payment}        
+        flags = {"load_offers": row.load_offers, "load_payment": row.load_payment}
         session.commit()
 
     return flags

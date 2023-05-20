@@ -1,6 +1,6 @@
 import requests
 
-def get_vinyl(query: str, discogs_token: str) -> dict:
+def get_vinyl(query: str, discogs_token: str) -> dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/database/search?query={query}&format=lp&type=release"
 
@@ -9,7 +9,7 @@ def get_vinyl(query: str, discogs_token: str) -> dict:
     return response.json()
 
 
-def get_cd(barcode: str, discogs_token: str) -> dict:
+def get_cd(barcode: str, discogs_token: str) -> dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/database/search?barcode={barcode}&format=cd&type=release"
 
@@ -17,7 +17,7 @@ def get_cd(barcode: str, discogs_token: str) -> dict:
 
     return response.json()
 
-def get_price(id: str, discogs_token: str) -> dict:
+def get_price(id: str, discogs_token: str) -> dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com//marketplace/price_suggestions/{id}"
 
@@ -25,7 +25,7 @@ def get_price(id: str, discogs_token: str) -> dict:
 
     return response.json()
 
-def get_tracklist(id: str, discogs_token: str) -> dict:
+def get_tracklist(id: str, discogs_token: str) -> str:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/releases/{id}"
 
@@ -35,7 +35,8 @@ def get_tracklist(id: str, discogs_token: str) -> dict:
         tracklist = response.json()['tracklist']
         tracks = "<p><b>LISTA UTWORÓW:</b></p>"
         paragraph = []
-
+        outtrack = ""
+        
         for track in tracklist:
             if 'sub_tracks' in list(track.keys()):
                 for sub_track in track['sub_tracks']:
@@ -58,7 +59,7 @@ def get_tracklist(id: str, discogs_token: str) -> dict:
     except KeyError:
         return "<p><b>LISTA UTWORÓW: -</b></p>"
 
-def create_offer(listing_id: int, condition: str, sleeve_condition: str, carton: str, price: float, discogs_token: str) -> dict:
+def create_offer(listing_id: int, condition: str, sleeve_condition: str, carton: str, price: float, discogs_token: str) -> dict[str, str]:
     offer = {
         "listing_id": listing_id,
         "release_id": listing_id,

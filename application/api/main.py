@@ -1,14 +1,13 @@
 from fastapi import FastAPI, Request
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from json import loads
-from time import sleep
 import database as db
 import allegro_api as allegro
-from azure_api import read_image
-from preprocessing_data import preprocess_data_parallel, remove_background, get_cd_barcode
-from imageKit_api import upload_file_imageKit
-from plots import annual_sale_barplot, create_genres_barplot
-from discogs_api import create_offer
+from   preprocessing_image import read_image, remove_background
+from   preprocessing_data import preprocess_data_parallel, get_cd_barcode
+from   imageKit_api import upload_file_imageKit
+from   plots import annual_sale_barplot, create_genres_barplot
+from   discogs_api import create_offer
 
 app = FastAPI()
 
@@ -131,7 +130,7 @@ async def image_data(request: Request):
         discogs_data = []
         image_data = db.get_text_from_image()
         image_data = image_data[index:index+number_images]
-
+        
         # Get data from discogs
         for data in image_data:
             text_from_image = data['text_from_image'] 
@@ -147,7 +146,6 @@ async def image_data(request: Request):
                 
                 discogs_data.append({"input_data": text_from_image, "information": information, "url": url})
 
-                
         return {"status": 200, "output": discogs_data}
 
     except Exception as e:
@@ -255,7 +253,6 @@ async def allegro_offers(request: Request):
         genre = response['genre'] if response['genre'] else 'all'
         
         offers = allegro.get_my_offers(credentials, limit, offset, type_offer, type_record, genre)
-        
         return {"status": 200, "output": offers}
 
     except Exception as e:

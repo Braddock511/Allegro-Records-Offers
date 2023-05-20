@@ -25,14 +25,11 @@ services:
       - POSTGRES_HOST=db 
       - POSTGRES_PORT=5432 
       - POSTGRES_DB=postgres 
-      - API_IMAGEKIT_ID= 
-      - API_IMAGEKIT_SECRET= 
-      - API_IMAGEKIT_ENDPOINT= 
-      - API_AZURE_SUBSCRIPTION_KEY= 
-      - API_AZURE_ENDPOINT= 
-      - API_DISCOGS_ID= 
-      - API_DISCOGS_SECRET= 
-      - API_DISCOGS_TOKEN= 
+      - API_IMAGEKIT_ID=
+      - API_IMAGEKIT_SECRET=
+      - API_IMAGEKIT_ENDPOINT=
+      - API_DISCOGS_TOKEN=
+      - API_OCR_SPACE=
     ports: 
       - 8000:80 
     networks: 

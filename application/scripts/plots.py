@@ -4,7 +4,7 @@ import base64
 import os
 import json
 from datetime import datetime
-from .imageKit_api import upload_file_imageKit
+from imageKit_api import upload_file_imageKit
 
 def annual_sale_barplot(credentials: dict, sales: list) -> str:
     dates = {}

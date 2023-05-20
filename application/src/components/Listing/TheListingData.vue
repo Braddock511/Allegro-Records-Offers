@@ -286,8 +286,7 @@
                 }
                 else{
                     this.img = []
-                    this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: this.currentIndex}, {headers: {'Content-Type': 'application/json'}})).data.output
-                   
+                    this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
                     for (let i = 0; i < this.numberImages; i++) {
                         this.img.push(this.discogsData[i].url)
                     }
@@ -332,8 +331,9 @@
         },
         async beforeMount() {
             this.loading.flag =  true
-            this.loading.message = this.$t("loading.loadData")
+            this.loading.message = this.$t("loading.loadData") 
             this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
+            console.log(this.discogsData)
             try{
                 for (let i = 0; i < this.numberImages; i++) {
                     this.img.push(this.discogsData[i].url)
