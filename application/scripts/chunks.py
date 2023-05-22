@@ -1,71 +1,86 @@
 import re
+from typing import List, Dict
 from discogs_api import get_vinyl, get_cd, get_price
 
-def search_data(chunk: list[str], discogs_token: str, type_record: str, image_data: bool) -> list[dict[str, str]]:
-    discogs_data_output = []
-    discogs_data = {}
+def remove_text_in_parentheses(text: str) -> str:
+    text = re.sub(r'\(', ' (', text)
+    text = re.sub(r'\([^)]*\)', '', text)
+    return text
+
+def remove_unwanted_characters(text: str) -> str:
+    return text.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
+
+def contains_only_ascii_and_not_punctuation(text: str) -> bool:
     punctuation = "<"'"'"'@:^`!#$%&*();?'\'[]{}=+,>"
-    remove_punctuation = re.compile(r"^[a-zA-Z {}]*$".format(re.escape(punctuation)))
+    punctuation_regex = re.compile(f"^[a-zA-Z {re.escape(punctuation)}]*$")
+    
+    return not re.search(r'[^\u0000-\u007F]', text) and not punctuation_regex.match(text)
 
-    for text in chunk:
-        if 5 < len(text) < 50:
-            # Remove any text within parentheses if data is a image
-            if not image_data:
-                text = re.sub(r'\(', ' (', text)
-                text = re.sub(r'\([^)]*\)', '', text)
+def get_discogs_data(text: str, type_record: str, discogs_token: str) -> Dict[str, str]:
+    discogs_data = {}
 
-            # Check if the text contains only ASCII characters
-            if not re.search(r'[^\u0000-\u007F]', text):
-                if not remove_punctuation.match(text):
+    if type_record in {"Vinyl", "Winyl"}:
+        discogs_data = get_vinyl(text, discogs_token)
+    elif type_record == "CD":
+        discogs_data = get_cd(text, discogs_token)
 
-                    # Remove any unwanted characters from the text if data is a image
-                    if image_data:
-                        text = text.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
-                    
-                    if type_record == "Vinyl" or type_record == "Winyl":
-                        discogs_data = get_vinyl(text, discogs_token)
+    return discogs_data
 
-                    elif type_record == "CD":
-                        discogs_data = get_cd(text, discogs_token)
+def filter_discogs_data(discogs_data_list: List[Dict[str, str]], text: str, image_data: bool) -> List[Dict[str, str]]:
+    discogs_data_output = []
 
-                    try:
-                        if 'results' in discogs_data.keys():
-                            for disc_data in discogs_data['results']:
-                                if image_data:
-                                    discogs_text = disc_data['catno'].replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
-                                    if text == discogs_text:
-                                        discogs_data_output.append(disc_data)
-                                        break
-
-                                else:
-                                    discogs_data_output.append(disc_data)
-                    
-                    except UnboundLocalError:
-                        pass
+    for disc_data in discogs_data_list:
+        if image_data:
+            discogs_text = remove_unwanted_characters(disc_data['catno'])
+            if text == discogs_text:
+                discogs_data_output.append(disc_data)
+                break
+        else:
+            discogs_data_output.append(disc_data)
 
     return discogs_data_output
 
+def search_data(chunk: List[str], discogs_token: str, type_record: str, image_data: bool) -> List[dict[str, str]]:
+    discogs_data_output = []
+    discogs_data = {}
+
+    for text in chunk:
+        if 5 < len(text) < 50:
+            if not image_data:
+                text = remove_text_in_parentheses(text)
+
+            if contains_only_ascii_and_not_punctuation(text):
+                if image_data:
+                    text = remove_unwanted_characters(text)
+                
+                discogs_data = get_discogs_data(text, type_record, discogs_token)
+
+                if 'results' in discogs_data.keys():
+                    discogs_data_output.extend(filter_discogs_data(discogs_data['results'], text, image_data))
+                    
+    return discogs_data_output
+
 def preprocess_data(chunk: list, discogs_token: str) -> list:
-    id, label, country, year, uri, genre, title, price, barcode = '-', '-', '-', '-', '-', '-', '-', '-', '-'
+    record_id, label, country, year, uri, genre, title, price, barcode = '-', '-', '-', '-', '-', '-', '-', '-', '-'
     community_want_have = {}
     discogs_information = []
-    information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have}
+    information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have}
 
     for result in chunk:
         if isinstance(result, dict):
-            id = result['id']
-            price = get_price(id, discogs_token)
+            record_id = result['id']
+            price = get_price(record_id, discogs_token)
             uri = result['uri']
             genre = result['genre'][0]
             title = result['title']
             title = title.replace("*", "").replace("•", "").replace("†", " ").replace("º", " ").replace("—", " ")
-            country = result.get('country') if result.get('country') else '-'
+            country = result.get('country', '-')
             year = result.get('year') or result.get('released') if (result.get('year') or result.get('released')) else '-'
             barcode = result.get('barcode', [''])[0].replace(" ", "") if result.get('barcode') else '-'
             label = result.get('label', [''])[0] + " | " + result.get('catno', '') if result.get('label') else '-'
             community_want_have = result['community']
 
-        information = {"id": id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, 
+        information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, 
         "community": community_want_have}
         discogs_information.append(information)
 

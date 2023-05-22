@@ -1,6 +1,7 @@
 import requests
+from typing import Dict
 
-def get_vinyl(query: str, discogs_token: str) -> dict[str, str]:
+def get_vinyl(query: str, discogs_token: str) -> Dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/database/search?query={query}&format=lp&type=release"
 
@@ -9,7 +10,7 @@ def get_vinyl(query: str, discogs_token: str) -> dict[str, str]:
     return response.json()
 
 
-def get_cd(barcode: str, discogs_token: str) -> dict[str, str]:
+def get_cd(barcode: str, discogs_token: str) -> Dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/database/search?barcode={barcode}&format=cd&type=release"
 
@@ -17,7 +18,7 @@ def get_cd(barcode: str, discogs_token: str) -> dict[str, str]:
 
     return response.json()
 
-def get_price(id: str, discogs_token: str) -> dict[str, str]:
+def get_price(id: str, discogs_token: str) -> Dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com//marketplace/price_suggestions/{id}"
 
@@ -30,9 +31,9 @@ def get_tracklist(id: str, discogs_token: str) -> str:
     url = f"https://api.discogs.com/releases/{id}"
 
     response = requests.get(url, headers=headers)
+    tracklist = response.json()['tracklist']
 
     try:
-        tracklist = response.json()['tracklist']
         tracks = "<p><b>LISTA UTWORÓW:</b></p>"
         paragraph = []
         outtrack = ""
@@ -52,14 +53,12 @@ def get_tracklist(id: str, discogs_token: str) -> str:
                 tracks += f"<p>{output}</p>"
                 paragraph.clear()
 
-        tracks = tracks.replace("&", " ")
-
-        return tracks
+        return tracks.replace("&", " ")
     
     except KeyError:
         return "<p><b>LISTA UTWORÓW: -</b></p>"
 
-def create_offer(listing_id: int, condition: str, sleeve_condition: str, carton: str, price: float, discogs_token: str) -> dict[str, str]:
+def create_offer(listing_id: int, condition: str, sleeve_condition: str, carton: str, price: float, discogs_token: str) -> Dict[str, str]:
     offer = {
         "listing_id": listing_id,
         "release_id": listing_id,
@@ -69,7 +68,7 @@ def create_offer(listing_id: int, condition: str, sleeve_condition: str, carton:
         "location": carton
     }
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
-    url = f"https://api.discogs.com//marketplace/listings"
+    url = "https://api.discogs.com//marketplace/listings"
     response = requests.post(url, headers=headers, json=offer)
 
     return response.json()

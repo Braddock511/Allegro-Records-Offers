@@ -1,7 +1,8 @@
 from imagekitio import ImageKit
 from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
+from typing import Dict
 
-def upload_file_imageKit(image: str|bytes, credentials: dict[str, str]) -> dict[str, str]:
+def upload_file_imageKit(image: str|bytes, credentials: Dict[str, str]) -> Dict[str, str]:
     imageKit_config = {
         "public_key": credentials["api_imagekit_id"],
         "private_key": credentials["api_imagekit_secret"],

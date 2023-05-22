@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.sql import text
 from os import environ
+from typing import List, Dict
 
 user = environ.get("POSTGRES_USER")
 password = environ.get("POSTGRES_PASSWORD")
@@ -95,7 +96,7 @@ def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -
         session.commit()
 
 
-def get_credentials() -> dict[str, str]:
+def get_credentials() -> Dict[str, str]:
     Session = sessionmaker(bind=engine)
     
     with Session() as session:
@@ -106,7 +107,7 @@ def get_credentials() -> dict[str, str]:
 
     return credentials
 
-def post_text_from_image(text_from_images: list[dict[str, str]]) -> None:
+def post_text_from_image(text_from_images: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -119,7 +120,7 @@ def post_text_from_image(text_from_images: list[dict[str, str]]) -> None:
 
         session.commit()
 
-def get_text_from_image() -> list[dict[str, Column[str]]]:
+def get_text_from_image() -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -137,15 +138,15 @@ def truncate_image_data() -> None:
         session.execute(text('TRUNCATE image_data'))
         session.commit()
 
-def post_allegro_offers(offers: list[dict[str, str]]) -> None:
+def post_allegro_offers(offers: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         if session.query(AllegroOffers).limit(1).count() == 0:
             for offer in offers:
-                id = offer['id']
+                offer_id = offer['id']
                 offer_data = json.dumps(offer)
-                session.add(AllegroOffers(offer_id=id, offer_data=offer_data))
+                session.add(AllegroOffers(offer_id=offer_id, offer_data=offer_data))
 
             flags = get_flags()
 
@@ -157,7 +158,7 @@ def post_allegro_offers(offers: list[dict[str, str]]) -> None:
 
             session.commit()
 
-def get_allegro_offers() -> list[dict[str, Column[str]]]:
+def get_allegro_offers() -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -167,7 +168,7 @@ def get_allegro_offers() -> list[dict[str, Column[str]]]:
 
     return allegro_offers
 
-def post_payments(payments: list[dict[str, str]]) -> None:
+def post_payments(payments: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -180,7 +181,7 @@ def post_payments(payments: list[dict[str, str]]) -> None:
             last_row.load_payment = True
             session.commit()
 
-def get_payments() -> list[Column[str]]:
+def get_payments() -> List[Column[str]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
@@ -198,7 +199,7 @@ def post_false_flags() -> None:
         session.add(Flags(load_offers=False, load_payment=False))
         session.commit()
         
-def get_flags() -> dict[str, Column[bool]]:
+def get_flags() -> Dict[str, Column[bool]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:

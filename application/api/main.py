@@ -50,7 +50,7 @@ async def read_image_data(request: Request):
                 text_from_image, image_url_2 = get_cd_barcode(image_2, credentials)
                 
                 # Other images
-                for j in range(0, number_images):
+                for j in range(number_images):
                     if j != 1:
                         other_image = images[i+j]
                         other_image_url = upload_file_imageKit(other_image, credentials)['url']
@@ -85,13 +85,13 @@ async def discogs_info(request: Request):
     try:
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
-        id = response['id']
+        record_id = response['id']
         allegro_data = response['allegroData']
         type_record = None
         offer_input_data = None
         
         if "offers" in allegro_data.keys():
-            offers_info = allegro.get_offer_info(credentials, allegro_data['offers'][id]['id'])
+            offers_info = allegro.get_offer_info(credentials, allegro_data['offers'][record_id]['id'])
         else:
             offers_info = allegro.get_offer_info(credentials, allegro_data['id'])
         
@@ -100,7 +100,7 @@ async def discogs_info(request: Request):
             if x['name'] == 'Nośnik':
                 type_record = x['values'][0]
                 
-        if type_record == "Vinyl" or type_record == "Winyl":
+        if type_record in {"Vinyl", "Winyl"}:
             name = offers_info['name']
             name = name.split(".")[0]
             name = name.split("(CD)")[0]
@@ -250,7 +250,7 @@ async def allegro_offers(request: Request):
         offset = response['offset']
         type_offer = response['typeOffer']
         type_record = response['typeRecord']
-        genre = response['genre'] if response['genre'] else 'all'
+        genre = response.get("genre", "all")
         
         offers = allegro.get_my_offers(credentials, limit, offset, type_offer, type_record, genre)
         return {"status": 200, "output": offers}
@@ -278,9 +278,10 @@ async def store_all_offers():
         credentials = db.get_credentials()
         flags = db.get_flags()
         offers = []
-        i = 0
         
         if not flags['load_offers']:
+            i = 0
+            
             while True:
                 allegro_offers = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "all", "all")
                 offers.append(allegro_offers['offers'])
@@ -305,9 +306,10 @@ async def store_all_payments():
         credentials = db.get_credentials()
         flags = db.get_flags()
         payments = []
-        i = 0
         if not flags['load_payment']:
+            i = 0
             while True:
+                
                 payment_history = allegro.get_payment_history(credentials, 100, 100*i)
                 payments.append(payment_history['paymentOperations'])
 

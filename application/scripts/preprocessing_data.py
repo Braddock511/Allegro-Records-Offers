@@ -1,14 +1,14 @@
 import requests
 import numpy as np
 import multiprocessing
+from typing import List, Dict
 from PIL import Image
 from pyzbar import pyzbar
 from io import BytesIO
-from time import sleep
 from imageKit_api import upload_file_imageKit
 from chunks import search_data, preprocess_data
 
-def search_data_parallel(text_from_image: list[str], discogs_token: str, type_record: str, image_data: bool) -> list[dict[str, str]]:
+def search_data_parallel(text_from_image: List[str], discogs_token: str, type_record: str, image_data: bool) -> List[Dict[str, str]]:
     # Split the text_from_image list into chunks
     num_chunks = multiprocessing.cpu_count()
     chunk_size = len(text_from_image) // num_chunks
@@ -22,7 +22,7 @@ def search_data_parallel(text_from_image: list[str], discogs_token: str, type_re
     return [item for sublist in results for item in sublist]
         
 
-def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_record: str, image_data: bool = True) -> list[dict[str, str]]:
+def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_record: str, image_data: bool = True) -> List[Dict[str, str]]:
     # Get the Discogs API token from the credentials list
     discogs_token = credentials["api_discogs_token"]
 
@@ -32,9 +32,6 @@ def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_
 
     # Search the Discogs API for vinyl records matching the input texts
     results = search_data_parallel(text_from_image, discogs_token, type_record, image_data)
-    
-    # Discogs limit -> 1 request per second
-    sleep(1)
 
     # Split the results list into chunks
     num_chunks = multiprocessing.cpu_count()
@@ -56,8 +53,7 @@ def get_cd_barcode(image: bytes, credentials: dict):
     barcodes = pyzbar.decode(image)
 
     for barcode in barcodes:
-        data = barcode.data.decode("utf-8")
-        if data:
-            return data, image_url
+        if data := barcode.data.decode("utf-8"):
+             return data, image_url
     
     return "", image_url

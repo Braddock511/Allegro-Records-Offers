@@ -1,9 +1,10 @@
 import requests
 import base64
+from typing import Dict
 from rembg import remove
 from imageKit_api import upload_file_imageKit
 
-def read_image(image: str, credentials: dict[str, str]) -> tuple[str, str]:
+def read_image(image: str, credentials: Dict[str, str]) -> tuple[str, str]:
     image = upload_file_imageKit(image, credentials)
     image_url = image['url']
     
@@ -21,15 +22,14 @@ def read_image(image: str, credentials: dict[str, str]) -> tuple[str, str]:
 
     # Check if OCR was successful
     if result.get("IsErroredOnProcessing"):
-        error_message = result.get("ErrorMessage", "OCR processing error")
-        raise Exception(f"OCR processing error: {error_message}")
+        return ("", "")
 
     # Extract the extracted text and image URL
     output_text = result.get("ParsedResults")[0].get("ParsedText").splitlines()
     
     return output_text, image_url
 
-def remove_background(image_url: str, credentials: dict[str, str]):
+def remove_background(image_url: str, credentials: Dict[str, str]):
     response = requests.get(image_url)
     image_data = response.content
 
@@ -38,6 +38,6 @@ def remove_background(image_url: str, credentials: dict[str, str]):
     image_without_background = base64.b64encode(image_without_background).decode('utf-8')
 
     upload_image = upload_file_imageKit(image_without_background, credentials)
-    image_url = upload_image['url']
     
-    return image_url
+    return upload_image['url']
+    
