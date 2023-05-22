@@ -6,6 +6,7 @@
     </span>
     <div class="data" v-if="cartonFlag && !failedFlag && !loading.flag">
         <TheSlider :images="img"></TheSlider>
+        {{ $t("table.condition") }} {{ conditions[currentIndex/numberImages] }}
         <div style="width: 100%; text-align: center;">
                 <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="failed.data.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-'}); failed.condition.push(this.condition); failed.img.push(this.img[0]); next()">{{ $t("table.next") }}</button>
         </div>
@@ -372,6 +373,10 @@
                 type: Number,
                 required: true,
                 integer: true
+            },
+            conditions:{
+                type: Array,
+                required: false
             }
         },
         components:{

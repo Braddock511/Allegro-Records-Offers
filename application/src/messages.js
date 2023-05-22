@@ -1,6 +1,7 @@
 export default {
   en: {
     vinyl: 'Vinyl',
+    conditionFile: "File with conditions",
     info: {
       title: "Allegro Records Offers",
       description: 'The "Allegro Records Offers" application is a tool to help users effectively manage their record offers on Allegro, one of the largest Internet portals in Poland. The user can send photos of the discs from which there is a read text, and then get data from the Discogs website, and in this way users can list their vinyl records or CDs on Allegro and edit existing offers. In addition, the user can clear the background of the image and view the statistics of offers. You can also list your records on discogs'
@@ -159,7 +160,8 @@ export default {
       descFailed: "Edit description failed",
       toLong: "Title length must be less than 50",
       offersFailed: "Load offers - failed",
-      paymentsFailed: "Load sales - failed"
+      paymentsFailed: "Load sales - failed",
+      validFile: 'The file should contain only these conditions: "-M", "M", "EX", "VG+", "VG", "G", "F" separated by a newline'
     },
     loading:{
       loadData: "Loading data...",
@@ -170,6 +172,7 @@ export default {
   },
   pl: {
     vinyl: 'Winyl',
+    conditionFile: "Plik ze stanami płyt",
     info: {
       title: "Oferty Allegro Records",
       description: "Aplikacja 'Allegro Records Offers' to narzędzie przeznaczone do efektywnego zarządzania ofertami na Allegro, jednym z największych polskich portali handlowych. Dzięki tej aplikacji użytkownicy mogą łatwo wystawić swoje produkty na Allegro i edytować istniejące oferty. Aplikacja posiada przyjazny interfejs, który umożliwia szybkie i łatwe dodawanie zdjęć, opisów, cen i innych ważnych szczegółów, tworząc informacyjne oferty, które przyciągną potencjalnych kupujących. Ponadto, użytkownik może wyczyścić tło zdjęcia i zobaczyć statystyki ofert."
@@ -327,7 +330,8 @@ export default {
       descFailed: "Edycja opisu - niepowodzenie",
       toLong: "Długość tytułu musi być mniejsza niż 50",
       offersFailed: "Wczytanie ofert - niepowodzenie",
-      paymentsFailed: "Wczytanie sprzedaży - niepowodzenie"
+      paymentsFailed: "Wczytanie sprzedaży - niepowodzenie",
+      validFile: 'Plik powinien zawierać tylko te stany: "-M", "M", "EX", "VG+", "VG", "G", "F" oddzielone nową linią'
     },
     loading:{
       loadData: "Wczytywanie danych...",

@@ -5,7 +5,7 @@
                 <div class="title">{{ $t("listingView.upload") }}</div>
                 <div class="input-container">
                     <label for="files">{{ $t("listingView.images") }} &nbsp;</label>
-                    <input @change="handleFiles" id="files" type="file" multiple required style="font-size: 14px;"/>
+                    <input @change="handleImagesFiles" id="files" type="file" multiple required style="font-size: 14px;"/>
                 </div>
                 <select v-model="typeRecord" style="display: flex; align-self: start; width: 200px; font-size: 14px;">
                         <option value="Vinyl">{{ $t("vinyl") }}</option>
@@ -31,6 +31,10 @@
                     <label for="number-images">{{ $t("listingView.numberImages") }}</label>
                     <input v-model="numberImages" id="number-images" type="number" min="2" required style="font-size: 14px; margin-left: 10px;"/>
                 </div>
+                <div class="input-container">
+                    <label for="number-images">{{ $t("conditionFile") }}&nbsp;</label>
+                    <input type="file" @change="handleConditionFile" accept=".txt" style="font-size: 14px;"/>
+                </div>
                 <p>{{ $t("listingView.imageOrder") }}</p>
                 <p>{{ $t("listingView.paymentLocationDelivery") }}</p>
                 <p>{{ $t("listingView.description") }}</p>
@@ -42,7 +46,7 @@
             <h3>{{ $t('loading.readImage') }}</h3>
         </div>
     </span>
-    <TheListingData v-if="read" :typeRecord="typeRecord" :typeOffer="typeOffer" :duration="duration" :clear="clear" :numberImages="numberImages" :numberFiles="files.length"/>
+    <TheListingData v-if="read" :typeRecord="typeRecord" :typeOffer="typeOffer" :duration="duration" :clear="clear" :numberImages="numberImages" :numberFiles="files.length" :conditions="conditions"/>
 </template>
 
 <script>
@@ -59,12 +63,15 @@
                 typeRecord: "Vinyl",
                 typeOffer: "BUY_NOW",
                 duration: "P1D",
+                conditionFile: null,
+                conditions: [],
                 clear: false,
                 loading: false,
+                alert: {}
             }
         },
         methods:{
-            handleFiles(event) {
+            handleImagesFiles(event) {
                 // Get an array of the selected files and sort them by name
                 const files = Array.from(event.target.files)
                 this.files = files
@@ -84,6 +91,21 @@
                     }
                 }
             },
+            handleConditionFile(event) {
+                const file = event.target.files[0]
+                this.conditionFile = file
+                const reader = new FileReader()
+                reader.onload = () => {
+                    const content = reader.result
+                    this.validateAndSave(content)
+                }
+                reader.readAsText(this.conditionFile)
+                },
+                validateAndSave(content) {
+                    const lines = content.includes('\n') ? content.split('\n') : content.split(' ')
+                    const processedLines = lines.map((line) => line.trim())
+                    this.conditions = this.conditions.concat(processedLines)
+            },
             async getImageData() {
                 this.loading = true
                 this.read = await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.typeRecord, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
@@ -93,7 +115,7 @@
         },
         components:{
             TheListingData,
-            VueCookies 
+            VueCookies
         }
     }
 </script>
