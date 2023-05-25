@@ -1,10 +1,11 @@
+import asyncio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from json import loads
 import database as db
 import allegro_api as allegro
-from   preprocessing_image import read_image, remove_background
-from   preprocessing_data import preprocess_data_parallel, get_cd_barcode
+from   preprocessing_image import preprocess_vinyl_images, preprocess_cd_images, remove_background
+from   preprocessing_data import preprocess_data_parallel
 from   imageKit_api import upload_file_imageKit
 from   plots import annual_sale_barplot, create_genres_barplot
 from   discogs_api import create_offer
@@ -20,51 +21,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/read-image")
-async def read_image_data(request: Request):
+@app.post("/read-vinyl-image")
+async def read_vinyl_image(request: Request):
     try:
         db.truncate_image_data()
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         images = response['images']
-        type_record = response['typeRecord']
-        number_images = response['numberImages']
-        text_from_images = []
 
-        for i in range(0, len(images), number_images):
-            if type_record == "Vinyl":
-                # Read first image
-                image_1 = images[i]
-                text_from_image_1, image_url_1 = read_image(image_1, credentials)
-                text_from_images.append({"text_from_image": text_from_image_1, "url": image_url_1})
-
-                # Other images
-                for j in range(1, number_images):
-                    other_image = images[i+j]
-                    other_image_url = upload_file_imageKit(other_image, credentials)['url']
-                    text_from_images.append({"text_from_image": "EMPTY", "url": other_image_url})
-
-            elif type_record == "CD":
-                # Read second image 
-                image_2 = images[i+1]
-                text_from_image, image_url_2 = get_cd_barcode(image_2, credentials)
-                
-                # Other images
-                for j in range(number_images):
-                    if j != 1:
-                        other_image = images[i+j]
-                        other_image_url = upload_file_imageKit(other_image, credentials)['url']
-                        text_from_images.append({"text_from_image": "EMPTY", "url": other_image_url})
-
-                    if j == 0:
-                        text_from_images.append({"text_from_image": text_from_image, "url": image_url_2})
+        preprocess_tasks = [preprocess_vinyl_images(chunk_images, credentials) for chunk_images in images]
+        text_from_images = await asyncio.gather(*preprocess_tasks)
 
         db.post_text_from_image(text_from_images)
 
         return {"status": 200, "output": text_from_images}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in read_image: {str(e)}"}
+        return {"status": 404, "error": f"Exception in read_vinyl_image: {str(e)}"}
+
+
+@app.post("/read-cd-image")
+async def read_cd_image(request: Request):
+    try:
+        db.truncate_image_data()
+        credentials = db.get_credentials()
+        response = loads((await request.body()).decode('utf-8'))
+        images = response['images']
+        text_from_images = []
+        
+        preprocess_tasks = [preprocess_cd_images(chunk_images, credentials) for chunk_images in images]
+        text_from_images = await asyncio.gather(*preprocess_tasks)
+            
+        db.post_text_from_image(text_from_images)
+
+        return {"status": 200, "output": text_from_images}
+
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in read_cd_image: {str(e)}"}
 
 @app.post("/clear-image")
 async def clear_image(request: Request):

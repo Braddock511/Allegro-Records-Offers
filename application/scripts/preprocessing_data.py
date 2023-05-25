@@ -1,11 +1,5 @@
-import requests
-import numpy as np
 import multiprocessing
 from typing import List, Dict
-from PIL import Image
-from pyzbar import pyzbar
-from io import BytesIO
-from imageKit_api import upload_file_imageKit
 from chunks import search_data, preprocess_data
 
 def search_data_parallel(text_from_image: List[str], discogs_token: str, type_record: str, image_data: bool) -> List[Dict[str, str]]:
@@ -43,17 +37,3 @@ def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_
         discogs_information = pool.starmap(preprocess_data, [(chunk, discogs_token) for chunk in chunks])
 
     return [item for sublist in discogs_information for item in sublist]
-
-def get_cd_barcode(image: bytes, credentials: dict):
-    upload_image = upload_file_imageKit(image, credentials)
-    image_url = upload_image['url']
-    response = requests.get(image_url).content
-
-    image = np.array(Image.open(BytesIO(response)).convert('RGB'))
-    barcodes = pyzbar.decode(image)
-
-    for barcode in barcodes:
-        if data := barcode.data.decode("utf-8"):
-             return data, image_url
-    
-    return "", image_url

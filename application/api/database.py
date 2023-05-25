@@ -111,12 +111,9 @@ def post_text_from_image(text_from_images: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        # Delete all rows from the table
-        session.query(Image_Data).delete()
-
-        # Create a dictionary of the data to be inserted into the image_data
-        for data_item in text_from_images:
-            session.add(Image_Data(text_from_image=data_item['text_from_image'], url=data_item['url']))
+        for text_from_image in text_from_images:
+            for data_item in text_from_image:
+                session.add(Image_Data(text_from_image=data_item['text_from_image'], url=data_item['url']))
 
         session.commit()
 
