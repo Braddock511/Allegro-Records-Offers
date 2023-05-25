@@ -106,9 +106,26 @@
                     const processedLines = lines.map((line) => line.trim())
                     this.conditions = this.conditions.concat(processedLines)
             },
+            splitImages(images, numberImages) {
+                const chunks = [];
+
+                for (let i = 0; i < images.length; i += numberImages) {
+                    const chunk = images.slice(i, i + numberImages)
+                    chunks.push(chunk)
+                }
+
+                return chunks
+            },
             async getImageData() {
                 this.loading = true
-                this.read = await axios.post('http://127.0.0.1:8000/read-image', {images: this.images, typeRecord: this.typeRecord, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
+                const splitImages = this.splitImages(this.images, this.numberImages)
+                
+                if (this.typeRecord == "Vinyl"){
+                    this.read = await axios.post('http://127.0.0.1:8000/read-vinyl-image', {images: splitImages}, {headers: {'Content-Type': 'application/json'}})
+                }
+                else if (this.typeRecord == "CD"){
+                    this.read = await axios.post('http://127.0.0.1:8000/read-cd-image', {images: splitImages}, {headers: {'Content-Type': 'application/json'}})
+                }
                 console.log(this.read)
                 this.loading = false
             },

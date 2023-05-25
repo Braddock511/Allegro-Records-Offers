@@ -143,157 +143,172 @@
                 cartonFlag: false,
                 visible: false,
                 failedFlag: false,
-                loading: {"flag": false, "message": ""}
+                loading: {"flag": false, "message": ""},
+                requests: []
             }
         },
         methods:{
+            resetVariables() {
+                this.title = ""
+                this.label = ""
+                this.country = ""
+                this.year = ""
+                this.price = ""
+                this.barcode = ""
+                this.condition = "Near Mint (NM or M-)"
+            },
             async listingOfferAllegro(data) {
                 let selectedData = {}
-                if (this.price !== ""){
-                    // Get data
-                    if (data.title !== undefined){
-                        selectedData = {
-                            id: data.id,
-                            title: data.title,
-                            label: data.label,
-                            country: data.country,
-                            year: data.year,
-                            genre: data.genre,
-                            price: this.price,
-                            barcode: data.barcode,
-                            quantity: data.quantity
-                        }
-                    }
-                    else{
-                        if (this.title !== "" && this.price !== ""){
-                            if (this.title.length+3 < 50){
-                                selectedData = {
-                                    id: "",
-                                    title: this.title,
-                                    label: this.label ? this.label : "-",
-                                    country: this.country ? this.country : "-",
-                                    year: this.year ? this.year : "-",
-                                    genre: this.genre,
-                                    price: this.price,
-                                    barcode: this.barcode ? this.barcode : "-",
-                                    quantity: ""
-                                }
-                            }
-                            else{
-                                this.alert = {variant: "warning", message: this.$t("alerts.toLong")}
-                            }
-                        }
-                        else{
-                            this.alert = {variant: "warning", message: this.$t("alerts.complete")}
-                        }
-                    }
+
+                if (this.price === "") {
+                    this.alert = { variant: "warning", message: this.$t("alerts.complete") }
+                    return
                 }
-                else{
-                    this.alert = {variant: "warning", message: this.$t("alerts.complete")}
-                }
-                
-                if (Object.keys(selectedData).length !== 0){
-                    // Send data
-                    this.loading.flag = true
-                    this.loading.message = this.$t("loading.listingOffer")
-                    const response = (await axios.post('http://127.0.0.1:8000/allegro-listing', {data: selectedData, condition: this.condition, carton: this.carton, images: this.img, typeRecord: this.typeRecord, typeOffer: this.typeOffer, duration: this.duration, clear: this.clear}, { headers: { 'Content-Type': 'application/json' }})).data
-                    if (response.error || response.output.errors){
-                        this.failed.data.push(selectedData)
-                        this.failed.condition.push(this.condition)
-                        this.failed.img.push(this.img[0])
-                        this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
-                        this.title = "",
-                        this.label = "",
-                        this.country = "",
-                        this.year = "",
-                        this.price = "",
-                        this.barcode = ""
-                        this.condition = "Near Mint (NM or M-)"
-                        // Next offer   
-                        this.next()
-                    }
-                    else{
-                        this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
-                        this.title = "",
-                        this.label = "",
-                        this.country = "",
-                        this.year = "",
-                        this.price = "",
-                        this.barcode = ""
-                        this.condition = "Near Mint (NM or M-)"
-                        // Next offer
-                        this.next()
-                    }
-                }
-            },
-            async listingOfferDiscogs(data) {
-                let selectedData = {}
-                if (this.price !== ""){
-                    // Get data
+
+                if (data.title !== undefined) {
                     selectedData = {
                         id: data.id,
-                        condition: this.condition,
+                        title: data.title,
+                        label: data.label,
+                        country: data.country,
+                        year: data.year,
+                        genre: data.genre,
                         price: this.price,
+                        barcode: data.barcode,
+                        quantity: data.quantity,
                     }
-                    
-                    if (Object.keys(selectedData).length !== 0){
-                        // Send data
-                        this.loading.flag = true
-                        this.loading.message = this.$t("loading.listingOffer")
-                        const response = (await axios.post('http://127.0.0.1:8000/discogs-listing', {listing_id: data.id, mediaCondition: this.condition, carton: this.carton, sleeveCondition: this.sleeveCondition, price: this.roundedPriceToEUR(this.price)}, { headers: { 'Content-Type': 'application/json' }})).data
-                        if (response.error || response.output.errors){
+                } else {
+                    if (this.title === "" || this.price === "") {
+                        this.alert = { variant: "warning", message: this.$t("alerts.complete") }
+                        return
+                    }
+
+                    if (this.title.length + 3 >= 50) {
+                        this.alert = { variant: "warning", message: this.$t("alerts.toLong") }
+                        return
+                    }
+
+                    selectedData = {
+                        id: "",
+                        title: this.title,
+                        label: this.label ? this.label : "-",
+                        country: this.country ? this.country : "-",
+                        year: this.year ? this.year : "-",
+                        genre: this.genre,
+                        price: this.price,
+                        barcode: this.barcode ? this.barcode : "-",
+                        quantity: "",
+                    }
+                }
+
+                // Send data
+                this.loading.flag = true
+                this.loading.message = this.$t("loading.listingOffer")
+
+                const allegroListing = axios.post("http://127.0.0.1:8000/allegro-listing", {
+                    data: selectedData,
+                    condition: this.condition,
+                    carton: this.carton,
+                    images: this.img,
+                    typeRecord: this.typeRecord,
+                    typeOffer: this.typeOffer,
+                    duration: this.duration,
+                    clear: this.clear}, { 
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "Access-Control-Allow-Origin": "*", 
+                        } 
+                    }).then((response) => {
+                        response = response.data
+                        console.log(response)
+                        if (response.error || response.output.errors) {
                             this.failed.data.push(selectedData)
                             this.failed.condition.push(this.condition)
                             this.failed.img.push(this.img[0])
-                            this.alert = {variant: "danger", message: this.$t("alerts.listingFailed")}
-                            this.title = "",
-                            this.label = "",
-                            this.country = "",
-                            this.year = "",
-                            this.price = "",
-                            this.condition = "Near Mint (NM or M-)"
-                            // Next offer   
-                            this.next()
+                            this.alert = { variant: "danger", message: `${this.$t("alerts.listingFailed")} - ${selectedData.title}` }
+                        } else {
+                            this.alert = { variant: "success", message: `${this.$t("alerts.listingSuccess")} - ${selectedData.title}` }
                         }
-                        else{
-                            this.alert = {variant: "success", message: this.$t("alerts.listingSuccess")}
-                            this.title = "",
-                            this.label = "",
-                            this.country = "",
-                            this.year = "",
-                            this.price = "",
-                            this.condition = "Near Mint (NM or M-)"
-                            // Next offer
-                            this.next()
-                        }
+                    })
+                
+                this.requests.push(allegroListing);
+
+                this.resetVariables()
+                this.next()
+            },
+
+            async listingOfferDiscogs(data) {
+                if (this.price === "") {
+                    this.alert = { variant: "warning", message: this.$t("alerts.complete") }
+                    return
+                }
+
+                let selectedData = {
+                    id: data.id,
+                    condition: this.condition,
+                    price: this.price,
+                }
+
+                // Send data
+                this.loading.flag = true
+                this.loading.message = this.$t("loading.listingOffer")
+
+                try {
+                    const response = (axios.post("http://127.0.0.1:8000/discogs-listing",{
+                            listing_id: data.id,
+                            mediaCondition: this.condition,
+                            carton: this.carton,
+                            sleeveCondition: this.sleeveCondition,
+                            price: this.roundedPriceToEUR(this.price),
+                        }, { headers: { "Content-Type": "application/json" } })).data
+
+                    if (response.error || response.output.errors) {
+                        this.failed.data.push(selectedData)
+                        this.failed.condition.push(this.condition)
+                        this.failed.img.push(this.img[0])
+                        this.alert = { variant: "danger", message: this.$t("alerts.listingFailed") }
+                    } else {
+                        this.alert = { variant: "success", message: this.$t("alerts.listingSuccess") }
                     }
+                } catch (error) {
+                    // Handle request error
+                    console.error(error)
+                    this.alert = { variant: "danger", message: this.$t("alerts.listingFailed") }
                 }
-                else{
-                    this.alert = {variant: "warning", message: this.$t("alerts.complete")}
-                }
+                this.resetVariables(); 
+                await this.next();
             },
             async next(){
                 this.loading.flag = true
                 this.loading.message = this.$t("loading.loadData")
                 this.currentIndex += this.numberImages
+
                 if (this.currentIndex >= this.numberFiles) {
-                    if(this.failed.img.length != 0){
-                        this.failedFlag = true
-                    }
-                    else{
-                        await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
+                    if (this.failed.img.length !== 0) {
+                        this.loading.message = ""
+                        if (await Promise.all(this.requests)){
+                            this.loading.flag = false
+                            this.failedFlag = true
+                        }
+                    } else {
                         window.location.reload()
+                        return
                     }
                 }
                 else{
                     this.img = []
-                    this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
-                    for (let i = 0; i < this.numberImages; i++) {
-                        this.img.push(this.discogsData[i].url)
-                    }
-                    this.img.reverse()
+                    await axios.post("http://127.0.0.1:8000/discogs-information-image", {typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                        this.discogsData = response.data.output
+                        
+                        for (let i = 0; i < this.numberImages; i++) {
+                            this.img.push(this.discogsData[i].url)
+                        }
+                        
+                        this.img.reverse()
+                        this.loading.message = "" 
+                        this.loading.flag = false
+                    })
                 }
-                setTimeout(() => {this.loading.message = ""; this.loading.flag = false}, 100)
             },
             roundedPriceToPLN(price) {
                 let finalValue

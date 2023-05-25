@@ -82,30 +82,34 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
         user_messages = [error['userMessage'] for error in result['errors']]
 
         if 'Request Timeout' not in error_messages:
-            if any("Existing Product related" in msg for msg in user_messages):
-                category = re.findall(r"product category: .*", user_messages[0])[0]
-                new_genre = re.sub(r"\D", "", category)
-                data['productSet'][0]['product']['category']['id'] = new_genre
-                errors.append("Genre")
+            for msg in error_messages:
+                if "Existing Product related" in msg:
+                    category = re.findall(r"product category .*", msg)[0]
+                    new_genre = re.sub(r"\D", "", category)
+                    data['productSet'][0]['product']['category']['id'] = new_genre
+                    errors.append("Genre")
 
-            if any("The provided parameter 'Wykonawca'" in msg for msg in error_messages):
-                category = re.findall(r"product parameter .*", user_messages[0])[0]
-                new_artist = re.sub(r"[.`]", "", category.replace("product parameter", "")).strip()
-                data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist]
-                errors.append("Artist")
+                elif "Wykonawca" in msg:
+                    artist = re.findall(r"parameter value .*", msg)[0]
+                    new_artist = re.sub(r'\((.*?)\)', r'\1', artist.replace("parameter value", "")).strip()
+                    data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist]
+                    errors.append("Artist")
 
-            if any("The provided parameter 'Tytuł'" in msg for msg in error_messages):
-                category = re.findall(r"product parameter .*", user_messages[0])[0]
-                new_title = re.sub(r"[.`]", "", category.replace("product parameter", "")).strip()
-                data['productSet'][0]['product']['parameters'][1]['values'] = [new_title]
-                errors.append("Title")
+                elif "Tytuł" in msg:
+                    title = re.findall(r"parameter value .*", msg)[0]
+                    new_title = re.sub(r'\((.*?)\)', r'\1', title.replace("parameter value", "")).strip()       
+                    data['productSet'][0]['product']['parameters'][1]['values'] = [new_title]
+                    errors.append("Title")
 
-            if any("Invalid GTIN" in msg for msg in error_messages):
-                new_barcode = error_messages[0].split(" - ")[1].split(" in ")[0]
-                if len(new_barcode) not in [8, 10, 12, 13, 14]:
-                    new_barcode = f"0{new_barcode}"
-                data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]
-                errors.append("EAN")
+                elif "Invalid GTIN" in msg:
+                    new_barcode = msg.split(" - ")[1].split(" in ")[0]
+                    if len(new_barcode) not in [8, 10, 12, 13, 14]:
+                        new_barcode = f"0{new_barcode}"
+                    data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]
+                    errors.append("EAN")
+                    
+                else:
+                    errors.append("OTHER ERRORS THAT CAN'T BE CHANGE")
 
             if any("'Wytwórnia'" in msg or "Wytwórnia" in msg for msg in user_messages):
                 parameters = data['productSet'][0]['product']['parameters']

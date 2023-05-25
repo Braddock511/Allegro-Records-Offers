@@ -30,10 +30,10 @@ def get_tracklist(id: str, discogs_token: str) -> str:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/releases/{id}"
 
-    response = requests.get(url, headers=headers)
-    tracklist = response.json()['tracklist']
-
     try:
+        response = requests.get(url, headers=headers)
+        tracklist = response.json()['tracklist']
+
         tracks = "<p><b>LISTA UTWORÓW:</b></p>"
         paragraph = []
         outtrack = ""
