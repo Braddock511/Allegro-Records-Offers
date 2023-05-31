@@ -71,6 +71,17 @@ def get_offer_info(credentials: dict, offer_id: int) -> dict:
     return result.json()
 
 def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
+    """
+    Handles errors returned by the Allegro API during product offers processing.
+    
+    Args:
+        data (dict): The data dictionary containing product information.
+        result (dict): The dictionary containing the result returned by the Allegro API.
+        credentials (dict): The dictionary containing API credentials.
+        
+    Returns:
+        dict: The modified result dictionary after handling the errors.
+    """
     errors = []
     url = 'https://api.allegro.pl/sale/product-offers'
 
@@ -416,6 +427,17 @@ def get_payment_history(credentials: dict, limit: int, offset: int) -> dict:
     return result.json()
 
 def swap_cartons(credentials: dict, change_carton: str, change_to_carton: str) -> dict:
+    """
+    Swaps the carton name in Allegro offers with a new carton name.
+
+    Args:
+        credentials (dict): The dictionary containing API credentials.
+        change_carton (str): The old carton name to be replaced.
+        change_to_carton (str): The new carton name to replace with.
+
+    Returns:
+        dict: The JSON response returned by the Allegro API after updating the offers.
+    """
     allegro_token = credentials["api_allegro_token"]
     
     offers = get_allegro_offers()

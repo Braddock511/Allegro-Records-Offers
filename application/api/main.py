@@ -6,7 +6,6 @@ import database as db
 import allegro_api as allegro
 from   preprocessing_image import preprocess_vinyl_images, preprocess_cd_images, remove_background
 from   preprocessing_data import preprocess_data_parallel
-from   imageKit_api import upload_file_imageKit
 from   plots import annual_sale_barplot, create_genres_barplot
 from   discogs_api import create_offer
 
@@ -75,31 +74,40 @@ async def clear_image(request: Request):
 
 @app.post("/discogs-information")
 async def discogs_info(request: Request):
+    """
+        Endpoint that receives a POST request with data about an offer for a record. The function processes the data to extract the necessary information, and then queries the Discogs API to retrieve additional information about the record.
+
+        Args:
+            request (Request): The request object containing index of offers and information about the allegro offer. 
+
+        Returns:
+            dict: A dictionary containing the status, offer information, and Discogs data.
+    """
     try:
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
-        record_id = response['id']
+        index = response['index']
         allegro_data = response['allegroData']
         type_record = None
         offer_input_data = None
         
         if "offers" in allegro_data.keys():
-            offers_info = allegro.get_offer_info(credentials, allegro_data['offers'][record_id]['id'])
+            offer_info = allegro.get_offer_info(credentials, allegro_data['offers'][index]['id'])
         else:
-            offers_info = allegro.get_offer_info(credentials, allegro_data['id'])
+            offer_info = allegro.get_offer_info(credentials, allegro_data['id'])
         
-        parameters = offers_info['productSet'][0]['product']['parameters']
+        parameters = offer_info['productSet'][0]['product']['parameters']
         for x in parameters:
             if x['name'] == 'Nośnik':
                 type_record = x['values'][0]
                 
         if type_record in {"Vinyl", "Winyl"}:
-            name = offers_info['name']
+            name = offer_info['name']
             name = name.split(".")[0]
             name = name.split("(CD)")[0]
             offer_input_data = name
         elif type_record == "CD":
-            parameters = offers_info['productSet'][0]['product']['parameters']
+            parameters = offer_info['productSet'][0]['product']['parameters']
             
             for x in parameters:
                 if x['name'] == 'EAN (GTIN)':
@@ -107,13 +115,22 @@ async def discogs_info(request: Request):
         
         discogs_data = preprocess_data_parallel(offer_input_data, credentials, type_record, False)
             
-        return {"status": 200, "offer": offers_info, "discogs": discogs_data}
+        return {"status": 200, "offer": offer_info, "discogs": discogs_data}
     
     except Exception as e:
         return {"status": 404, "error": f"Exception in discogs_info: {str(e)}"}
 
 @app.post("/discogs-information-image")
 async def image_data(request: Request):
+    """
+        Get Discogs information for vinyl or CD records from image data.
+
+        Args:
+            request (Request): The request object containing index of offers, number images in one offer and type of record
+
+        Returns:
+            dict: A dictionary containing the status and Discogs data for the records.
+    """
     try:
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))

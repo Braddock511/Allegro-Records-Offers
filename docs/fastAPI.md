@@ -12,13 +12,13 @@ clear_image - endpoint that receives a POST request with image data in the reque
 
 discogs_info - endpoint that receives a POST request with data about an offer for a music record. The function processes the data to extract the necessary information, and then queries the Discogs API to retrieve additional information about the record. The resulting data is returned as a JSON object.
 - request with a JSON object in the request body containing the following keys:
-    - id (str): representing the ID of the offer.
+    - index (str): representing the index of offers
     - allegroData (dictionary): information about the offer.
-    - typeRecord (dictionary): type of the record, either "Vinyl" or "CD".
 
 image_data - endpoint /discogs-information-image that takes in a POST request with JSON data. The endpoint retrieves image data from a database, processes the data using a pre-trained machine learning model, and returns the processed data in JSON format.
 - request with a JSON object in the request body containing the following keys:
     - index (int): representing the starting index of the images to be retrieved from the database.
+    - numberImages (int): number images in one offer
     - typeRecord (dictionary): type of the record, either "Vinyl" or "CD".
 
 truncate - endpoint that truncate image data table

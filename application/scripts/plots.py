@@ -7,6 +7,16 @@ from datetime import datetime
 from imageKit_api import upload_file_imageKit
 
 def annual_sale_barplot(credentials: dict, sales: list) -> str:
+    """
+        Generates a bar plot of annual sales using the provided credentials and sales data.
+
+        Args:
+            credentials (dict): The credentials containing the necessary information.
+            sales (list): The list of sales data from allegro.
+
+        Returns:
+            str: The URL of the generated bar plot image.
+    """
     dates = {}
     prices = {}
 
@@ -55,6 +65,16 @@ def annual_sale_barplot(credentials: dict, sales: list) -> str:
     return image_url['url']
 
 def create_genres_barplot(credentials: dict, offers: list) -> str:
+    """
+        Generates a bar plot of the number of genres in the offers
+
+        Args:
+            credentials (dict): The credentials containing the necessary information.
+            offers (list): The list of offers data.
+
+        Returns:
+            str: The URL of the generated bar plot image.
+    """
     categories = {1410: 'Ballad', 1411: 'Blues', 1145: "Country", 5638: 'Dance', 0: 'Disco', 5639: 'Ethno, Folk, World music', 5626: 'For kids', 289: 'Jazz', 5625: 'Carols', 260981: 'Metal', 10830: 'Alternative', 261112: 'Electronic', 322237: 'Film', 286: 'Classical', 261156: 'Opera', 261039: 'Pop', 261040: 'Rap, Hip-Hop', 1413: 'Reggae', 261043: 'Rock', 5623: "Rock'n'roll", 261041: 'Single', 284: 'New sounds', 1419: 'Compilations', 1420: 'Soul', 321961: 'Synth-pop', 293: 'Other', 9531: 'Sets', 
                   1361: 'Ballad', 261036: 'Blues', 1143: "Country", 261035: 'Dance', 89757: 'Disco', 261100: "Ethno, Folk, World music",  261028: "For kids", 260: 'Jazz', 5607: 'Carols',  261128: 'Metal', 261029: 'Alternative', 261111: 'Electronic', 322237: 'Film', 9536: 'Classical', 9537: 'Opera', 261127: 'Pop', 261044: 'Rap, Hip-Hop', 182: 'Reggae',  261110: 'Rock', 5605: "Rock'n'roll", 322236: 'Single', 261042: 'New sounds',261102: 'Compilations', 181: 'Soul', 321960: 'Synth-pop', 9530: 'Sets', 191: 'Other', 89751: 'Religious', }
     genres = [categories.get(int(offer['category']['id'])) for offer in offers]

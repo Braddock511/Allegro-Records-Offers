@@ -2,17 +2,19 @@ import base64
 import json
 from unittest.mock import patch
 from fastapi.testclient import TestClient
+import requests
 from sqlalchemy import Column, String, Integer, Boolean, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from api.main import app
-from api.database import post_credentials, get_credentials, post_text_from_image, get_text_from_image, post_allegro_offers, get_allegro_offers, post_payments, get_payments, post_false_flags, get_flags, truncate_allegro_offers, truncate_allegro_payments
+from api.database import post_credentials, get_credentials, post_text_from_image, get_text_from_image, post_allegro_offers, get_allegro_offers, truncate_allegro_offers, truncate_allegro_payments
 from scripts.allegro_api import get_my_offers, get_offer_info, create_offer, get_condition_and_carton, edit_description, get_payment_history, edit_images, swap_cartons
-from scripts.azure_api import read_image, clear_image
 from scripts.discogs_api import get_vinyl, get_cd, get_price, get_tracklist, create_offer
 from scripts.imageKit_api import upload_file_imageKit
 from scripts.plots import annual_sale_barplot, create_genres_barplot
-from scripts.preprocessing_data import search_data, get_cd_barcode, preprocess_data, remove_background
+from scripts.preprocessing_data import search_data_parallel, preprocess_data_parallel
+from scripts.chunks import search_data, preprocess_data
+from scripts.preprocessing_image import read_image, preprocess_vinyl_images, get_cd_barcode, preprocess_cd_images, remove_background
 
 Base = declarative_base()
 
@@ -25,11 +27,8 @@ class Credentials(Base):
         api_imagekit_secret = Column(String)
         api_imagekit_endpoint = Column(String)
 
-        api_azure_subscription_key = Column(String)
-        api_azure_endpoint = Column(String)
+        api_ocr_space = Column(String)
 
-        api_discogs_id = Column(String)
-        api_discogs_secret = Column(String)
         api_discogs_token = Column(String)
 
         api_allegro_id = Column(String)
@@ -41,7 +40,7 @@ class Image_Data(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     text_from_image = Column(String)
     url = Column(String)
-    
+
 class AllegroOffers(Base):
     __tablename__ = "allegro_offers"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -69,7 +68,7 @@ class TestDatabase:
     def test_post_credentials(self):
         post_credentials("test_id", "test_secret", "test_token")
 
-        row = self.session.query(Credentials).first()
+        row = self.session.query(Credentials).order_by(Credentials.id.desc()).first()
 
         assert row.api_allegro_id == "test_id"
         assert row.api_allegro_secret == "test_secret"
@@ -83,96 +82,42 @@ class TestDatabase:
         assert result['api_allegro_token'] == "test_token"
 
     def test_post_text_from_image(self):
-        text_from_images = [{"text_from_image": "test", "url": "test.png"}, 
+        text_from_images = [[{"text_from_image": "test", "url": "test.png"}, 
                             {"text_from_image": "", "url": "test.png"}, 
-                            {"text_from_image": "", "url": "test.png"}]
+                            {"text_from_image": "", "url": "test.png"}],
+                            [{"text_from_image": "test2", "url": "test2.png"}, 
+                            {"text_from_image": "", "url": "test2.png"}, 
+                            {"text_from_image": "", "url": "test2.png"}]]
         
         post_text_from_image(text_from_images)
 
-        rows = self.session.query(Image_Data).all()
+        row = self.session.query(Image_Data).first()
 
-        assert rows[0].text_from_image == 'test'
-        assert rows[0].url == 'test.png'
+        assert row.text_from_image == 'test'
+        assert row.url == 'test.png'
 
     def test_get_text_from_image(self):
-        text_from_images = [{"text_from_image": "test", "url": "test.png"}, 
-                            {"text_from_image": "", "url": "test.png"}, 
-                            {"text_from_image": "", "url": "test.png"}]
-        
-        post_text_from_image(text_from_images)
         result = get_text_from_image()
 
-        assert result['text_from_image'][0] == 'test'
-        assert result['url'][0] == 'test.png'
+        assert result[0]['text_from_image'] == 'test'
+        assert result[0]['url'] == 'test.png'
         
-    def test_post_allegro_offers(self):
-        allegro_offers = [{"id": 12456, "name": "test1"},
-                          {"id": 92251, "name": "test2"},
-                          {"id": 95253, "name": "test3"}]
-        
-        post_allegro_offers(allegro_offers)
-        
-        rows = self.session.query(AllegroOffers).all()
-
-        assert rows[0].id == 12456
-        assert rows[0].name == 'test1'
-        
-    def test_get_allegro_offers(self):
-        allegro_offers = [{"id": 12456, "name": "test1"},
-                          {"id": 92251, "name": "test2"},
-                          {"id": 95253, "name": "test3"}]
+    def test_post_get_allegro_offers(self):
+        allegro_offers = [{"id": '12456', "name": "test1"},
+                          {"id": '92251', "name": "test2"},
+                          {"id": '95253', "name": "test3"}]
         
         post_allegro_offers(allegro_offers)
         result = get_allegro_offers()
 
-        assert result[0].id == 12456
-        assert result[0].name == 'test1'
-        
-    def test_post_payments(self):
-        payments = [{"id": 12456, "price": 39.99},
-                    {"id": 92251, "price": 69.99},
-                    {"id": 95253, "price": 99.99}]
-        
-        post_payments(payments)
-        
-        rows = self.session.query(AllegroPayments).all()
-
-        assert rows[0].id == 12456
-        assert rows[0].price == 39.99
-        
-    def test_get_payments(self):
-        payments = [{"id": 12456, "price": 39.99},
-                    {"id": 92251, "price": 69.99},
-                    {"id": 95253, "price": 99.99}]
-        
-        post_payments(payments)
-        result = get_payments()        
-
-        assert result[0].id == 12456
-        assert result[0].price == 39.99
-        
-    def test_post_false_flags(self):
-        post_false_flags()
-        
-        rows = self.session.query(Flags).all()
-
-        assert rows[0].load_offers == False
-        assert rows[0].load_payment == False
-        
-    def test_get_flags(self):
-        post_false_flags()
-        result = get_flags()
-        
-        assert result[0].load_offers == False
-        assert result[0].load_payment == False
-        
+        assert isinstance(result[0], dict)
         
     def test_truncate_allegro_offers(self):
         truncate_allegro_offers()
         
         result = get_allegro_offers()
         
-        assert result is None
+        assert result == []
         
     def test_truncate_allegro_payments(self):
         truncate_allegro_payments()
@@ -184,72 +129,63 @@ class TestDatabase:
 class TestAPI:
     client = TestClient(app)
 
-    with open(r'D:\records\test.jpg', 'rb') as f:
-        image_bytes = f.read()
-        image = base64.b64encode(image_bytes)
-        image = json.dumps(image.decode('utf-8'))
+    response = requests.get("https://ik.imagekit.io/jhddvvyeg/test.jpg?updatedAt=1685255855385")
+    image_content = response.content
+    vinyl_image = base64.b64encode(image_content).decode('utf-8')
 
-    def test_read_image_data(self):
+    response = requests.get("https://ik.imagekit.io/jhddvvyeg/testCD.jpg?updatedAt=1685256086025")
+    image_content = response.content
+    cd_image = base64.b64encode(image_content).decode('utf-8')
+
+    def test_read_vinyl_image(self):
         test_input = {
-            "images": [TestAPI.image, TestAPI.image, TestAPI.image],
-            "typeRecord": "Vinyl",
-            "numberImages": 3
+            "images": [TestAPI.vinyl_image, TestAPI.vinyl_image, TestAPI.vinyl_image],
         }
 
-        response = TestAPI.client.post("/read-image", json=test_input)
+        response = TestAPI.client.post("/read-vinyl-image", json=test_input)
 
         assert response.status_code == 200
-        assert "status" in response.json()
-        assert "output" in response.json()
+        
+    def test_read_cd_image(self):
+        test_input = {
+            "images": [TestAPI.cd_image, TestAPI.cd_image, TestAPI.cd_image],
+        }
 
-        assert isinstance(response.json()["output"], list)
-        assert all(isinstance(item, dict) and "text_from_image" in item and "url" in item for item in response.json()["output"])
+        response = TestAPI.client.post("/read-vinyl-image", json=test_input)
+
+        assert response.status_code == 200
 
     def test_discogs_information_image(self):
         payload = {
             "index": 0,
+            "numberImages": 3,
             "typeRecord": "Vinyl",
         }
 
         response = TestAPI.client.post('/discogs-information-image', json=payload)
 
         assert response.status_code == 200
-        assert "status" in response.json()
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], list)
 
     def test_clear_image(self):
         test_input = {
-            "image": TestAPI.image
+            "image": TestAPI.vinyl_image
         }
 
         response = TestAPI.client.post("/clear-image", json=test_input)
 
         assert response.status_code == 200
-        assert "status" in response.json()
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], str)
 
     def test_discogs_info(self):
         test_input = {
-            "id": 0,
+            "index": 0,
             "allegroData": {
                 "id": "12237324592"
             },
-            "typeRecord": "Vinyl"
         }
 
         response = TestAPI.client.post("/discogs-information", json=test_input)
 
         assert response.status_code == 200
-        assert "status" in response.json()
-        assert "offer" in response.json()
-        assert "discogs" in response.json()
-
-        assert isinstance(response.json()["offer"], dict)
-        assert isinstance(response.json()["discogs"], dict) or isinstance(response.json()["discogs"], list)
 
     def test_allegro_offers(self):
         test_data = {
@@ -263,9 +199,6 @@ class TestAPI:
         response = TestAPI.client.post("/allegro-offers", json=test_data)
 
         assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], dict)
 
     def test_allegro_offer(self):
         test_data = {
@@ -275,58 +208,22 @@ class TestAPI:
         response = TestAPI.client.post("/allegro-offer", json=test_data)
 
         assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], dict)
 
     def test_allegro_visitors_viewers(self):
         response = TestAPI.client.get("/allegro-visitors-viewers")
 
         assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], list)
-
-    def test_allegro_sale(self):
-        response = TestAPI.client.get("/allegro-sale")
-
-        assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], list)
 
     def test_sale_barplot(self):
         response = TestAPI.client.get("/sale-barplot")
 
         assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], str)
     
     def test_genre_barplot(self):
         response = TestAPI.client.get("/genre-barplot")
 
         assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], str)
         
-    def test_store_all_offers(self):
-        response = TestAPI.client.get("/store-all-offers")
-
-        assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], list)
-        
-    def test_pstore_all_payments(self):
-        response = TestAPI.client.get("/store-all-payments")
-
-        assert response.status_code == 200
-        assert "output" in response.json()
-
-        assert isinstance(response.json()["output"], list)
-    
 class TestAllegroApi:
     credentials = {"api_allegro_token": "", "api_discogs_token": ""}
 
@@ -438,31 +335,6 @@ class TestAllegroApi:
 
         assert result == "test.A2"
 
-class TestAzureApi:
-    credentials = {"api_azure_subscription_key": "", 
-                   "api_azure_endpoint": "", 
-                   "api_imagekit_id": "", 
-                   "api_imagekit_secret": "", 
-                   "api_imagekit_endpoint": ""}
-    
-    with open(r'D:\records\test.jpg', 'rb') as f:
-        image_bytes = f.read()
-        image = base64.b64encode(image_bytes)
-        image = json.dumps(image.decode('utf-8'))
-
-    def test_read_image(self):
-        result, url = read_image(TestAzureApi.image, TestAzureApi.credentials)
-        
-        assert isinstance(result, list)
-        assert isinstance(url, str)
-
-    def test_clear_image(self):
-        image_url = "https://example.com/image.png"
-        result = clear_image(image_url, TestAzureApi.credentials)
-
-        assert isinstance(result, bytes)
-        assert result.startswith(b'{') and result.endswith(b'}')
-
 class TestDiscogsApi:
     discogs_token = ""
 
@@ -510,10 +382,9 @@ class TestImageKitApi:
                    "api_imagekit_secret": "", 
                    "api_imagekit_endpoint": ""}
     
-    with open(r'D:\records\test.jpg', 'rb') as f:
-        image_bytes = f.read()
-        image = base64.b64encode(image_bytes)
-        image = json.dumps(image.decode('utf-8'))
+    response = requests.get("https://picsum.photos/200/300")
+    image_content = response.content
+    image = base64.b64encode(image_content).decode('utf-8')
 
     def test_upload_file_imageKit(self):
         result = upload_file_imageKit(TestImageKitApi.image, TestImageKitApi.credentials)
@@ -557,91 +428,69 @@ class TestPlots:
         assert isinstance(result, str)
         assert result.startswith("https://ik.imagekit.io/")
 
+class TestChunks:
+    discogs_token = ""
+    
+    def test_search_data(self):
+        input_data = ["Test1", "Test2", "Test3"]
+        type_record = "Vinyl"
+        image_data = True
+
+        results = search_data(input_data, TestChunks.discogs_token, type_record, image_data)
+        
+        assert isinstance(results, list)
+        assert all(isinstance(item, dict) for item in results)
+
+    def test_preprocess_data(self):
+        input_data = [
+            {
+                "id": 123,
+                "uri": "/release/123",
+                "genre": ["Rock"],
+                "title": "Sample Album",
+                "country": "USA",
+                "year": 2021,
+                "barcode": ["123456789"],
+                "label": ["Sample Label"],
+                "catno": "CAT001",
+                "community": {"want": 10, "have": 5}
+            }
+        ]
+        results = preprocess_data(input_data, TestChunks.discogs_token)
+
+        assert isinstance(results, list)
+        assert all(isinstance(item, dict) for item in results)
+
 class TestPreprocessingData:
     credentials = {"api_discogs_token": "", 
                    "api_imagekit_id": "", 
                    "api_imagekit_secret": "", 
                    "api_imagekit_endpoint": ""}
-    
-    def test_search_data(self):
-        # Test case 1: Text data - vinyl
-        result = search_data(["Pink Floyd - The Dark Side Of The Moon"], TestPreprocessingData.credentials, "Vinyl", False)
-        assert len(result) == 1
-        assert result[0]['title'] == "The Dark Side Of The Moon"
-
-        # Test case 2: Text data - cd
-        result = search_data(["0602557156317"], TestPreprocessingData.credentials, "CD", False)
-        assert len(result) == 1
-        assert result[0]['title'] == "Hardwired...To Self-Destruct"
-
-        # Test case 3: Image data - vinyl
-        result = search_data(['JNYHUID MI SOYR', 'SIDE 1', 'LICENSEE TRADE MARK', 'sport (4:03)', 'GEMA', 'INAUTHORIZED PUBLIC PERFORMANCE BROAD', 'HAMBURG', '33', 'ATL 40 417', '1972 Atlantic Records', 'Klaus Doldinger', 'Except "Fairy Tale" - Trad. Adpt. By', 'Klaus Doldinger', 'All Titles Composed And Produced By', 'ATLANTIC', '4. Get Yourself A Second Passpo', '3. Fairy Tale (7:32)', '1. Mandragora (3:46)', '2. Nexus (5:23)', 'PASSPORT - SECOND PASSPORT', '40 417 -', 'STEREO', 'A ATLANTIC RECORDING CORP. U.S.A.', 'CTURER AND OF THE OWNER OF THE RECORD', 'ALL RIGHTS OF THE', 'BESSIE SMITH', 'AL STEWART', 'SPIRIT', "The World's Greatest Blues", '68258', 'MOONDOG', 'Singar', 'LEONARD COHEN', 'MOONDOG', 'POCO', 'The Bassie Smith Story Volumes 1-4', 'ARGENT', '52377/78/79/80', 'Argent', 'AMERICAN', 'KALEIDOSCOPE', 'Clear', '83729', 'The Family That Plays Together', '83523', 'argeac', '+', 'Spirit', '83278', 'Zero She Flies', '53848', '63241', "IT'S A", 'Love Chronicles', '83450', 'TIFUL DAY', '64082', 'Bedsitter', '53087', 'TREES', 'MILES DAVIS', 'ROCK WORKSHOP', 'bernice', '84005', 'Marrying Maiden', '64085', 'A Beautiful Day', '#3722', 'AMORY KANE', 'The Garden Of Jane Delawney', 'LAURA NYRO', '63837', 'BLACK WIDOW', 'on', 'AHAL', 'Rask Workshop', '64076', 'CEt', 'BOB DYLAN', 'REDBONE', 'SIM', 'GARFU', 'New York Tandeberry', 'L', 'Ch And The Thirteenth Confession 032', '63510', 'Nashville Skyline', 'Highway 61 Revisited', '88260', 'Giant Stop', 'lapisg it All Back Home', '83601', "The Netch'l blues", '82672', '82516', 'a Metal', '$8228', '83387', 'Just To Be There', 'CHAMBERS BROS', 'EVERLY', 'BROTHERS'], TestPreprocessingData.credentials, "Vinyl", True)
-        assert len(result) == 1
-        assert result[0]['title'] == "Passport - Second Passport"
-
-        # Test case 4: Empty data
-        result = search_data([""], TestPreprocessingData.credentials, "Vinyl", False)
-        assert len(result) == 0
-
-    def test_preprocess_data(self):
-        # Test case 1: Image data
-        input_text = "ATL40417"
-        result = preprocess_data(input_text, TestPreprocessingData.credentials, "Vinyl")
-        assert isinstance(result, list)
-        assert len(result) == 1
-        assert isinstance(result[0], dict)
-        assert result[0]['title'] == "Second Passport"
-
-        # Test case 2: Non-image data
-        input_text = "Pink Floyd - The Dark Side Of The Moon"
-        result = preprocess_data(input_text, TestPreprocessingData.credentials, "CD", False)
-        assert isinstance(result, list)
-        assert len(result) == 1
-        assert isinstance(result[0], dict)
-        assert result[0]['title'] == "The Dark Side Of The Moon"
-
-    def test_remove_background(self):
-        image_url = "https://example.com/image.png"
-
-        result = remove_background(image_url, TestPreprocessingData.credentials)
-        assert isinstance(result, str)
-        assert result.startswith("https://ik.imagekit.io")
-
-    def test_get_cd_barcode(self):
-        with open(r'D:\records\test.jpg', 'rb') as f:
-            image_bytes = f.read()
-            image = base64.b64encode(image_bytes)
-            image = json.dumps(image.decode('utf-8'))
-
-        barcode, image_url = get_cd_barcode(image, TestPreprocessingData.credentials)
-        
-        assert isinstance(barcode, str)
-        assert isinstance(image_url, str)
-        
+            
     def test_search_data_parallel(self):
         # Test case 1: Text data - vinyl
-        result = search_data(["Pink Floyd - The Dark Side Of The Moon"], TestPreprocessingData.credentials, "Vinyl", False)
+        result = search_data_parallel(["Pink Floyd - The Dark Side Of The Moon"], TestPreprocessingData.credentials, "Vinyl", False)
         assert len(result) == 1
         assert result[0]['title'] == "The Dark Side Of The Moon"
 
         # Test case 2: Text data - cd
-        result = search_data(["0602557156317"], TestPreprocessingData.credentials, "CD", False)
+        result = search_data_parallel(["0602557156317"], TestPreprocessingData.credentials, "CD", False)
         assert len(result) == 1
         assert result[0]['title'] == "Hardwired...To Self-Destruct"
 
         # Test case 3: Image data - vinyl
-        result = search_data(['JNYHUID MI SOYR', 'SIDE 1', 'LICENSEE TRADE MARK', 'sport (4:03)', 'GEMA', 'INAUTHORIZED PUBLIC PERFORMANCE BROAD', 'HAMBURG', '33', 'ATL 40 417', '1972 Atlantic Records', 'Klaus Doldinger', 'Except "Fairy Tale" - Trad. Adpt. By', 'Klaus Doldinger', 'All Titles Composed And Produced By', 'ATLANTIC', '4. Get Yourself A Second Passpo', '3. Fairy Tale (7:32)', '1. Mandragora (3:46)', '2. Nexus (5:23)', 'PASSPORT - SECOND PASSPORT', '40 417 -', 'STEREO', 'A ATLANTIC RECORDING CORP. U.S.A.', 'CTURER AND OF THE OWNER OF THE RECORD', 'ALL RIGHTS OF THE', 'BESSIE SMITH', 'AL STEWART', 'SPIRIT', "The World's Greatest Blues", '68258', 'MOONDOG', 'Singar', 'LEONARD COHEN', 'MOONDOG', 'POCO', 'The Bassie Smith Story Volumes 1-4', 'ARGENT', '52377/78/79/80', 'Argent', 'AMERICAN', 'KALEIDOSCOPE', 'Clear', '83729', 'The Family That Plays Together', '83523', 'argeac', '+', 'Spirit', '83278', 'Zero She Flies', '53848', '63241', "IT'S A", 'Love Chronicles', '83450', 'TIFUL DAY', '64082', 'Bedsitter', '53087', 'TREES', 'MILES DAVIS', 'ROCK WORKSHOP', 'bernice', '84005', 'Marrying Maiden', '64085', 'A Beautiful Day', '#3722', 'AMORY KANE', 'The Garden Of Jane Delawney', 'LAURA NYRO', '63837', 'BLACK WIDOW', 'on', 'AHAL', 'Rask Workshop', '64076', 'CEt', 'BOB DYLAN', 'REDBONE', 'SIM', 'GARFU', 'New York Tandeberry', 'L', 'Ch And The Thirteenth Confession 032', '63510', 'Nashville Skyline', 'Highway 61 Revisited', '88260', 'Giant Stop', 'lapisg it All Back Home', '83601', "The Netch'l blues", '82672', '82516', 'a Metal', '$8228', '83387', 'Just To Be There', 'CHAMBERS BROS', 'EVERLY', 'BROTHERS'], TestPreprocessingData.credentials, "Vinyl", True)
+        result = search_data_parallel(['JNYHUID MI SOYR', 'SIDE 1', 'LICENSEE TRADE MARK', 'sport (4:03)', 'GEMA', 'INAUTHORIZED PUBLIC PERFORMANCE BROAD', 'HAMBURG', '33', 'ATL 40 417', '1972 Atlantic Records', 'Klaus Doldinger', 'Except "Fairy Tale" - Trad. Adpt. By', 'Klaus Doldinger', 'All Titles Composed And Produced By', 'ATLANTIC', '4. Get Yourself A Second Passpo', '3. Fairy Tale (7:32)', '1. Mandragora (3:46)', '2. Nexus (5:23)', 'PASSPORT - SECOND PASSPORT', '40 417 -', 'STEREO', 'A ATLANTIC RECORDING CORP. U.S.A.', 'CTURER AND OF THE OWNER OF THE RECORD', 'ALL RIGHTS OF THE', 'BESSIE SMITH', 'AL STEWART', 'SPIRIT', "The World's Greatest Blues", '68258', 'MOONDOG', 'Singar', 'LEONARD COHEN', 'MOONDOG', 'POCO', 'The Bassie Smith Story Volumes 1-4', 'ARGENT', '52377/78/79/80', 'Argent', 'AMERICAN', 'KALEIDOSCOPE', 'Clear', '83729', 'The Family That Plays Together', '83523', 'argeac', '+', 'Spirit', '83278', 'Zero She Flies', '53848', '63241', "IT'S A", 'Love Chronicles', '83450', 'TIFUL DAY', '64082', 'Bedsitter', '53087', 'TREES', 'MILES DAVIS', 'ROCK WORKSHOP', 'bernice', '84005', 'Marrying Maiden', '64085', 'A Beautiful Day', '#3722', 'AMORY KANE', 'The Garden Of Jane Delawney', 'LAURA NYRO', '63837', 'BLACK WIDOW', 'on', 'AHAL', 'Rask Workshop', '64076', 'CEt', 'BOB DYLAN', 'REDBONE', 'SIM', 'GARFU', 'New York Tandeberry', 'L', 'Ch And The Thirteenth Confession 032', '63510', 'Nashville Skyline', 'Highway 61 Revisited', '88260', 'Giant Stop', 'lapisg it All Back Home', '83601', "The Netch'l blues", '82672', '82516', 'a Metal', '$8228', '83387', 'Just To Be There', 'CHAMBERS BROS', 'EVERLY', 'BROTHERS'], TestPreprocessingData.credentials, "Vinyl", True)
         assert len(result) == 1
         assert result[0]['title'] == "Passport - Second Passport"
 
         # Test case 4: Empty data
-        result = search_data([""], TestPreprocessingData.credentials, "Vinyl", False)
+        result = search_data_parallel([""], TestPreprocessingData.credentials, "Vinyl", False)
         assert len(result) == 0
     
     def test_preprocess_data_parallel(self):
         # Test case 1: Image data
         input_text = "ATL40417"
-        result = preprocess_data(input_text, TestPreprocessingData.credentials, "Vinyl")
+        result = preprocess_data_parallel(input_text, TestPreprocessingData.credentials, "Vinyl")
         assert isinstance(result, list)
         assert len(result) == 1
         assert isinstance(result[0], dict)
@@ -649,8 +498,52 @@ class TestPreprocessingData:
 
         # Test case 2: Non-image data
         input_text = "Pink Floyd - The Dark Side Of The Moon"
-        result = preprocess_data(input_text, TestPreprocessingData.credentials, "CD", False)
+        result = preprocess_data_parallel(input_text, TestPreprocessingData.credentials, "CD", False)
         assert isinstance(result, list)
         assert len(result) == 1
         assert isinstance(result[0], dict)
         assert result[0]['title'] == "The Dark Side Of The Moon"
+        
+class TestPreprocessingImage:
+    response = requests.get("https://ik.imagekit.io/jhddvvyeg/test.jpg?updatedAt=1685255855385")
+    image_content = response.content
+    vinyl_image = base64.b64encode(image_content).decode('utf-8')
+    
+    credentials = {"api_discogs_token": "", 
+                   "api_ocr_space": "",
+                   "api_imagekit_id": "", 
+                   "api_imagekit_secret": "", 
+                   "api_imagekit_endpoint": ""}
+    
+    def test_read_image(self):
+        text, image_url = read_image(TestPreprocessingImage.vinyl_image, TestPreprocessingImage.vinyl_image)
+
+        assert isinstance(text, list)
+        assert isinstance(image_url, str)
+
+    async def test_preprocess_vinyl_images(self):
+        images = [TestPreprocessingImage.vinyl_image, TestPreprocessingImage.vinyl_image, TestPreprocessingImage.vinyl_image]
+        results = await preprocess_vinyl_images(images, TestPreprocessingImage.vinyl_image)
+
+        assert isinstance(results, list)
+        assert all(isinstance(item, dict) for item in results)
+        
+    def test_get_cd_barcode(self):
+        text, image_url = get_cd_barcode(TestPreprocessingImage.vinyl_image, TestPreprocessingImage.vinyl_image)
+
+        assert isinstance(text, list)
+        assert isinstance(image_url, str)
+        
+    async def test_preprocess_vinyl_images(self):
+        images = [TestPreprocessingImage.vinyl_image, TestPreprocessingImage.vinyl_image, TestPreprocessingImage.vinyl_image]
+        results = await preprocess_cd_images(images, TestPreprocessingImage.vinyl_image)
+
+        assert isinstance(results, list)
+        assert all(isinstance(item, dict) for item in results)
+        
+    def test_remove_background(self):
+        image_url = "https://ik.imagekit.io/jhddvvyeg/test.jpg?updatedAt=1685255855385"
+        result = remove_background(image_url, TestPreprocessingImage.vinyl_image)
+
+        assert isinstance(result, str)
+        

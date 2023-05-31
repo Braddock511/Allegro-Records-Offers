@@ -1,8 +1,19 @@
 import multiprocessing
 from typing import List, Dict
 from chunks import search_data, preprocess_data
-
 def search_data_parallel(text_from_image: List[str], discogs_token: str, type_record: str, image_data: bool) -> List[Dict[str, str]]:
+    """
+        Searches for data in parallel for the given text from images using multiprocessing.
+
+        Args:
+            text_from_image (List[str]): The list of text extracted from images.
+            discogs_token (str): The token for the Discogs API.
+            type_record (str): The type of record to search for.
+            image_data (bool): Indicates whether to include image data in the search.
+
+        Returns:
+            List[Dict[str, str]]: The list of search results as dictionaries.
+    """
     # Split the text_from_image list into chunks
     num_chunks = multiprocessing.cpu_count()
     chunk_size = len(text_from_image) // num_chunks
@@ -17,7 +28,18 @@ def search_data_parallel(text_from_image: List[str], discogs_token: str, type_re
         
 
 def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_record: str, image_data: bool = True) -> List[Dict[str, str]]:
-    # Get the Discogs API token from the credentials list
+    """
+        Preprocesses the data in parallel for the given text from images using multiprocessing.
+
+        Args:
+            text_from_image (str | list): The text extracted from images or a single text string.
+            credentials (dict): The credentials containing the necessary information.
+            type_record (str): The type of record to search for.
+            image_data (bool, optional): Indicates whether to include image data in the search. Defaults to True.
+
+        Returns:
+            List[Dict[str, str]]: The preprocessed data as a list of dictionaries.
+    """
     discogs_token = credentials["api_discogs_token"]
 
     # Clean up the input string

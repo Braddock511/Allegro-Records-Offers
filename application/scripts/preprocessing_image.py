@@ -10,6 +10,16 @@ from rembg import remove
 from imageKit_api import upload_file_imageKit
 
 def read_image(image: str, credentials: Dict[str, str]) -> tuple[str, str]:
+    """
+        Reads the text from an image using OCR and returns the extracted text and image URL.
+
+        Args:
+            image (str): The image file or URL.
+            credentials (Dict[str, str]): The credentials containing the necessary information.
+
+        Returns:
+            tuple[str, str]: The extracted text and image URL.
+    """
     image = upload_file_imageKit(image, credentials)
     image_url = image['url']
     
@@ -34,7 +44,17 @@ def read_image(image: str, credentials: Dict[str, str]) -> tuple[str, str]:
     
     return output_text, image_url
 
-async def preprocess_vinyl_images(images, credentials):
+async def preprocess_vinyl_images(images: list, credentials: Dict[str, str]) -> list:
+    """
+        Preprocesses vinyl images by reading the text from the images using OCR.
+
+        Args:
+            images (List[str]): A list of image URLs.
+            credentials (Dict[str, str]): The credentials containing the necessary information.
+
+        Returns:
+            List[Dict[str, str]]: A list of dictionaries containing the extracted text and image URL for each image.
+    """
     # Read first image
     text_from_image_1, image_url_1 = await asyncio.to_thread(read_image, images[0], credentials)
     text_from_images = [{"text_from_image": text_from_image_1, "url": image_url_1}]
@@ -46,7 +66,17 @@ async def preprocess_vinyl_images(images, credentials):
     
     return text_from_images
 
-def get_cd_barcode(image: bytes, credentials: dict):
+def get_cd_barcode(image: bytes, credentials: dict) -> tuple[str, str]:
+    """
+        Retrieves the CD barcode from an image.
+
+        Args:
+            image (bytes): The image data in bytes.
+            credentials (dict): The credentials containing the necessary information.
+
+        Returns:
+            Tuple[str, str]: A tuple containing the extracted barcode data and the image URL.
+    """
     upload_image = upload_file_imageKit(image, credentials)
     image_url = upload_image['url']
     response = requests.get(image_url).content
@@ -60,7 +90,17 @@ def get_cd_barcode(image: bytes, credentials: dict):
     
     return "", image_url
 
-async def preprocess_cd_images(images, credentials):
+async def preprocess_cd_images(images: list, credentials: Dict[str, str]) -> list:
+    """
+        Preprocesses CD images to extract barcode information.
+
+        Args:
+            images (List[bytes]): The CD images in bytes.
+            credentials (dict): The credentials containing the necessary information.
+
+        Returns:
+            List[Dict[str, str]]: A list of dictionaries containing the extracted text and image URLs.
+    """
     # Read second image 
     text_from_image, image_url_2 = await asyncio.to_thread(get_cd_barcode, images[1], credentials)
 
@@ -79,7 +119,17 @@ async def preprocess_cd_images(images, credentials):
     
     return text_from_images
 
-def remove_background(image_url: str, credentials: Dict[str, str]):
+def remove_background(image_url: str, credentials: Dict[str, str]) -> str:
+    """
+        Remove background from an image and upload the resulting image.
+
+        Args:
+            image_url (str): URL of the image to remove the background from.
+            credentials (Dict[str, str]): Credentials for image processing and uploading.
+
+        Returns:
+            str: URL of the uploaded image without the background.
+    """
     response = requests.get(image_url)
     image_data = response.content
 

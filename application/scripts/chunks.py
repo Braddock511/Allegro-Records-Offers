@@ -3,20 +3,59 @@ from typing import List, Dict
 from discogs_api import get_vinyl, get_cd, get_price
 
 def remove_text_in_parentheses(text: str) -> str:
+    """
+        Removes text enclosed in parentheses from a given string.
+        
+        Args:
+            text (str): The input string.
+            
+        Returns:
+            str: The modified string with text inside parentheses removed.
+    """
     text = re.sub(r'\(', ' (', text)
     text = re.sub(r'\([^)]*\)', '', text)
     return text
 
 def remove_unwanted_characters(text: str) -> str:
+    """
+        Removes ", ', A, B, -, ~ and blank characters from a given string
+        
+        Args:
+            text (str): The input string.
+            
+        Returns:
+            str: The modified string with unwanted characters removed.
+    """
     return text.replace('"', "").replace("'", "").replace("A", "").replace("B", "").replace(" ", "").replace("-", "").replace("~", "")
 
 def contains_only_ascii_and_not_punctuation(text: str) -> bool:
+    """
+        Checks if a given string contains only ASCII characters and is not composed solely of punctuation.
+        
+        Args:
+            text (str): The input string.
+            
+        Returns:
+            bool: True if the string contains only ASCII characters and is not solely composed of punctuation; False otherwise.
+    
+    """
     punctuation = "<"'"'"'@:^`!#$%&*();?'\'[]{}=+,>"
     punctuation_regex = re.compile(f"^[a-zA-Z {re.escape(punctuation)}]*$")
     
     return not re.search(r'[^\u0000-\u007F]', text) and not punctuation_regex.match(text)
 
 def get_discogs_data(text: str, type_record: str, discogs_token: str) -> Dict[str, str]:
+    """
+        Retrieves discogs data based on a given text and record type
+        
+        Args:
+            text (str): The input text.
+            type_record (str): The record type ("Vinyl" or "CD").
+            discogs_token (str): The discogs token for authentication.
+            
+        Returns:
+            Dict[str, str]: A dictionary containing discogs data.
+    """
     discogs_data = {}
 
     if type_record in {"Vinyl", "Winyl"}:
@@ -27,6 +66,17 @@ def get_discogs_data(text: str, type_record: str, discogs_token: str) -> Dict[st
     return discogs_data
 
 def filter_discogs_data(discogs_data_list: List[Dict[str, str]], text: str, image_data: bool) -> List[Dict[str, str]]:
+    """
+        Filters discogs data based on specific criteria.
+    
+        Args:
+            discogs_data_list (List[Dict[str, str]]): A list of discogs data dictionaries.
+            text (str): The input text for filtering.
+            image_data (bool): A flag indicating whether image data is being filtered.
+            
+        Retruns:
+            List[Dict[str, str]]: A filtered list of discogs data dictionaries.
+    """
     discogs_data_output = []
 
     for disc_data in discogs_data_list:
@@ -41,6 +91,18 @@ def filter_discogs_data(discogs_data_list: List[Dict[str, str]], text: str, imag
     return discogs_data_output
 
 def search_data(chunk: List[str], discogs_token: str, type_record: str, image_data: bool) -> List[dict[str, str]]:
+    """
+        Searches discogs data based on a given chunk of text, discogs token, record type, and image data flag.
+
+        Args:
+            chunk (List[str]): A list of text chunks.
+            discogs_token (str): The discogs token for authentication.
+            type_record (str): The record type ("Vinyl" or "CD").
+            image_data (bool): A flag indicating whether image data is being searched.
+
+        Returns:
+            List[dict[str, str]]: A list of discogs data dictionaries that match the search criteria.
+    """
     discogs_data_output = []
     discogs_data = {}
 
@@ -61,6 +123,16 @@ def search_data(chunk: List[str], discogs_token: str, type_record: str, image_da
     return discogs_data_output
 
 def preprocess_data(chunk: list, discogs_token: str) -> list:
+    """
+        Preprocesses the data in the chunk list and returns a list of discogs information dictionaries.
+
+        Args:
+            chunk (list): A list of data chunks.
+            discogs_token (str): The discogs token for authentication.
+
+        Returns:
+            list: A list of discogs information dictionaries.
+    """
     record_id, label, country, year, uri, genre, title, price, barcode = '-', '-', '-', '-', '-', '-', '-', '-', '-'
     community_want_have = {}
     discogs_information = []

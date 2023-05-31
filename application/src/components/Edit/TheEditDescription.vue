@@ -88,7 +88,7 @@
                     return ""
                 }
                 else{
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: this.offerIndex, allegroData: this.allegroData})).data
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: this.offerIndex, allegroData: this.allegroData})).data
                     if (this.allegroData.error || this.allegroData.errors){
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
@@ -104,7 +104,7 @@
         },
         async beforeMount() {
             this.loading = true
-            this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData})).data
+            this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
             if (this.allegroData.error || this.allegroData.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }

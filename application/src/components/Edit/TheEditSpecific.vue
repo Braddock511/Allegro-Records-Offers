@@ -97,7 +97,7 @@
                 }
                 else{
                     this.allegroData = this.allegroData.output
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {id: 0, allegroData: this.allegroData})).data
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
                     this.img = this.offerData.offer.images
                 }
                 this.loading = false
