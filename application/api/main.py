@@ -234,17 +234,15 @@ async def edit_image(request: Request):
 async def allegro_listing(request: Request):
     try:
         response = loads((await request.body()).decode('utf-8'))
-        data = response['data']
+        offer_data = response['offer_data']
         carton = response['carton']
-        condition = response['condition']
-        images = response['images']
         type_record = response['typeRecord']
         type_offer = response['typeOffer']
         duration = response['duration']
         clear = response['clear']
         credentials = db.get_credentials()
 
-        result = allegro.create_offer(credentials, data, carton, condition, images, type_record, type_offer, duration, clear)
+        result = allegro.create_offer(credentials, offer_data, carton, type_record, type_offer, duration, clear)
 
         return {"status": 200, "output": result}
 

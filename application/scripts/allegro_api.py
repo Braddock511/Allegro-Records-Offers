@@ -141,7 +141,7 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
 
     return result
 
-def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: str, images: list, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
+def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
     if type_record in {"Vinyl", "Winyl"}:
         categories = {"all": 279, "latin": 286, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
     elif type_record == "CD":
@@ -150,14 +150,16 @@ def create_offer(credentials: dict, discogs_data: dict, carton: str, condition: 
     conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
 
     # Discogs data
-    record_id = discogs_data['id']
-    title = discogs_data['title']
-    label = discogs_data['label'].replace("&", "")
-    country = discogs_data['country'].replace("&", ", ")
-    released = discogs_data['year']
-    genre = discogs_data['genre']
-    price = discogs_data['price']
-    barcode = "".join(re.findall('\d+', discogs_data['barcode']))
+    record_id = offer_data['id']
+    title = offer_data['title']
+    label = offer_data['label'].replace("&", "")
+    country = offer_data['country'].replace("&", ", ")
+    released = offer_data['year']
+    genre = offer_data['genre']
+    price = offer_data['price']
+    images = offer_data['images']
+    condition = offer_data['condition']
+    barcode = "".join(re.findall('\d+', offer_data['barcode']))
     tracklist = get_tracklist(record_id, credentials["api_discogs_token"])
 
     # Allegro data

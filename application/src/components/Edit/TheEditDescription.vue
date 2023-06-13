@@ -134,10 +134,5 @@
             justify-content: center;
         }
     }
-    tr{
-        td:nth-child(5)::before{
-            content: "" !important;
-        }
-    }
 }
 </style>

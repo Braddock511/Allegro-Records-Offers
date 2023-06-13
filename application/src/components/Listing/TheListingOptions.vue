@@ -104,7 +104,7 @@
                 validateAndSave(content) {
                     const lines = content.includes('\n') ? content.split('\n') : content.split(' ')
                     const processedLines = lines.map((line) => line.trim())
-                    this.conditions = this.conditions.concat(processedLines)
+                    this.conditions = this.conditions.concat(processedLines).reverse()
             },
             splitImages(images, numberImages) {
                 const chunks = [];

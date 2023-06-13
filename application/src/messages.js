@@ -41,7 +41,8 @@ export default {
       sendImages: 'Send images',
       buyNow: "Buy now",
       auction: "Auction",
-      day: "Day"
+      day: "Day",
+      allListed: "All offers have been listed"
     },
     editView:{
       many: "Edit many offers",
@@ -211,7 +212,8 @@ export default {
       sendImages: 'Wyślij zdjęcia',
       buyNow: "Kup teraz",
       auction: "Licytacja",
-      day: "Dzień"
+      day: "Dzień",
+      allListed: "Wszystkie oferty zostały wystawione"
     },
     editView:{
       many: "Edytuj wiele ofert",
@@ -269,13 +271,13 @@ export default {
       good: 'G (Dobry)',
       fair: 'F (Zły)',
       listing_offer: 'Wystaw ofertę',
-      enter_title: 'Wprowadź tytuł:',
-      enter_label: 'Wprowadź etykietę:',
-      enter_country: 'Wprowadź kraj:',
-      enter_year: 'Wprowadź rok:',
-      enter_barcode: 'Wprowadź kod kreskowy:',
-      enter_price: 'Wprowadź cenę:',
-      send: 'Wyślij',
+      enter_title: 'Wpisz tytuł:',
+      enter_label: 'Wpisz etykietę:',
+      enter_country: 'Wpisz kraj:',
+      enter_year: 'Wpisz rok:',
+      enter_barcode: 'Wpisz kod kreskowy:',
+      enter_price: 'Wpisz cenę:',
+      send: 'Wystaw',
       next: "Następna",
       unlisted: "Nie wystawione oferty",
       image: "Zdjęcie",

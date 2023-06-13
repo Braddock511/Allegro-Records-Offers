@@ -96,19 +96,6 @@
             display: block;
             font-size: 18px;
             text-align: left;
-
-            &:nth-child(1)::before{
-                content: "";
-            }
-            &:nth-child(2)::before{
-                content: "";
-            }
-            &:nth-child(3)::before{
-                content: "";
-            }
-            &:nth-child(4)::before{
-                content: "";
-            }
             }
         }
     }

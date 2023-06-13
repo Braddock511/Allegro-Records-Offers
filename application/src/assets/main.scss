@@ -175,7 +175,6 @@ select{
     }
     
     table {
-      width: 100vw;
       border: 0;
       tr {
         border-bottom: 2px solid #ddd;
@@ -190,19 +189,6 @@ select{
           display: block;
           font-size: 18px;
           text-align: left;
-        
-        &:nth-child(1)::before{
-          content: "Label: ";
-        }
-        &:nth-child(2)::before{
-          content: "Country: ";
-        }
-        &:nth-child(3)::before{
-          content: "Year: ";
-        }
-        &:nth-child(4)::before{
-          content: "Price: ";
-        }
         
         select{
           width: 30% !important;

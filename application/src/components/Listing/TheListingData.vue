@@ -5,10 +5,13 @@
         <button class="btn btn-primary" type="button" @click="confirmCarton" style="width: 300px; padding: 0.5rem; font-size: 20px;">{{ $t("carton.confirm") }}</button>
     </span>
     <div class="data" v-if="cartonFlag && !failedFlag && !loading.flag">
-        <TheSlider :images="img"></TheSlider>
-        {{ $t("table.condition") }} {{ conditions[currentIndex/numberImages] }}
+        <TheSlider :images="offerImages"></TheSlider>
+        <h3>{{ $t("table.condition") }} {{ conditions[currentIndex/numberImages] }}</h3>
         <div style="width: 100%; text-align: center;">
-                <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" @click="failed.data.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-'}); failed.condition.push(this.condition); failed.img.push(this.img[0]); next()">{{ $t("table.next") }}</button>
+            <button class="btn btn-primary" type="submit" style="padding: 0.5rem; width: 50%; font-size: 20px;" 
+                @click="activeRequests+=1; failed.push({id: '', title: '-', label: '-', country: '-', year: '-', genre: '-', price: '-', barcode: '-', condition: this.condition, images: this.offerImages}); next()">
+                {{ $t("table.next") }}
+            </button>
         </div>
         <table>
             <tr style="background-color: rgb(34, 36, 35); border-bottom: 0px;">
@@ -58,7 +61,7 @@
                         <option value="new">{{ $t("genre_options.new") }}</option>
                         <option value="opera">{{ $t("genre_options.opera") }}</option>
                         <option value="pop">{{ $t("genre_options.pop") }}</option>
-                        <option value="rap">{{ $t("genre_options.rap") }}</option>
+                        <option value="hip hop">{{ $t("genre_options.rap") }}</option>
                         <option value="reggae">{{ $t("genre_options.reggae") }}</option>
                         <option value="rock">{{ $t("genre_options.rock") }}</option>
                         <option value="rock'n'roll">{{ $t("genre_options.rock_and_roll") }}</option>
@@ -75,7 +78,7 @@
                 <td><button class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="listingOfferAllegro">{{ $t("table.send") }}</button></td>
                 <td>
                     {{ $t("table.sleeveCondition") }}
-                    <select v-model="sleeveCondition">
+                    <select v-model="sleeveCondition" style="width: 100%;">
                         <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
                         <option value="Mint (M)">{{ $t("table.mint") }}</option>
                         <option value="Excellent (EX)">{{ $t("table.ex") }}</option>
@@ -114,7 +117,7 @@
     </div>
     <TheAlert :alert="alert" />
 
-    <TheFailed :dataFailed="failed" :typeRecord="typeRecord" v-if="failedFlag"/>
+    <TheFailed :dataFailed="failed" :typeRecord="typeRecord" :carton="carton" :typeOffer=" this.typeOffer" :duration=" this.duration" :clear=" this.clear" v-if="failedFlag"/>
 </template>
   
 <script>
@@ -125,9 +128,9 @@
     export default {
         data(){
             return{
-                condition: "Near Mint (NM or M-)",
+                condition: "Near Mint (NM or M-)", 
                 sleeveCondition: "Near Mint (NM or M-)",
-                carton: "",
+                carton: "", 
                 title: "",
                 label: "",
                 country: "",
@@ -137,14 +140,14 @@
                 price: "",
                 currentIndex: 0,
                 recordIndex: this.typeRecord == "Vinyl" ? 0 : 1, 
-                img: [],
-                failed: {"data": [], "condition": [], "img": []},
+                offerImages: [],
+                failed: [],
                 alert: {},
                 cartonFlag: false,
                 visible: false,
                 failedFlag: false,
                 loading: {"flag": false, "message": ""},
-                requests: []
+                activeRequests: 0
             }
         },
         methods:{
@@ -156,6 +159,45 @@
                 this.price = ""
                 this.barcode = ""
                 this.condition = "Near Mint (NM or M-)"
+            },
+            async listingOfferDiscogs(data) {
+                if (this.price === "") {
+                    this.alert = { variant: "warning", message: this.$t("alerts.complete") }
+                    return
+                }
+
+                let selectedData = {
+                    id: data.id,
+                    condition: this.condition,
+                    price: this.price,
+                }
+
+                // Send data
+                this.loading.flag = true
+                this.loading.message = this.$t("loading.listingOffer")
+
+                await axios.post("http://127.0.0.1:8000/discogs-listing",{
+                        listing_id: data.id,
+                        mediaCondition: this.condition,
+                        carton: this.carton,
+                        sleeveCondition: this.sleeveCondition,
+                        price: this.roundedPriceToEUR(this.price),
+                    }, { headers: { "Content-Type": "application/json" } }).then((response) => {
+                        response = response.data
+
+                        if (response.error || response.output.errors) {
+                            this.failed.push(selectedData)
+                            this.alert = { variant: "danger", message: this.$t("alerts.listingFailed") }
+                        } else {
+                            this.alert = { variant: "success", message: this.$t("alerts.listingSuccess") }
+                        }
+                    }).finally(() => {
+                        this.activeRequests += 1
+                        
+                    })
+
+                this.resetVariables(); 
+                await this.next();
             },
             async listingOfferAllegro(data) {
                 let selectedData = {}
@@ -176,6 +218,8 @@
                         price: this.price,
                         barcode: data.barcode,
                         quantity: data.quantity,
+                        images: this.offerImages,
+                        condition: this.condition 
                     }
                 } else {
                     if (this.title === "" || this.price === "") {
@@ -198,18 +242,18 @@
                         price: this.price,
                         barcode: this.barcode ? this.barcode : "-",
                         quantity: "",
+                        images: this.offerImages,
+                        condition: this.condition
                     }
                 }
 
-                // Send data
+                // Send data 
                 this.loading.flag = true
-                this.loading.message = this.$t("loading.listingOffer")
-
-                const allegroListing = axios.post("http://127.0.0.1:8000/allegro-listing", {
-                    data: selectedData,
-                    condition: this.condition,
+                this.next()
+                
+                axios.post("http://127.0.0.1:8000/allegro-listing", {
+                    offer_data: selectedData,
                     carton: this.carton,
-                    images: this.img,
                     typeRecord: this.typeRecord,
                     typeOffer: this.typeOffer,
                     duration: this.duration,
@@ -221,62 +265,24 @@
                     }).then((response) => {
                         response = response.data
                         console.log(response)
+
                         if (response.error || response.output.errors) {
-                            this.failed.data.push(selectedData)
-                            this.failed.condition.push(this.condition)
-                            this.failed.img.push(this.img[0])
+                            this.failed.push(selectedData)
                             this.alert = { variant: "danger", message: `${this.$t("alerts.listingFailed")} - ${selectedData.title}` }
                         } else {
                             this.alert = { variant: "success", message: `${this.$t("alerts.listingSuccess")} - ${selectedData.title}` }
                         }
+                    }).finally(()=>{
+                        this.activeRequests += 1
+                        
+                        // Last offer
+                        if (this.activeRequests == (this.numberFiles / this.numberImages))
+                        {
+                            this.next()
+                        }
                     })
                 
-                this.requests.push(allegroListing);
-
                 this.resetVariables()
-                this.next()
-            },
-
-            async listingOfferDiscogs(data) {
-                if (this.price === "") {
-                    this.alert = { variant: "warning", message: this.$t("alerts.complete") }
-                    return
-                }
-
-                let selectedData = {
-                    id: data.id,
-                    condition: this.condition,
-                    price: this.price,
-                }
-
-                // Send data
-                this.loading.flag = true
-                this.loading.message = this.$t("loading.listingOffer")
-
-                try {
-                    const response = (axios.post("http://127.0.0.1:8000/discogs-listing",{
-                            listing_id: data.id,
-                            mediaCondition: this.condition,
-                            carton: this.carton,
-                            sleeveCondition: this.sleeveCondition,
-                            price: this.roundedPriceToEUR(this.price),
-                        }, { headers: { "Content-Type": "application/json" } })).data
-
-                    if (response.error || response.output.errors) {
-                        this.failed.data.push(selectedData)
-                        this.failed.condition.push(this.condition)
-                        this.failed.img.push(this.img[0])
-                        this.alert = { variant: "danger", message: this.$t("alerts.listingFailed") }
-                    } else {
-                        this.alert = { variant: "success", message: this.$t("alerts.listingSuccess") }
-                    }
-                } catch (error) {
-                    // Handle request error
-                    console.error(error)
-                    this.alert = { variant: "danger", message: this.$t("alerts.listingFailed") }
-                }
-                this.resetVariables(); 
-                await this.next();
             },
             async next(){
                 this.loading.flag = true
@@ -284,27 +290,23 @@
                 this.currentIndex += this.numberImages
 
                 if (this.currentIndex >= this.numberFiles) {
-                    if (this.failed.img.length !== 0) {
-                        this.loading.message = ""
-                        if (await Promise.all(this.requests)){
-                            this.loading.flag = false
-                            this.failedFlag = true
-                        }
-                    } else {
-                        window.location.reload()
-                        return
+                    this.loading.message = ""
+                    if (this.activeRequests == (this.numberFiles / this.numberImages))
+                    {
+                        this.loading.flag = false
+                        this.failedFlag = true
                     }
                 }
                 else{
-                    this.img = []
-                    await axios.post("http://127.0.0.1:8000/discogs-information-image", {typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                    this.offerImages = []
+                    axios.post("http://127.0.0.1:8000/discogs-information-image", {typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
                         this.discogsData = response.data.output
                         
                         for (let i = 0; i < this.numberImages; i++) {
-                            this.img.push(this.discogsData[i].url)
+                            this.offerImages.push(this.discogsData[i].url)
                         }
                         
-                        this.img.reverse()
+                        this.offerImages.reverse()
                         this.loading.message = "" 
                         this.loading.flag = false
                     })
@@ -349,12 +351,12 @@
             this.loading.flag =  true
             this.loading.message = this.$t("loading.loadData") 
             this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
-            console.log(this.discogsData)
+
             try{
                 for (let i = 0; i < this.numberImages; i++) {
-                    this.img.push(this.discogsData[i].url)
+                    this.offerImages.push(this.discogsData[i].url)
                 }
-                this.img.reverse()
+                this.offerImages.reverse()
             }
             catch{
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
@@ -412,57 +414,4 @@
         font-size: 24px;
         margin-top: 50px;
     }
-
-    @media screen and (max-width: 1650px) {
-        tr{
-            td{
-                &:nth-child(1)::before{
-                    content: "";
-                }
-                &:nth-child(2)::before{
-                    content: "";
-                }
-                &:nth-child(3)::before{
-                    content: "";
-                }
-                &:nth-child(4)::before{
-                    content: "";
-                }
-                &:nth-child(5)::before{
-                    content: "";
-                }
-            }
-        }
-        tbody{
-            tr{
-                td{
-                &:nth-child(1){
-                    display: flex;
-                    align-items: center;
-                }
-                &:nth-child(1)::before{
-                    content: "Title: ";
-                }
-                &:nth-child(2)::before{
-                    content: "Label: ";
-                }
-                &:nth-child(3)::before{
-                    content: "Country: ";
-                }
-                &:nth-child(4)::before{
-                    content: "Year: ";
-                }
-                &:nth-child(5)::before{
-                    content: "Genre: ";
-                }
-            }
-        }
-    }
-    .allegro::after{
-        content: " Allegro";
-    }
-    .discogs::after{
-        content: " Discogs";
-    }
-}
 </style>

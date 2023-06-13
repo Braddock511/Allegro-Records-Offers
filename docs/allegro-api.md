@@ -28,10 +28,8 @@ handle_allegro_errors - Handles errors returned by the Allegro API during produc
 
 create_offer - creating an offer on the Allegro platform for either a Vinyl or CD record.
 - credentials (dict): contains the Allegro API token needed to authenticate the request.
-- discogs_data (dict): information about record from discogs
+- offer_data (dict): information about record from discogs
 - carton (str): marking of the physical carton
-- condition (str): condition of disc
-- images (list): images of record
 - type_offer (str): type of offer - buy now or auction
 - type_record (str): type of recors - vinyl or cd
 - duration (str): duration of offer

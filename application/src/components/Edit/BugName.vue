@@ -89,7 +89,7 @@
                 typeOffer: "all",
                 typeRecord: "all",
                 genre: "all",
-                loading: false,
+                loading: false
             }
         },
         methods:{
