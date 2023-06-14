@@ -77,7 +77,7 @@ with Session() as session:
         session.add(Flags(load_offers=False, load_payment=False))
         session.commit() 
 
-def post_credentials(user_key: str, allegro_id: str, allegro_secret: str, allegro_token: str) -> bool:
+def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro_secret: str, allegro_token: str) -> bool:
     if user_key in KEYS.keys():
         Session = sessionmaker(bind=engine)
         
@@ -88,7 +88,7 @@ def post_credentials(user_key: str, allegro_id: str, allegro_secret: str, allegr
                 "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
                 "api_imagekit_endpoint": environ.get("API_IMAGEKIT_ENDPOINT"),
                 "api_ocr_space": environ.get("API_OCR_SPACE"),
-                "api_discogs_token": environ.get("API_DISCOGS_TOKEN"),
+                "api_discogs_token": discogs_token,
                 "api_allegro_id": allegro_id,
                 "api_allegro_secret": allegro_secret,
                 "api_allegro_token": allegro_token

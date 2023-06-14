@@ -28,7 +28,6 @@ services:
       - API_IMAGEKIT_ID=
       - API_IMAGEKIT_SECRET=
       - API_IMAGEKIT_ENDPOINT=
-      - API_DISCOGS_TOKEN=
       - API_OCR_SPACE=
     ports: 
       - 8000:80 

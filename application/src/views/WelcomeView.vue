@@ -8,7 +8,7 @@
                 <p>{{ $t('info.description') }}</p>               
             </div>
             <div id="buttons" style="display: flex; flex-direction: column; justify-content: center;">
-                <router-link  v-if="!isCookieSet" to="/allegro-credentials"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('buttons.enterAllegroCredentials') }}</button></router-link>
+                <router-link to="/allegro-credentials"><button class="btn btn-primary w-100" type="button" style="padding: 0.5rem; font-size: 20px;">{{ $t('buttons.enterAllegroCredentials') }}</button></router-link>
             </div>
         </main>
     </span>
@@ -32,7 +32,7 @@
         },
         computed: {
             isCookieSet() {
-                return this.$cookies.get("allegro-cred") === "true"
+                return this.$cookies.get("allegro-cred").flag === true
             },
         },
         components: {
