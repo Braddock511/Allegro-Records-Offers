@@ -188,14 +188,17 @@ async def allegro_auth(request: Request):
 async def allegro_token(request: Request):
     try:
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['user_key']
         user_id = response['client_id']
         user_secret = response['client_secret']
         device_code = response['device_code']
         user_token = allegro.get_allegro_token(user_id, user_secret, device_code)
 
-        db.post_credentials(user_id, user_secret, user_token)
+        check_user = db.post_credentials(user_key, user_id, user_secret, user_token)
+        if check_user:
+            return {"status": 200, "output": user_token}
 
-        return {"status": 200, "output": user_token}
+        return {"status": 401, "output": "Unauthorized"}
 
     except Exception as e:
         return {"status": 404, "error": f"Exception in allegro_token: {str(e)}"}

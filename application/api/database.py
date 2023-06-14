@@ -21,6 +21,8 @@ if not user:
 
 # Create database
 SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+KEYS = {"test": ""}
+
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 Base = declarative_base()
 
@@ -29,6 +31,8 @@ class Credentials(Base):
 
         id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
+        user_folder = Column(String)
+        
         api_imagekit_id = Column(String)
         api_imagekit_secret = Column(String)
         api_imagekit_endpoint = Column(String)
@@ -73,28 +77,30 @@ with Session() as session:
         session.add(Flags(load_offers=False, load_payment=False))
         session.commit() 
 
-def post_credentials(allegro_id: str, allegro_secret: str, allegro_token: str) -> None:
-    if not all([allegro_id, allegro_secret, allegro_token]):
-        raise ValueError("Allegro credentials are missing")
-    
-    Session = sessionmaker(bind=engine)
-    
-    with Session() as session:
-        data_to_insert = {
-            "api_imagekit_id": environ.get("API_IMAGEKIT_ID"),
-            "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
-            "api_imagekit_endpoint": environ.get("API_IMAGEKIT_ENDPOINT"),
-            "api_ocr_space": environ.get("API_OCR_SPACE"),
-            "api_discogs_token": environ.get("API_DISCOGS_TOKEN"),
-            "api_allegro_id": allegro_id,
-            "api_allegro_secret": allegro_secret,
-            "api_allegro_token": allegro_token
-        }      
+def post_credentials(user_key: str, allegro_id: str, allegro_secret: str, allegro_token: str) -> bool:
+    if user_key in KEYS.keys():
+        Session = sessionmaker(bind=engine)
+        
+        with Session() as session:
+            data_to_insert = {
+                "user_folder": KEYS[user_key],
+                "api_imagekit_id": environ.get("API_IMAGEKIT_ID"),
+                "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
+                "api_imagekit_endpoint": environ.get("API_IMAGEKIT_ENDPOINT"),
+                "api_ocr_space": environ.get("API_OCR_SPACE"),
+                "api_discogs_token": environ.get("API_DISCOGS_TOKEN"),
+                "api_allegro_id": allegro_id,
+                "api_allegro_secret": allegro_secret,
+                "api_allegro_token": allegro_token
+            }        
 
-        credentials_data = Credentials(**data_to_insert)
-        session.add(credentials_data)
-        session.commit()
-
+            credentials_data = Credentials(**data_to_insert)
+            session.add(credentials_data)
+            session.commit()
+        
+        return True
+    
+    return False
 
 def get_credentials() -> Dict[str, str]:
     Session = sessionmaker(bind=engine)

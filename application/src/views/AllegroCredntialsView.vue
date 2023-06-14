@@ -4,6 +4,9 @@
         <form @submit.prevent="allegroToken">
             <div class="title">{{ $t('formContainer.credentials') }}</div>
             <div class="input-container">
+                <input v-model="user_key" id="user_key" class="input" type="text" :placeholder="$t('formContainer.userKey')" required style="width: 50%;"/>
+            </div>            
+            <div class="input-container">
                 <input v-model="user_id" id="client_id" class="input" type="text" :placeholder="$t('formContainer.clientId')" required style="width: 50%;"/>
             </div>
             <div class="input-container">
@@ -29,6 +32,7 @@
     export default {
         data(){
             return{
+                user_key: "",
                 user_id: "",
                 user_secret: "",
                 response: "",
@@ -41,8 +45,8 @@
             async allegroToken() {
                 this.response = (await axios.post("http://127.0.0.1:8000/allegro-auth", {client_id: this.user_id, client_secret: this.user_secret})).data.output
                 this.formDisplay = false
-                const tokenResponse = (await axios.post("http://127.0.0.1:8000/allegro-token", {client_id: this.user_id, client_secret: this.user_secret, device_code: this.response["device_code"],})).data
-                if (tokenResponse.error){
+                const tokenResponse = (await axios.post("http://127.0.0.1:8000/allegro-token", {user_key: this.user_key, client_id: this.user_id, client_secret: this.user_secret, device_code: this.response["device_code"],})).data
+                if (tokenResponse.error || tokenResponse.status == 401){
                     this.formDisplay = true
                     this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")}
                 }

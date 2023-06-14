@@ -16,8 +16,9 @@ export default {
     },
     formContainer:{
       credentials: "Credentials",
-      clientId: "Client id",
-      clientSecret: "Client secret",
+      userKey: "Key provided by the developer",
+      clientId: "Allegro client id",
+      clientSecret: "Allergo client secret",
       button: "Send credentials",
       confirm: "Confirm"
     },
@@ -188,8 +189,9 @@ export default {
     },
     formContainer:{
       credentials: "Dane uwierzytelniające",
-      clientId: "ID klienta",
-      clientSecret: "Tajny klucz klienta",
+      userKey: "Klucz podany przez dewelopera",
+      clientId: "ID klienta allegro",
+      clientSecret: "Tajny klucz klienta allegro",
       button: "Wyślij dane uwierzytelniające",
       confirm: "Potwierdź"
     },
