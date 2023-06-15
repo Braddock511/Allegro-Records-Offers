@@ -61,7 +61,7 @@
         },
         methods:{
             async back(){
-                await axios.get('http://127.0.0.1:8000/truncate', {headers: {'Content-Type': 'application/json'}})
+                await axios.get('http://127.0.0.1:8000/clear-image-data', {headers: {'Content-Type': 'application/json'}})
                 window.location.reload()
             },
             async listingOfferAllegro(selectedData) {
@@ -116,8 +116,8 @@
                 requried: true
             }, 
             clear:{
-                type: String,
-                requried: Boolean
+                type: Boolean,
+                requried: true
             },
         },
         components:{

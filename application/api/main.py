@@ -23,7 +23,7 @@ app.add_middleware(
 @app.post("/read-vinyl-image")
 async def read_vinyl_image(request: Request):
     try:
-        db.truncate_image_data()
+        db.delete_image_data()
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         images = response['images']
@@ -42,7 +42,7 @@ async def read_vinyl_image(request: Request):
 @app.post("/read-cd-image")
 async def read_cd_image(request: Request):
     try:
-        db.truncate_image_data()
+        db.delete_image_data()
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         images = response['images']
@@ -161,14 +161,14 @@ async def image_data(request: Request):
     except Exception as e:
         return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
 
-@app.get("/truncate")
-async def truncate():
+@app.get("/clear-image-data")
+async def clear_image_data():
     try:
-        db.truncate_image_data()
+        db.delete_image_data()
 
         return {"status": 200}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
+        return {"status": 404, "error": f"Exception in clear_image_data: {str(e)}"}
 
 
 @app.post("/allegro-auth")
@@ -384,8 +384,8 @@ async def genre_barplot():
 @app.get("/refresh-database")
 async def refresh_database():
     try:
-        db.truncate_allegro_offers()
-        db.truncate_allegro_payments()
+        db.delete_allegro_offers()
+        db.delete_allegro_payments()
         db.post_false_flags()
 
         return {"status": 200}
