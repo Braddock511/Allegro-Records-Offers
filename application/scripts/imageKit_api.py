@@ -10,10 +10,15 @@ def upload_file_imageKit(image: str|bytes, credentials: Dict[str, str]) -> Dict[
     }
 
     image_options = UploadFileRequestOptions(
-        folder='/',
+        folder=credentials["user_folder"],
     )
     
     imagekit = ImageKit(**imageKit_config)
 
-    result = imagekit.upload_file(file=image, file_name=f'{image[:10]}.png', options=image_options)
-    return result.response_metadata.raw
+    while True:
+        try:
+            result = imagekit.upload_file(file=image, file_name=f'{image[:10]}.png', options=image_options)
+            return result.response_metadata.raw
+        except Exception as e:
+            print(f"Error occurred during upload: {str(e)}")
+        

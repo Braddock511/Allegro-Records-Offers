@@ -118,4 +118,9 @@
         width: 500px;
     }
 }
+@media only screen and (max-width: 500px) {
+    .slider{
+        width: 300px;
+    }
+}
 </style>

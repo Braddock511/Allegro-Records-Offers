@@ -1,5 +1,5 @@
 <template>
-  <div id="container">
+  <div id="container" v-if="!loading">
     <nav>
       <h2>Allegro offers</h2>
       <hr>
@@ -42,10 +42,10 @@
       <TheGenres v-if="option=='genres'"/>
     </main>
 
-    <div id="loading" v-if="loading">
-        <img src="@/assets/spinner.gif" alt="loading">
-    </div>
     <TheAlert :alert="alert" />
+  </div>
+  <div id="loading" v-if="loading">
+      <img src="@/assets/spinner.gif" alt="loading">
   </div>
 </template>
 
@@ -164,15 +164,9 @@
     flex-direction: column;
     
     nav {
-      display: flex;
       width: 100%;
-      height: auto;
-      h2{
-        display: none;
-      }
+      font-size: 1px;
       ul{
-        display: flex;
-
         li{
           img{
             height: 50px;

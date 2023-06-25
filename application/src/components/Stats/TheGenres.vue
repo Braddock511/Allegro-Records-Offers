@@ -1,7 +1,7 @@
 <template>
     <span v-if="!loading" style="flex-direction: column; width: 100%;">
-        <div class="data" style="width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap;">
-            <img :src="genreBarplot" alt="bar plot">
+        <div class="data" style="flex-direction: row; justify-content: center;">
+            <img :src="genreBarplot" alt="bar plot" style="width: 100%;">
         </div>
     </span>
     <div id="loading" v-if="loading">

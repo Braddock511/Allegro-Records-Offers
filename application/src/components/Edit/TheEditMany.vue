@@ -59,9 +59,9 @@
                         <option value="sets">{{ $t("genre_options.sets") }}</option>
                     </select>
                 </div>
-                <span style="display:flex; justify-content: center; gap: 10px;">
-                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getData('desc')">{{ $t("editMany.editDescription") }}</button>
-                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem; font-size: 20px;" @click="getData('images')">{{ $t("editMany.editImages") }}</button>
+                <span style="display:flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getData('desc')">{{ $t("editMany.editDescription") }}</button>
+                    <button class="btn btn-primary w-100" type="submit" style="padding: 0.5rem;" @click="getData('images')">{{ $t("editMany.editImages") }}</button>
                 </span>
             </form>
         </section>

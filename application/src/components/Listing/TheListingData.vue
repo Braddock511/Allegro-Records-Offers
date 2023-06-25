@@ -37,10 +37,10 @@
                 <td><h3>Discogs</h3></td>
             </tr>
             <tr>
-                <td>{{ $t("table.enter_title") }} <input type="text" name="title" class="custom" v-model="title"></td>
-                <td>{{ $t("table.enter_label") }} <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
-                <td>{{ $t("table.enter_country") }} <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
-                <td>{{ $t("table.enter_year") }} <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
+                <td><span class="enter">{{ $t("table.enter_title") }}</span> <input type="text" name="title" class="custom" v-model="title"></td>
+                <td><span class="enter">{{ $t("table.enter_label") }}</span> <input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
+                <td><span class="enter">{{ $t("table.enter_country") }}</span> <input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
+                <td><span class="enter">{{ $t("table.enter_year") }}</span> <input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
                 <td>                    
                     <select v-model="genre" style="width: 85%;">
                         <option value="ballad">{{ $t("genre_options.ballad") }}</option>
@@ -75,6 +75,18 @@
                 </td>
                 <td v-if="typeRecord == 'CD'">{{ $t("table.enter_barcode") }} <input type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode"></td>
                 <td>{{ $t("table.enter_price") }} <input type="number" name="price" class="custom" min="1" v-model="price"></td>
+                <td class="media-condition" style="display: none">
+                    {{ $t("table.condition") }}
+                    <select v-model="condition">
+                        <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
+                        <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                        <option value="Excellent (EX)">{{ $t("table.ex") }}</option>
+                        <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
+                        <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
+                        <option value="Good (G)">{{ $t("table.good") }}</option>
+                        <option value="Fair (F)">{{ $t("table.fair") }}</option>
+                    </select>
+                </td>
                 <td><button class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="listingOfferAllegro">{{ $t("table.send") }}</button></td>
                 <td>
                     {{ $t("table.sleeveCondition") }}
@@ -97,6 +109,18 @@
                 <td>{{ data.year }}</td>
                 <td>{{ data.genre }}</td>
                 <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
+                <td class="media-condition" style="display: none">
+                    {{ $t("table.condition") }}
+                    <select v-model="condition">
+                        <option value="Near Mint (NM or M-)">{{ $t("table.mintMinus") }}</option>
+                        <option value="Mint (M)">{{ $t("table.mint") }}</option>
+                        <option value="Excellent (EX)">{{ $t("table.ex") }}</option>
+                        <option value="Very Good Plus (VG+)">{{ $t("table.veryGoodPlus") }}</option>
+                        <option value="Very Good (VG)">{{ $t("table.veryGood") }}</option>
+                        <option value="Good (G)">{{ $t("table.good") }}</option>
+                        <option value="Fair (F)">{{ $t("table.fair") }}</option>
+                    </select>
+                </td>
                 <td v-if="data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined">
                     Want: {{ data.community.want }} | Have: {{ data.community.have }}<br>
                     <input type="number" name="price" class="custom" min="1" :placeholder="roundedPriceToPLN(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])" v-model="price" @click="price = roundedPriceToPLN(data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition])">
@@ -413,5 +437,17 @@
         gap: 10px;
         font-size: 24px;
         margin-top: 50px;
+    }
+    .enter{
+        display: none;
+    }
+    @media screen and (max-width: 1750px) {
+        .media-condition{
+            display: block !important;
+          }
+
+        .enter{
+            display: contents;
+        }
     }
 </style>

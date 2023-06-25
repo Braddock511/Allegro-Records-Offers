@@ -89,7 +89,7 @@
     table {
         tr {
         &:nth-child(1){
-            display: block;
+            display: block !important;
         }
 
         td {

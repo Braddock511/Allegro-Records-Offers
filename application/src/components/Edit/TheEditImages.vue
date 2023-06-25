@@ -103,8 +103,8 @@
 <style lang="scss" scoped>
     @media screen and (max-width: 1000px) {
         #clear-image{
-            max-width: 500px !important;
-            max-height: 500px !important;
+            max-width: 300px !important;
+            max-height: 300px !important;
         }
     }
     

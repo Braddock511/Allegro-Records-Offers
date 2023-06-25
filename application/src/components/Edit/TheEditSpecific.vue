@@ -39,10 +39,10 @@
                     <td><h3>{{ $t("editSpecific.editOffer") }}</h3></td>
                 </tr>
                 <tr>
-                    <td><input type="text" name="label" class="custom" placeholder="-"  v-model="label"></td>
-                    <td><input type="text" name="country" class="custom" placeholder="-"  v-model="country"></td>
-                    <td><input type="text" name="year" class="custom" placeholder="-" v-model="year"></td>
-                    <td v-if="allegroData.sellingMode.format=='BUY_NOW'"><input type="text" name="price" class="custom" placeholder="-" v-model="price"></td>
+                    <td><input type="text" name="label" class="custom" placeholder="Label"  v-model="label"></td>
+                    <td><input type="text" name="country" class="custom" placeholder="Country"  v-model="country"></td>
+                    <td><input type="text" name="year" class="custom" placeholder="Year" v-model="year"></td>
+                    <td v-if="allegroData.sellingMode.format=='BUY_NOW'"><input type="text" name="price" class="custom" placeholder="Price" v-model="price"></td>
                     <td><button class="btn btn-primary w-100" type="type" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
                 </tr>
                 <tr v-for="data in offerData.discogs" v-if="offerData && offerData.discogs">

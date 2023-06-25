@@ -127,6 +127,16 @@ select{
     }
 }
 
+@media only screen and (max-width: 500px) {
+  .form-container{
+      width: 300px;
+      form{
+          min-width: 300px;
+          padding: 10px;
+        }
+    }
+}
+
 .data{
   display: flex;
   flex-direction: column;
@@ -165,6 +175,7 @@ select{
 
 @media screen and (max-width: 1750px) {
 
+
   .data{
     width: 100%;
 
@@ -189,6 +200,7 @@ select{
           display: block;
           font-size: 18px;
           text-align: left;
+
         
         select{
           width: 30% !important;
@@ -201,6 +213,6 @@ select{
 
 @media only screen and (max-width: 500px) {
   .data{
-      min-width: 500px;
+      min-width: 300px;
   }
 }
