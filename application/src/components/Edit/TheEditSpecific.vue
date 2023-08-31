@@ -177,7 +177,7 @@
                 let finalValue
                 if (price){
                     const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01
-                    finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
+                    finalValue = (roundedValue < 19.99) ? 19.99 : roundedValue 
                 }
                 else{
                     finalValue = 0

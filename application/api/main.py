@@ -27,6 +27,7 @@ async def read_vinyl_image(request: Request):
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
         images = response['images']
+        text_from_images = []
 
         preprocess_tasks = [preprocess_vinyl_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
@@ -161,6 +162,19 @@ async def image_data(request: Request):
     except Exception as e:
         return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
 
+@app.post("/discogs-information-new-search")
+async def image_data(request: Request):
+    credentials = db.get_credentials()
+    response = loads((await request.body()).decode('utf-8'))
+    new_search = response['newSearch']
+    type_record = response['typeRecord']
+    information = preprocess_data_parallel(new_search, credentials, type_record, False)
+    
+    discogs_data = [{"input_data": new_search, "information": information, "url": ""} for _ in range(3)]
+
+    return {"status": 200, "output": discogs_data}
+       
+    
 @app.get("/clear-image-data")
 async def clear_image_data():
     try:
@@ -410,8 +424,8 @@ async def discogs_listing(request: Request):
     except Exception as e:
         return {"status": 404, "error": f"Exception in discogs_listing: {str(e)}"}
     
-@app.post("/swap-cartons")
-async def swap(request: Request):
+@app.post("/swap-all")
+async def swap_all(request: Request):
     try:
         credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
@@ -422,4 +436,19 @@ async def swap(request: Request):
 
         return {"status": 200, "output": result}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in swap: {str(e)}"}
+        return {"status": 404, "error": f"Exception in swap_all: {str(e)}"}
+    
+@app.post("/swap-specific")
+async def swap_specific(request: Request):
+    try:
+        credentials = db.get_credentials()
+        response = loads((await request.body()).decode('utf-8'))
+        swap_carton = response['swapCarton']
+        with_carton = response['withCarton']
+        offer_id = response['offerId']
+
+        result = allegro.swap_specific_carton(credentials, swap_carton, with_carton, offer_id)
+
+        return {"status": 200, "output": result}
+    except Exception as e:
+        return {"status": 404, "error": f"Exception in swap_specific: {str(e)}"}

@@ -133,6 +133,11 @@
                 <td><button  class="btn btn-primary w-100 discogs" type="submit" style="padding: 0.5rem;" @click="listingOfferDiscogs(data)">{{ $t("table.send") }}</button></td>
             </tr>
             </tbody>
+            <tr>
+                <td colspan="4"><h4>{{ $t("table.notFound") }}</h4></td>
+                <td colspan="2"><input type="text" class="custom" v-model="newSearch" placeholder="-" ></td>
+                <td><button class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="search">{{ $t("table.search") }}</button></td>
+            </tr>
         </table>
     </div>
     <div id="loading" v-if="loading.flag">
@@ -171,7 +176,8 @@
                 visible: false,
                 failedFlag: false,
                 loading: {"flag": false, "message": ""},
-                activeRequests: 0
+                activeRequests: 0,
+                newSearch: ""
             }
         },
         methods:{
@@ -336,11 +342,23 @@
                     })
                 }
             },
+            async search(){
+                this.loading.flag = true
+                this.loading.message = this.$t("loading.loadData")
+
+                axios.post("http://127.0.0.1:8000/discogs-information-new-search", {newSearch: this.newSearch, typeRecord: this.typeRecord}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                    this.discogsData = response.data.output
+                    
+                    this.newSearch = ""
+                    this.loading.message = "" 
+                    this.loading.flag = false
+                })
+            },
             roundedPriceToPLN(price) {
                 let finalValue
                 if (price){
                     const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01
-                    finalValue = (roundedValue < 9.99) ? 9.99 : roundedValue 
+                    finalValue = (roundedValue < 19.99) ? 19.99 : roundedValue 
                 }
                 else{
                     finalValue = 0

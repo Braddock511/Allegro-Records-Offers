@@ -78,7 +78,10 @@ export default {
       title: "Swap cartons",
       swap: "Carton you want to change",
       with: "Carton you want to change to",
-      buttonSwap: "Swap"
+      swapOffer: "Swap",
+      swapAll: "Swap all",
+      swapSpecific: "Swap specific offer",
+      orFile: "Or attach a txt file with the id of the offers"
     },
     carton: {
       enter_carton: 'Enter carton',
@@ -113,7 +116,9 @@ export default {
       image: "Image",
       allegroForm: "Go to allegro form",
       back: "Back",
-      price: "Price"
+      price: "Price",
+      search: "Search",
+      notFound: "Not found? You can search by barcode or code on lp"
     },
     genre_options: {
       all: "All",
@@ -250,7 +255,10 @@ export default {
       info: "Zamienisz oznaczenie kartonu płyt na inne",
       swap: "Oznaczenie kartonu, który chcesz zmienić",
       with: "Oznaczenie kartonu, na który chcesz zmienić",
-      buttonSwap: "Zamień"
+      swapOffer: "Zamień",
+      swapAll: "Zamień wszystkie",
+      swapSpecific: "Zamień konkretną ofertę",
+      orFile: "Albo załącz plik txt z id ofert"
     },
     carton: {
       enter_carton: 'Karton',
@@ -285,7 +293,9 @@ export default {
       image: "Zdjęcie",
       allegroForm: "Wystaw na allegro",
       back: "Wróć",
-      price: "Cena"
+      price: "Cena",
+      search: "Szukaj",
+      notFound: "Nie znaleziono? Możesz szukać według kodu kreskowego lub kodu na lp"
     },
     genre_options: {
       all: "Wszystkie",

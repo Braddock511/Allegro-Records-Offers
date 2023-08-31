@@ -122,6 +122,25 @@ def search_data(chunk: List[str], discogs_token: str, type_record: str, image_da
                     
     return discogs_data_output
 
+def remove_not_allowed_characters(text: str) -> str:
+    """
+        Remove characters that are not allowed on Allegro from a given string
+        
+        Args:
+            text (str): The input string.
+            
+        Returns:
+            str: The modified string with unwanted characters removed.
+    """
+    polish_chars_pattern = r'[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]'    
+    ascii_pattern = r'[\x00-\x7F]'    
+    pattern = f'{polish_chars_pattern}|{ascii_pattern}'
+    
+    matches = re.findall(pattern, text, flags=re.UNICODE)    
+    cleaned_text = ''.join(matches)
+    
+    return cleaned_text
+
 def preprocess_data(chunk: list, discogs_token: str) -> list:
     """
         Preprocesses the data in the chunk list and returns a list of discogs information dictionaries.
@@ -144,8 +163,7 @@ def preprocess_data(chunk: list, discogs_token: str) -> list:
             price = get_price(record_id, discogs_token)
             uri = result['uri']
             genre = result['genre'][0]
-            title = result['title']
-            title = title.replace("*", "").replace("•", "").replace("†", " ").replace("º", " ").replace("—", " ")
+            title = remove_not_allowed_characters(result['title'])
             country = result.get('country', '-')
             year = result.get('year') or result.get('released') if (result.get('year') or result.get('released')) else '-'
             barcode = result.get('barcode', [''])[0].replace(" ", "") if result.get('barcode') else '-'

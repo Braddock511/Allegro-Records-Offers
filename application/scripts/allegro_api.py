@@ -143,15 +143,15 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
 
 def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
     if type_record in {"Vinyl", "Winyl"}:
-        categories = {"all": 279, "latin": 286, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "folk, world, & country": 5639, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
+        categories = {"all": 279, "latin": 286, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "folk, world, & country": 5639, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531, "non-music": 293}
     elif type_record == "CD":
-        categories = {"all": 175, "latin": 9536, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "folk, world, & country": 261100, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261127, "hip hop": 261044, "reggae": 182, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
+        categories = {"all": 175, "latin": 9536, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "folk, world, & country": 261100, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261127, "hip hop": 261044, "reggae": 182, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530, "non-music": 191}
 
     conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
 
     # Discogs data
     record_id = offer_data['id']
-    title = offer_data['title']
+    title = (offer_data['title']).strip()
     label = offer_data['label'].replace("&", "")
     country = offer_data['country'].replace("&", ", ")
     released = offer_data['year']
@@ -159,7 +159,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     price = offer_data['price']
     images = offer_data['images']
     condition = offer_data['condition']
-    barcode = "".join(re.findall('\d+', offer_data['barcode']))
+    barcode = ("".join(re.findall('\d+', offer_data['barcode']))).strip()
     tracklist = get_tracklist(record_id, credentials["api_discogs_token"])
 
     # Allegro data
@@ -181,9 +181,17 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     }
     category = categories.get(genre.lower())
     condition = conditions.get(condition)
-    author = title.split("-")[0]
-    name = " ".join(title.split("-")[1:])
-    full_name = f'{author.strip()}.{carton}' if len(f'{author} - {name}.{carton}') > 50 else f'{author} - {name}.{carton}'
+    author = (title.split("-")[0]).strip()
+    name = (" ".join(title.split("-")[1:])).strip()
+    
+    # Combine author, name, and carton
+    full_name = (f'{author} - {name}.{carton}' if len(f'{author} - {name}.{carton}') <= 50 else f'{author}.{carton}').strip()
+
+    # If the length is still greater than 50, truncate the author name
+    if len(full_name) > 50:
+        full_name = (f'{full_name.split(" ")[0]}.{carton}').strip()
+        full_name.replace(",", "") # Remove unwanted comma
+    
     allegro_condition = ["Nowy", "11323_1"] if condition == "M" else ["Używany", "11323_2"]
     
     if type_offer == "AUCTION":
@@ -205,22 +213,22 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
 
     if type_record == "Vinyl":
         data = {
-            "name": full_name.strip(),
+            "name": full_name,
 
             "productSet": [{
                 "product": {
-                    "name": title.strip(),
+                    "name": title,
                     "category": {
                         "id": category
                     },
                     "parameters": [
                         {
                             "name": "Wykonawca",
-                            "values": [author.strip()]
+                            "values": [author]
                         },
                         {
                             "name": "Tytuł",
-                            "values": [name.strip()]
+                            "values": [name]
                         },
                         {
                             "name": "Nośnik",
@@ -254,22 +262,22 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     
     elif type_record == "CD":
         data = {
-            "name": full_name.strip(),
+            "name": full_name,
 
             "productSet": [{
                 "product": {
-                    "name": title.strip(),
+                    "name": title,
                     "category": {
                         "id": category
                     },
                     "parameters": [
                         {
                             "name": "Wykonawca",
-                            "values": [author.strip()]
+                            "values": [author]
                         },
                         {
                             "name": "Tytuł",
-                            "values": [name.strip()]
+                            "values": [name]
                         },
                         {
                             "name": "Nośnik",
@@ -277,7 +285,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
                         },
                         {
                             'name': 'EAN (GTIN)',
-                            'values': [barcode.strip()]
+                            'values': [barcode]
                         },
                     ],
 
@@ -428,6 +436,28 @@ def get_payment_history(credentials: dict, limit: int, offset: int) -> dict:
     
     return result.json()
 
+def swap_specific_carton(credentials: dict, change_carton: str, change_to_carton: str, offer_id: str) -> dict:
+    allegro_token = credentials["api_allegro_token"]
+    offer = get_offer_info(credentials, offer_id)
+
+    # change carton in name
+    name = offer['name']
+    without_carton = name[:len(name)-len(change_carton)] # name without old carton
+    new_name = f"{without_carton}{change_to_carton}"
+    offer['name'] = new_name
+
+    # change carton in description if exist      
+    description = offer['description']
+    for i, section in enumerate(description['sections']):
+        for j, item in enumerate(section['items']):
+            if item.get("content") and change_carton in item['content']:
+                offer['description']['sections'][i]['items'][j]['content'] = item['content'].replace(change_carton, change_to_carton)
+
+    url = f"https://api.allegro.pl/sale/product-offers/{offer['id']}"
+    result = requests.patch(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
+
+    return result.json() 
+    
 def swap_cartons(credentials: dict, change_carton: str, change_to_carton: str) -> dict:
     """
     Swaps the carton name in Allegro offers with a new carton name.
