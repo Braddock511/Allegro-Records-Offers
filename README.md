@@ -2,7 +2,7 @@
 The "Allegro Records Offers" application is a tool to help users effectively manage their record offers on Allegro, one of the largest Internet portals in Poland. The user can send photos of the discs from which there is a read text, and then get data from the Discogs website, and in this way users can list their vinyl records or CDs on Allegro and edit existing offers. In addition, the user can clear the background of the image and view the statistics of offers. You can also list your records on discogs
 
 # Interface preview
-![alt text](https://ik.imagekit.io/ybcdqxxka/USING/app.png?updatedAt=1684776481135)
+![alt text](https://ik.imagekit.io/jhddvvyeg/preview.png?updatedAt=1697558062888)
 
 # Configuration
   
