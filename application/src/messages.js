@@ -65,6 +65,7 @@ export default {
       offerId: "Enter offer id",
       edit: "Edit",
       editOffer: "Edit offer",
+      listingSimilar: "Listing similar",
       clearImage: "Clear image"
     },
     editImages:{
@@ -241,6 +242,7 @@ export default {
     editSpecific:{
       offerId: "Wpisz id oferty",
       edit: "Edytuj",
+      listingSimilar: "Wystaw podobną",
       editOffer: "Edytuj ofertę",
       clearImage: "Wyczyść tło"
     },

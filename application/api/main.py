@@ -101,21 +101,17 @@ async def discogs_info(request: Request):
         for x in parameters:
             if x['name'] == 'Nośnik':
                 type_record = x['values'][0]
+            if x['name'] == 'EAN (GTIN)':
+                offer_input_data = x['values'][0]                
                 
         if type_record in {"Vinyl", "Winyl"}:
             name = offer_info['name']
             name = name.split(".")[0]
             name = name.split("(CD)")[0]
             offer_input_data = name
-        elif type_record == "CD":
-            parameters = offer_info['productSet'][0]['product']['parameters']
-            
-            for x in parameters:
-                if x['name'] == 'EAN (GTIN)':
-                    offer_input_data = x['values'][0]
-        
+
         discogs_data = preprocess_data_parallel(offer_input_data, credentials, type_record, False)
-            
+
         return {"status": 200, "offer": offer_info, "discogs": discogs_data}
     
     except Exception as e:
@@ -226,8 +222,9 @@ async def edit_offer(request: Request):
         offer_id = response['offerId']
         images = response['images']
         new_data = response['data']
+        listing_similar = response['listing_similar']
 
-        result = allegro.edit_description(credentials, offer_id, images, new_data)
+        result = allegro.edit_description(credentials, offer_id, images, new_data, listing_similar)
 
         return {"status": 200, "output": result}
         

@@ -1,13 +1,13 @@
 fastapi==0.94.1
 imagekitio==3.0.1
 numpy==1.23.5
-Pillow==9.4.0
+pillow>=10.0.1
 pyzbar==0.1.8
 requests==2.31.0
 uvicorn==0.20.0
 SQLAlchemy==2.0.4
 psycopg2-binary==2.9.5
-urllib3==1.26.7
+urllib3>=1.26.17
 matplotlib==3.6.1
 seaborn==0.11.2
 rembg==2.0.37

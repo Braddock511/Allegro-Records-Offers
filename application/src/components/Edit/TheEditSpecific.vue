@@ -37,6 +37,7 @@
                         </select>
                     </td>
                     <td><h3>{{ $t("editSpecific.editOffer") }}</h3></td>
+                    <td><h3>{{ $t("editSpecific.listingSimilar") }}</h3></td>
                 </tr>
                 <tr>
                     <td><input type="text" name="label" class="custom" placeholder="Label"  v-model="label"></td>
@@ -44,6 +45,7 @@
                     <td><input type="text" name="year" class="custom" placeholder="Year" v-model="year"></td>
                     <td v-if="allegroData.sellingMode.format=='BUY_NOW'"><input type="text" name="price" class="custom" placeholder="Price" v-model="price"></td>
                     <td><button class="btn btn-primary w-100" type="type" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
+                    <td><button class="btn btn-primary w-100" type="type" @click="editOffer">{{ $t("table.send") }}</button></td>
                 </tr>
                 <tr v-for="data in offerData.discogs" v-if="offerData && offerData.discogs">
                     <td>{{ data.label }}</td>
@@ -58,6 +60,7 @@
                         <input type="number" name="price" class="custom" min="1" v-model="price">
                     </td>
                     <td><button class="btn btn-primary w-100" type="type" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>
+                    <td><button class="btn btn-primary w-100" type="type" @click="listing_similar=true; editOffer(data)">{{ $t("table.send") }}</button></td>
                 </tr>
             </table>
         </div>
@@ -85,6 +88,7 @@
                 price: "",
                 condition: "Near Mint (NM or M-)",
                 loading: false,
+                listing_similar: false,
                 alert: {}
             }
         },
@@ -96,9 +100,14 @@
                     this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                 }
                 else{
-                    this.allegroData = this.allegroData.output
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
-                    this.img = this.offerData.offer.images
+                    try {
+                        this.allegroData = this.allegroData.output
+                        this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
+                        this.img = this.offerData.offer.images
+                    } catch (error) {
+                        this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+                        this.offerData = "" 
+                    }
                 }
                 this.loading = false
             },
@@ -125,12 +134,12 @@
                     if (this.price !== ""){
                         // Edit offer
                         this.loading = true
-                        const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {offerId: this.offerId, images: this.img, data: selectedData})).data
+                        const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {offerId: this.offerId, images: this.img, data: selectedData, listing_similar: this.listing_similar})).data
                         if (response.error || response.errors){
                             this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                         }
                         else{
-                            this.alert = {variant: "success", message: this.$t("alerts.descSuccess")}
+                            this.alert = {variant: "success", message: this.$t("alerts.success")}
                         }
                         this.label = ""
                         this.country = ""
@@ -145,12 +154,12 @@
                 else{
                     // Edit offer
                     this.loading = true
-                    const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {offerId: this.offerId, images: this.img, data: selectedData})).data
+                    const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {offerId: this.offerId, images: this.img, data: selectedData, listing_similar: this.listing_similar})).data
                     if (response.error || response.errors){
                         this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                     }
                     else{
-                        this.alert = {variant: "success", message: this.$t("alerts.descSuccess")}
+                        this.alert = {variant: "success", message: this.$t("alerts.success")}
                     }
                     this.label = ""
                     this.country = ""
@@ -158,6 +167,7 @@
                     this.price = ""
                     this.loading = false
                 }
+                this.listing_similar = false
             },
             async editImage(){
                 this.loading = true

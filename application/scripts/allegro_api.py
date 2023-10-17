@@ -30,7 +30,7 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
         if response.status_code == 200:
             return token['access_token']
         
-def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str) -> dict:
+def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str = "") -> dict:
     allegro_token = credentials["api_allegro_token"]
     
     if type_record == "Vinyl":
@@ -38,8 +38,6 @@ def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, t
         
     elif type_record == "CD":
         categories = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
-    else:
-        genre = ""
     
     if genre:
         genre = categories.get(genre)
@@ -364,7 +362,7 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
 
     return ("", "") if condition.upper() not in conditions else (condition, carton)
 
-def edit_description(credentials: dict, offer_id: str, images: list, new_information: dict) -> dict:
+def edit_description(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool) -> dict:
     condition_carton = get_condition_and_carton(credentials, offer_id)
 
     if not condition_carton:
@@ -410,14 +408,27 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
                     }
                 ]
             }
+
     offer['productSet'][0]['product']['images'] = images
 
     if price:
         offer['sellingMode'] = {"price": {"amount": price, "currency": "PLN"}}
-
-    url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
-    result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
     
+    if listing_similar:
+        offer['publication']['status'] = "ACTIVE"
+        offer['sellingMode']['format'] = "BUY_NOW"
+        if offer['sellingMode'].get('startingPrice', ""):
+            offer['sellingMode']['price'] = {"amount": offer['sellingMode']['startingPrice']['amount'], "currency": "PLN"}
+        offer['publication']['duration'] = None
+        offer['publication']['endedBy'] = None
+        offer['publication']['endingAt'] = None
+        
+        url = "https://api.allegro.pl/sale/product-offers"
+        result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
+    else:
+        url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
+        result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
+
     return result.json()
 
 def edit_images(credentials: dict, offer_id: str, images: list) -> dict:
