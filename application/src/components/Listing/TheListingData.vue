@@ -294,7 +294,6 @@
                         } 
                     }).then((response) => {
                         response = response.data
-                        console.log(response)
 
                         if (response.error || response.output.errors) {
                             this.failed.push(selectedData)

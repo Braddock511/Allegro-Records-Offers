@@ -30,7 +30,7 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
         if response.status_code == 200:
             return token['access_token']
         
-def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str = "") -> dict:
+def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str = "all") -> dict:
     allegro_token = credentials["api_allegro_token"]
     
     if type_record == "Vinyl":
@@ -38,7 +38,9 @@ def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, t
         
     elif type_record == "CD":
         categories = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
-    
+    else:
+        genre = ""
+
     if genre:
         genre = categories.get(genre)
         genre = f"&category.id={genre}"
@@ -375,12 +377,18 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
     released = new_information['year'].replace("&", "")
     price = new_information.get('price', "")
     offer = get_offer_info(credentials, offer_id)
+    parameters = offer['productSet'][0]['product']['parameters']
+    
+    for x in parameters:
+        if x['name'] == 'Nośnik':
+            type_record = x['values'][0]
+    
+    if type_record != "płyta DVD":
+        if not "Rok wydania" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and released != "-":
+            offer['productSet'][0]['product']['parameters'].append({"name": "Rok wydania", "values": [released]})
 
-    if not "Rok wydania" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and released != "-":
-        offer['productSet'][0]['product']['parameters'].append({"name": "Rok wydania", "values": [released]})
-
-    if not "Wytwórnia" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and label != "-":
-        offer['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
+        if not "Wytwórnia" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and label != "-":
+            offer['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
 
     offer['description'] = {
         'sections': [
@@ -415,6 +423,7 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
         offer['sellingMode'] = {"price": {"amount": price, "currency": "PLN"}}
     
     if listing_similar:
+        # Convert auction to buy_now
         offer['publication']['status'] = "ACTIVE"
         offer['sellingMode']['format'] = "BUY_NOW"
         if offer['sellingMode'].get('startingPrice', ""):

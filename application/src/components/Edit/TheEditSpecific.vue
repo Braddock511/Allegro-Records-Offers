@@ -1,6 +1,6 @@
 <template>
     <span>
-        <section class="form-container" v-if="!offerData && !loading">
+        <section class="form-container" v-if="!discogsData && !loading">
             <form>
                 <div class="title">{{ $t("editSpecific.offerId") }}</div>
                 <div class="input-container">
@@ -10,13 +10,13 @@
             </form>
         </section>
     </span>
-    <span v-if="offerData">
-        <div class="data" v-if="offerData.offer && !loading">
+    <span v-if="discogsData">
+        <div class="data" v-if="!loading">
             <TheSlider :images="img.slice()"></TheSlider>
             <div style="width: 100%;">
                 <span style="display: flex; flex-direction: column; align-items: center; gap: 10px;">    
                     <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="editImage">{{ $t("editSpecific.clearImage") }}</button>
-                    <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="offerData = ''; alert = {}">{{ $t("table.back") }}</button>
+                    <button class="btn btn-primary w-50" type="type" style="padding: 0.5rem; font-size: 20px;" @click="discogsData = ''; alert = {}">{{ $t("table.back") }}</button>
                 </span>
             </div>
             <table>
@@ -45,9 +45,9 @@
                     <td><input type="text" name="year" class="custom" placeholder="Year" v-model="year"></td>
                     <td v-if="allegroData.sellingMode.format=='BUY_NOW'"><input type="text" name="price" class="custom" placeholder="Price" v-model="price"></td>
                     <td><button class="btn btn-primary w-100" type="type" @click="editOffer">{{ $t("editSpecific.edit") }}</button></td>
-                    <td><button class="btn btn-primary w-100" type="type" @click="editOffer">{{ $t("table.send") }}</button></td>
+                    <td><button class="btn btn-primary w-100" type="type" @click="listing_similar=true; editOffer({})">{{ $t("table.send") }}</button></td>
                 </tr>
-                <tr v-for="data in offerData.discogs" v-if="offerData && offerData.discogs">
+                <tr v-for="data in discogsData.output[0].information" v-if="discogsData && discogsData.output">
                     <td>{{ data.label }}</td>
                     <td>{{ data.country }}</td>
                     <td>{{ data.year }}</td>
@@ -61,6 +61,11 @@
                     </td>
                     <td><button class="btn btn-primary w-100" type="type" @click="editOffer(data)">{{ $t("editSpecific.edit") }}</button></td>
                     <td><button class="btn btn-primary w-100" type="type" @click="listing_similar=true; editOffer(data)">{{ $t("table.send") }}</button></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><h4>{{ $t("table.notFound") }}</h4></td>
+                    <td><input type="text" class="custom" v-model="newSearch" placeholder="-" ></td>
+                    <td colspan="2"><button class="btn btn-primary w-100 allegro" type="submit" style="padding: 0.5rem;" @click="search">{{ $t("table.search") }}</button></td>
                 </tr>
             </table>
         </div>
@@ -79,7 +84,7 @@
         data(){
             return{
                 allegroData: "",
-                offerData: "",
+                discogsData: "",
                 offerId: "",
                 img: "",
                 label: "",
@@ -87,6 +92,7 @@
                 year: "",
                 price: "",
                 condition: "Near Mint (NM or M-)",
+                newSearch: "",
                 loading: false,
                 listing_similar: false,
                 alert: {}
@@ -102,11 +108,11 @@
                 else{
                     try {
                         this.allegroData = this.allegroData.output
-                        this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
-                        this.img = this.offerData.offer.images
+                        this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
+                        this.img = this.discogsData.offer.images
                     } catch (error) {
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
-                        this.offerData = "" 
+                        this.discogsData = "" 
                     }
                 }
                 this.loading = false
@@ -168,6 +174,8 @@
                     this.loading = false
                 }
                 this.listing_similar = false
+                this.discogsData = ""
+                this.offerId = ""
             },
             async editImage(){
                 this.loading = true
@@ -193,7 +201,17 @@
                     finalValue = 0
                 }
                 return finalValue
-            }
+            },
+            async search(){
+                this.loading = true
+
+                axios.post("http://127.0.0.1:8000/discogs-information-new-search", {newSearch: this.newSearch, typeRecord: this.typeRecord, allegroData: this.allegroData}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                    this.discogsData = response.data
+                    
+                    this.newSearch = ""
+                    this.loading = false
+                })
+            },
         },
         components:{
             TheSlider,

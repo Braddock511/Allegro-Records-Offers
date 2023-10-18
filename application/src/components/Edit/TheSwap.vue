@@ -64,7 +64,6 @@
             async swap() {
                 this.loading = true
                 const response = (await axios.post('http://127.0.0.1:8000/swap-all', {swapCarton: this.swapCarton, withCarton: this.withCarton})).data
-                console.log(response)
                 if (response.error || response.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                 }

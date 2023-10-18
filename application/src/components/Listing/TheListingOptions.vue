@@ -126,7 +126,6 @@
                 else if (this.typeRecord == "CD"){
                     this.read = await axios.post('http://127.0.0.1:8000/read-cd-image', {images: splitImages}, {headers: {'Content-Type': 'application/json'}})
                 }
-                console.log(this.read)
                 this.loading = false
             },
         },

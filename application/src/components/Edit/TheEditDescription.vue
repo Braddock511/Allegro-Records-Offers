@@ -83,7 +83,6 @@
                 this.loading = true
                 this.offerIndex += 1
                 if (this.offerIndex >= this.allegroData.offers.length){
-                    console.log(1)
                     window.location.reload()
                     return ""
                 }

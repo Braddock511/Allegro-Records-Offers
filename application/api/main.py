@@ -110,10 +110,10 @@ async def discogs_info(request: Request):
             name = name.split("(CD)")[0]
             offer_input_data = name
 
-        discogs_data = preprocess_data_parallel(offer_input_data, credentials, type_record, False)
+        information = preprocess_data_parallel(offer_input_data, credentials, type_record, False)
+        discogs_data = [{"input_data": offer_input_data, "information": information, "url": ""}]
 
-        return {"status": 200, "offer": offer_info, "discogs": discogs_data}
-    
+        return {"status": 200, "offer": offer_info, "output": discogs_data}
     except Exception as e:
         return {"status": 404, "error": f"Exception in discogs_info: {str(e)}"}
 
@@ -163,7 +163,14 @@ async def image_data(request: Request):
     credentials = db.get_credentials()
     response = loads((await request.body()).decode('utf-8'))
     new_search = response['newSearch']
-    type_record = response['typeRecord']
+    type_record = response.get('typeRecord', "")
+    if not type_record:
+        allegro_data = response['allegroData']
+        parameters = allegro_data['productSet'][0]['product']['parameters']
+        for x in parameters:
+            if x['name'] == 'Nośnik':
+                type_record = x['values'][0]
+                
     information = preprocess_data_parallel(new_search, credentials, type_record, False)
     
     discogs_data = [{"input_data": new_search, "information": information, "url": ""} for _ in range(3)]

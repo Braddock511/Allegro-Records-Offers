@@ -29,31 +29,31 @@ def get_price(id: str, discogs_token: str) -> Dict[str, str]:
 def get_tracklist(id: str, discogs_token: str) -> str:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
     url = f"https://api.discogs.com/releases/{id}"
-
+    
     try:
         response = requests.get(url, headers=headers)
         tracklist = response.json()['tracklist']
-
-        tracks = "<p><b>LISTA UTWORÓW:</b></p>"
-        paragraph = []
+        tracks = []
         outtrack = ""
-        
+
         for track in tracklist:
-            if 'sub_tracks' in list(track.keys()):
+            if 'sub_tracks' in track:
+                # If 'sub_tracks' exist, iterate through them
                 for sub_track in track['sub_tracks']:
                     outtrack = f"<b>{sub_track['position']}. {sub_track['title']}</b>"
-                    
+                    tracks.append(outtrack)
             else:
+                # If no 'sub_tracks', process the track itself
                 outtrack = f"<b>{track['position']}. {track['title']}</b>"
+                tracks.append(outtrack)
 
-            paragraph.append(outtrack)
-
-            if len(paragraph) == 2:
-                output = " | ".join(paragraph)
-                tracks += f"<p>{output}</p>"
-                paragraph.clear()
-
-        return tracks.replace("&", " ")
+        formatted_tracks = ["<p><b>LISTA UTWORÓW:</b></p>"]
+        for i in range(0, len(tracks), 2):
+            pair = " | ".join(tracks[i:i + 2])
+            formatted_tracks.append(f"<p>{pair}</p>")
+        output = "".join(formatted_tracks)
+        
+        return output.replace("&", " ")
     
     except KeyError:
         return "<p><b>LISTA UTWORÓW: -</b></p>"
