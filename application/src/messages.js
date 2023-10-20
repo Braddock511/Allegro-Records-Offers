@@ -66,7 +66,9 @@ export default {
       edit: "Edit",
       editOffer: "Edit offer",
       listingSimilar: "Listing similar",
-      clearImage: "Clear image"
+      clearImage: "Clear image",
+      editDescription: "Edit description",
+      toBuy: "Offers will be changed to Buy Now"
     },
     editImages:{
       firstImage: "Clears only the first image",
@@ -154,6 +156,7 @@ export default {
     },
     alerts:{
       success: "Success",
+      failed: "Failed",
       someWrong: "Something went wrong",
       complete: "Complete title and price",
       completePrice: "Complete price",
@@ -244,7 +247,9 @@ export default {
       edit: "Edytuj",
       listingSimilar: "Wystaw podobną",
       editOffer: "Edytuj ofertę",
-      clearImage: "Wyczyść tło"
+      clearImage: "Wyczyść tło",
+      editDescription: "Edytuj opis",
+      toBuy: "Oferty zostaną zmienione na Kup teraz"
     },
     editImages:{
       firstImage: "Czyści tło tylko z pierwszego zdjęcia",
@@ -332,6 +337,7 @@ export default {
     },
     alerts:{
       success: "Sukces",
+      failed: "Niepowodzenie",
       someWrong: "Coś poszło nie tak",
       complete: "Uzupełnij tytuł i cenę",
       completePrice: "Uzupełnij cenę",

@@ -80,13 +80,12 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
     if user_key in KEYS.keys():
         Session = sessionmaker(bind=engine)
         
-        global USER_FOLDER
-        USER_FOLDER = KEYS[user_key]
+        user_folder = KEYS[user_key]
 
         with Session() as session:
             try:
                 # Check if there is a record for the given user_key
-                credentials_data = session.query(Credentials).filter_by(user_folder=KEYS[user_key]).one()
+                credentials_data = session.query(Credentials).filter_by(user_folder=user_folder).one()
                 
                 # Update record
                 credentials_data.api_discogs_token = discogs_token
@@ -100,7 +99,7 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
             except NoResultFound:
                 
                 data_to_insert = {
-                    "user_folder": KEYS[user_key],
+                    "user_folder": user_folder,
                     "api_imagekit_id": environ.get("API_IMAGEKIT_ID"),
                     "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
                     "api_imagekit_endpoint": environ.get("API_IMAGEKIT_ENDPOINT"),
@@ -119,97 +118,97 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
     
     return False
 
-def get_credentials() -> Dict[str, str]:
+def get_credentials(user_key: str) -> Dict[str, str]:
     Session = sessionmaker(bind=engine)
     with Session() as session:
-        row = session.query(Credentials).filter_by(user_folder=USER_FOLDER).one()
+        row = session.query(Credentials).filter_by(user_folder=KEYS[user_key]).one()
         credentials = row.__dict__
 
     return credentials
 
-def post_text_from_image(text_from_images: List[Dict[str, str]]) -> None:
+def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         for text_from_image in text_from_images:
             for data_item in text_from_image:
-                session.add(ImageData(credentials_folder=USER_FOLDER, text_from_image=data_item['text_from_image'], url=data_item['url']))
+                session.add(ImageData(credentials_folder=KEYS[user_key], text_from_image=data_item['text_from_image'], url=data_item['url']))
 
         session.commit()
 
-def get_text_from_image() -> List[Dict[str, Column[str]]]:
+def get_text_from_image(user_key: str) -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         # Get all rows from the image_data table
-        rows = session.query(ImageData).filter_by(credentials_folder=USER_FOLDER).all()
+        rows = session.query(ImageData).filter_by(credentials_folder=KEYS[user_key]).all()
         data_image = [{"text_from_image": row.text_from_image, "url": row.url} for row in rows]
         session.commit()
 
     return data_image
 
-def delete_image_data() -> None:
+def delete_image_data(user_key: str) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        session.query(ImageData).filter(ImageData.credentials_folder == USER_FOLDER).delete()
+        session.query(ImageData).filter(ImageData.credentials_folder == KEYS[user_key]).delete()
         session.commit()
 
-def post_allegro_offers(offers: List[Dict[str, str]]) -> None:
+def post_allegro_offers(user_key: str, offers: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         for offer in offers:
             offer_id = offer['id']
             offer_data = json.dumps(offer)
-            session.add(AllegroOffers(credentials_folder=USER_FOLDER, offer_id=offer_id, offer_data=offer_data))
+            session.add(AllegroOffers(credentials_folder=KEYS[user_key], offer_id=offer_id, offer_data=offer_data))
 
 
-        row_flags = session.query(Flags).filter_by(credentials_folder=USER_FOLDER).order_by(Flags.id.desc()).first()
+        row_flags = session.query(Flags).filter_by(credentials_folder=KEYS[user_key]).order_by(Flags.id.desc()).first()
         row_flags.load_offers = True
 
         session.commit()
 
-def get_allegro_offers() -> List[Dict[str, Column[str]]]:
+def get_allegro_offers(user_key: str) -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        rows = session.query(AllegroOffers).filter_by(credentials_folder=USER_FOLDER).all()
+        rows = session.query(AllegroOffers).filter_by(credentials_folder=KEYS[user_key]).all()
         allegro_offers = [{"offer_id": row.offer_id, "offer_data": row.offer_data} for row in rows]
         session.commit()
 
     return allegro_offers
 
-def post_payments(payments: List[Dict[str, str]]) -> None:
+def post_payments(user_key: str, payments: List[Dict[str, str]]) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         for payment in payments:
             payment = json.dumps(payment)
-            session.add(AllegroPayments(credentials_folder=USER_FOLDER, payment=payment))
+            session.add(AllegroPayments(credentials_folder=KEYS[user_key], payment=payment))
 
-        row_flags = session.query(Flags).filter_by(credentials_folder=USER_FOLDER).order_by(Flags.id.desc()).first()
+        row_flags = session.query(Flags).filter_by(credentials_folder=KEYS[user_key]).order_by(Flags.id.desc()).first()
         row_flags.load_payment = True
 
         session.commit()
 
-def get_payments() -> List[Column[str]]:
+def get_payments(user_key: str) -> List[Column[str]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        rows = session.query(AllegroPayments).filter_by(credentials_folder=USER_FOLDER).all()
+        rows = session.query(AllegroPayments).filter_by(credentials_folder=KEYS[user_key]).all()
         allegro_payments = [row.payment for row in rows]
         
         session.commit()
 
     return allegro_payments
 
-def post_false_flags() -> None:
+def post_false_flags(user_key: str) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
         try:
-            flags = session.query(Flags).filter_by(credentials_folder=USER_FOLDER).one()
+            flags = session.query(Flags).filter_by(credentials_folder=KEYS[user_key]).one()
             
             flags.load_offers = False
             flags.load_payment = False
@@ -217,30 +216,30 @@ def post_false_flags() -> None:
             session.commit()
 
         except NoResultFound:
-            session.add(Flags(credentials_folder=USER_FOLDER, load_offers=False, load_payment=False))
+            session.add(Flags(credentials_folder=KEYS[user_key], load_offers=False, load_payment=False))
             session.commit()
         
-def get_flags() -> Dict[str, Column[bool]]:
+def get_flags(user_key: str) -> Dict[str, Column[bool]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        row = session.query(Flags).filter_by(credentials_folder=USER_FOLDER).one()
+        row = session.query(Flags).filter_by(credentials_folder=KEYS[user_key]).one()
         flags = {"load_offers": row.load_offers, "load_payment": row.load_payment}
         session.commit()
 
     return flags
 
-def delete_allegro_offers() -> None:
+def delete_allegro_offers(user_key: str) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        session.query(AllegroOffers).filter(AllegroOffers.credentials_folder == USER_FOLDER).delete()
+        session.query(AllegroOffers).filter(AllegroOffers.credentials_folder == KEYS[user_key]).delete()
         session.commit()
 
-def delete_allegro_payments() -> None:
+def delete_allegro_payments(user_key: str) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        session.query(AllegroPayments).filter(AllegroPayments.credentials_folder == USER_FOLDER).delete()
+        session.query(AllegroPayments).filter(AllegroPayments.credentials_folder == KEYS[user_key]).delete()
         session.commit()
 

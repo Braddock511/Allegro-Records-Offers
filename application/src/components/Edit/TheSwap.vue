@@ -58,12 +58,13 @@
                 displaySpecific: false,
                 alert: {},
                 loading: false,
+                userKey: this.$cookies.get('allegro-cred').userKey,
             }
         },
         methods:{
             async swap() {
                 this.loading = true
-                const response = (await axios.post('http://127.0.0.1:8000/swap-all', {swapCarton: this.swapCarton, withCarton: this.withCarton})).data
+                const response = (await axios.post('http://127.0.0.1:8000/swap-all', {userKey: this.userKey, swapCarton: this.swapCarton, withCarton: this.withCarton})).data
                 if (response.error || response.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                 }
@@ -76,7 +77,7 @@
                 this.loading = true
                 if(this.offersId.length == 0)
                 {
-                    const response = (await axios.post('http://127.0.0.1:8000/swap-specific', {swapCarton: this.swapCarton, withCarton: this.withCarton, offerId: this.offerId})).data
+                    const response = (await axios.post('http://127.0.0.1:8000/swap-specific', {userKey: this.userKey, swapCarton: this.swapCarton, withCarton: this.withCarton, offerId: this.offerId})).data
                     if (response.error || response.errors){
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
@@ -88,7 +89,7 @@
                 {
                     for (let i = 0; i < this.offersId.length; i++) {
                         const id = this.offersId[i]
-                        const response = (await axios.post('http://127.0.0.1:8000/swap-specific', { swapCarton: this.swapCarton, withCarton: this.withCarton, offerId: id })).data
+                        const response = (await axios.post('http://127.0.0.1:8000/swap-specific', {userKey: userKey, swapCarton: this.swapCarton, withCarton: this.withCarton, offerId: id })).data
 
                         if (response.error || response.errors) {
                             this.alert = { variant: "danger", message: this.$t("alerts.someWrong") }

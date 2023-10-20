@@ -119,12 +119,13 @@
             async getImageData() {
                 this.loading = true
                 const splitImages = this.splitImages(this.images, this.numberImages)
+                const userKey = this.$cookies.get('allegro-cred').userKey;
                 
                 if (this.typeRecord == "Vinyl"){
-                    this.read = await axios.post('http://127.0.0.1:8000/read-vinyl-image', {images: splitImages}, {headers: {'Content-Type': 'application/json'}})
+                    this.read = await axios.post('http://127.0.0.1:8000/read-vinyl-image', {userKey: userKey, images: splitImages}, {headers: {'Content-Type': 'application/json'}})
                 }
                 else if (this.typeRecord == "CD"){
-                    this.read = await axios.post('http://127.0.0.1:8000/read-cd-image', {images: splitImages}, {headers: {'Content-Type': 'application/json'}})
+                    this.read = await axios.post('http://127.0.0.1:8000/read-cd-image', {userKey: userKey, images: splitImages}, {headers: {'Content-Type': 'application/json'}})
                 }
                 this.loading = false
             },

@@ -51,7 +51,7 @@
         methods:{
             loadSavedData() {
                 const savedCred = this.$cookies.get('allegro-cred');
-                if (savedCred) {
+                if (savedCred.flag) {
                     this.userKey = savedCred.userKey || "";
                     this.discogsToken = savedCred.discogsToken || "";
                     this.allegroId = savedCred.allegroId || "";
@@ -76,8 +76,8 @@
                     };
                     this.$cookies.set('allegro-cred', credData, '12h', '/', '', false, 'Lax');
                     this.loading = true
-                    const response_offers = (await axios.get('http://127.0.0.1:8000/store-all-offers')).data
-                    const response_payments = (await axios.get('http://127.0.0.1:8000/store-all-payments')).data
+                    const response_offers = (await axios.post('http://127.0.0.1:8000/store-all-offers', {userKey: this.userKey})).data
+                    const response_payments = (await axios.post('http://127.0.0.1:8000/store-all-payments', {userKey: this.userKey})).data
                     if (response_offers.error){
                         this.alert = {variant: "danger", message: this.$t("alerts.offersFailed")}
                         this.formDisplay = true

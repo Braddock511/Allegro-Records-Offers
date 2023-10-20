@@ -23,16 +23,17 @@ app.add_middleware(
 @app.post("/read-vinyl-image")
 async def read_vinyl_image(request: Request):
     try:
-        db.delete_image_data()
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         images = response['images']
         text_from_images = []
+        db.delete_image_data(user_key)
+        credentials = db.get_credentials(user_key)
 
         preprocess_tasks = [preprocess_vinyl_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
 
-        db.post_text_from_image(text_from_images)
+        db.post_text_from_image(user_key, text_from_images)
 
         return {"status": 200, "output": text_from_images}
 
@@ -43,16 +44,17 @@ async def read_vinyl_image(request: Request):
 @app.post("/read-cd-image")
 async def read_cd_image(request: Request):
     try:
-        db.delete_image_data()
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         images = response['images']
         text_from_images = []
+        db.delete_image_data(user_key)
+        credentials = db.get_credentials(user_key)
         
         preprocess_tasks = [preprocess_cd_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
             
-        db.post_text_from_image(text_from_images)
+        db.post_text_from_image(user_key, text_from_images)
 
         return {"status": 200, "output": text_from_images}
 
@@ -62,9 +64,10 @@ async def read_cd_image(request: Request):
 @app.post("/clear-image")
 async def clear_image(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         image = response['image']
+        credentials = db.get_credentials(user_key)
         
         clear_image_url = remove_background(image, credentials)
         
@@ -85,12 +88,13 @@ async def discogs_info(request: Request):
             dict: A dictionary containing the status, offer information, and Discogs data.
     """
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         index = response['index']
         allegro_data = response['allegroData']
         type_record = None
         offer_input_data = None
+        credentials = db.get_credentials(user_key)
         
         if "offers" in allegro_data.keys():
             offer_info = allegro.get_offer_info(credentials, allegro_data['offers'][index]['id'])
@@ -129,14 +133,15 @@ async def image_data(request: Request):
             dict: A dictionary containing the status and Discogs data for the records.
     """
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         index = response['index']
         number_images = response['numberImages']
         type_record = response['typeRecord']
-        discogs_data = []
-        image_data = db.get_text_from_image()
+        credentials = db.get_credentials(user_key)
+        image_data = db.get_text_from_image(user_key)
         image_data = image_data[index:index+number_images]
+        discogs_data = []
         
         # Get data from discogs
         for data in image_data:
@@ -160,8 +165,8 @@ async def image_data(request: Request):
 
 @app.post("/discogs-information-new-search")
 async def image_data(request: Request):
-    credentials = db.get_credentials()
     response = loads((await request.body()).decode('utf-8'))
+    user_key = response['userKey']
     new_search = response['newSearch']
     type_record = response.get('typeRecord', "")
     if not type_record:
@@ -171,6 +176,7 @@ async def image_data(request: Request):
             if x['name'] == 'Nośnik':
                 type_record = x['values'][0]
                 
+    credentials = db.get_credentials(user_key)
     information = preprocess_data_parallel(new_search, credentials, type_record, False)
     
     discogs_data = [{"input_data": new_search, "information": information, "url": ""} for _ in range(3)]
@@ -178,10 +184,12 @@ async def image_data(request: Request):
     return {"status": 200, "output": discogs_data}
        
     
-@app.get("/clear-image-data")
-async def clear_image_data():
+@app.post("/clear-image-data")
+async def clear_image_data(request: Request):
     try:
-        db.delete_image_data()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        db.delete_image_data(user_key)
 
         return {"status": 200}
     except Exception as e:
@@ -205,7 +213,7 @@ async def allegro_auth(request: Request):
 async def allegro_token(request: Request):
     try:
         response = loads((await request.body()).decode('utf-8'))
-        user_key = response['user_key']
+        user_key = response['userKey']
         discogs_token = response['discogs_token']
         user_id = response['client_id']
         user_secret = response['client_secret']
@@ -224,15 +232,17 @@ async def allegro_token(request: Request):
 @app.post("/allegro-edit-description")
 async def edit_offer(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         offer_id = response['offerId']
         images = response['images']
         new_data = response['data']
         listing_similar = response['listing_similar']
+        edit_description = response['editDescription']
+        to_buy = response['toBuy']
+        credentials = db.get_credentials(user_key)
 
-        result = allegro.edit_description(credentials, offer_id, images, new_data, listing_similar)
-
+        result = allegro.edit_description(credentials, offer_id, images, new_data, listing_similar, edit_description, to_buy)
         return {"status": 200, "output": result}
         
     except Exception as e:
@@ -241,10 +251,12 @@ async def edit_offer(request: Request):
 @app.post("/allegro-edit-image")
 async def edit_image(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         offer_id = response['offerID']
         images = response['images']
+        credentials = db.get_credentials(user_key)
+
         result = allegro.edit_images(credentials, offer_id, images)
         
         return {"status": 200, "output": result}
@@ -256,13 +268,14 @@ async def edit_image(request: Request):
 async def allegro_listing(request: Request):
     try:
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         offer_data = response['offer_data']
         carton = response['carton']
         type_record = response['typeRecord']
         type_offer = response['typeOffer']
         duration = response['duration']
         clear = response['clear']
-        credentials = db.get_credentials()
+        credentials = db.get_credentials(user_key)
 
         result = allegro.create_offer(credentials, offer_data, carton, type_record, type_offer, duration, clear)
 
@@ -274,13 +287,14 @@ async def allegro_listing(request: Request):
 @app.post("/allegro-offers")
 async def allegro_offers(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         limit = response['limit']
         offset = response['offset']
         type_offer = response['typeOffer']
         type_record = response['typeRecord']
         genre = response.get("genre", "all")
+        credentials = db.get_credentials(user_key)
         
         offers = allegro.get_my_offers(credentials, limit, offset, type_offer, type_record, genre)
         return {"status": 200, "output": offers}
@@ -291,9 +305,10 @@ async def allegro_offers(request: Request):
 @app.post("/allegro-offer")
 async def allegro_offer(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         offer_id = response['offerId']
+        credentials = db.get_credentials(user_key)
         
         offers = allegro.get_offer_info(credentials, offer_id)
         
@@ -302,11 +317,13 @@ async def allegro_offer(request: Request):
     except Exception as e:
         return {"status": 404, "error": f"Exception in allegro_offer: {str(e)}"}
 
-@app.get("/store-all-offers")
-async def store_all_offers():
+@app.post("/store-all-offers")
+async def store_all_offers(request: Request):
     try:
-        credentials = db.get_credentials()
-        flags = db.get_flags()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        credentials = db.get_credentials(user_key)
+        flags = db.get_flags(user_key)
         offers = []
         
         if not flags['load_offers']:
@@ -323,18 +340,20 @@ async def store_all_offers():
 
             offers = sum(offers, [])
 
-            db.post_allegro_offers(offers)
+            db.post_allegro_offers(user_key, offers)
 
         return {"status": 200, "output": offers}
 
     except Exception as e:
         return {"status": 404, "error": f"Exception in store_all_offers: {str(e)}"}
 
-@app.get("/store-all-payments")
-async def store_all_payments():
+@app.post("/store-all-payments")
+async def store_all_payments(request: Request):
     try:
-        credentials = db.get_credentials()
-        flags = db.get_flags()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        credentials = db.get_credentials(user_key)
+        flags = db.get_flags(user_key)
         payments = []
         if not flags['load_payment']:
             i = 0
@@ -349,17 +368,19 @@ async def store_all_payments():
 
             payments = sum(payments, [])
 
-            db.post_payments(payments)
+            db.post_payments(user_key, payments)
 
         return {"status": 200, "output": payments}
     
     except Exception as e:
         return {"status": 404, "error": f"Exception in store_all_payments: {str(e)}"}
 
-@app.get("/allegro-visitors-viewers")
-async def allegro_visitors_viewers():
+@app.post("/allegro-visitors-viewers")
+async def allegro_visitors_viewers(request: Request):
     try:
-        allegro_offers = db.get_allegro_offers()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        allegro_offers = db.get_allegro_offers(user_key)
         output_offers = []
         for offer in allegro_offers:
             offer = loads(offer['offer_data'])
@@ -370,11 +391,13 @@ async def allegro_visitors_viewers():
     except Exception as e:
         return {"status": 404, "error": f"Exception in allegro_visitors_viewers: {str(e)}"}
 
-@app.get("/sale-barplot")
-async def sale_barplot():
+@app.post("/sale-barplot")
+async def sale_barplot(request: Request):
     try:
-        credentials = db.get_credentials()
-        sales = db.get_payments()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        credentials = db.get_credentials(user_key)
+        sales = db.get_payments(user_key)
         sale_barplot = annual_sale_barplot(credentials, sales)
         
         return {"status": 200, "output": sale_barplot}
@@ -382,11 +405,13 @@ async def sale_barplot():
     except Exception as e:
         return {"status": 404, "error": f"Exception in sale_barplot: {str(e)}"}
     
-@app.get("/genre-barplot")
-async def genre_barplot():
+@app.post("/genre-barplot")
+async def genre_barplot(request: Request):
     try:
-        credentials = db.get_credentials()
-        allegro_offers = db.get_allegro_offers()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        credentials = db.get_credentials(user_key)
+        allegro_offers = db.get_allegro_offers(user_key)
         output_offers = []
         for offer in allegro_offers:
             offer = loads(offer['offer_data'])
@@ -399,12 +424,14 @@ async def genre_barplot():
     except Exception as e:
         return {"status": 404, "error": f"Exception in genre_barplot: {str(e)}"}
 
-@app.get("/refresh-database")
-async def refresh_database():
+@app.post("/refresh-database")
+async def refresh_database(request: Request):
     try:
-        db.delete_allegro_offers()
-        db.delete_allegro_payments()
-        db.post_false_flags()
+        response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        db.delete_allegro_offers(user_key)
+        db.delete_allegro_payments(user_key)
+        db.post_false_flags(user_key)
 
         return {"status": 200}
     except Exception as e:
@@ -413,14 +440,15 @@ async def refresh_database():
 @app.post("/discogs-listing")
 async def discogs_listing(request: Request):
     try:
-        credentials = db.get_credentials()
-        discogs_token = credentials['api_discogs_token']
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
+        discogs_token = credentials['api_discogs_token']
         listing_id = response['listing_id']
         media_condition = response['mediaCondition']
         sleeve_condition = response['sleeveCondition']
         carton = response['carton']
         price = response['price']
+        credentials = db.get_credentials(user_key)
 
         result = create_offer(listing_id, media_condition, sleeve_condition, carton, price, discogs_token)
 
@@ -431,10 +459,11 @@ async def discogs_listing(request: Request):
 @app.post("/swap-all")
 async def swap_all(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         swap_carton = response['swapCarton']
         with_carton = response['withCarton']
+        credentials = db.get_credentials(user_key)
 
         result = allegro.swap_cartons(credentials, swap_carton, with_carton)
 
@@ -445,11 +474,12 @@ async def swap_all(request: Request):
 @app.post("/swap-specific")
 async def swap_specific(request: Request):
     try:
-        credentials = db.get_credentials()
         response = loads((await request.body()).decode('utf-8'))
+        user_key = response['userKey']
         swap_carton = response['swapCarton']
         with_carton = response['withCarton']
         offer_id = response['offerId']
+        credentials = db.get_credentials(user_key)
 
         result = allegro.swap_specific_carton(credentials, swap_carton, with_carton, offer_id)
 

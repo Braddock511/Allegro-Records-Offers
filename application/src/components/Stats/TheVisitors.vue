@@ -49,9 +49,11 @@
         },
         async beforeMount(){
             this.loading = true
-            const response = (await axios.get('http://127.0.0.1:8000/allegro-visitors-viewers')).data
+            const userKey = this.$cookies.get('allegro-cred').userKey;
+            const response = (await axios.post('http://127.0.0.1:8000/allegro-visitors-viewers', {userKey: userKey})).data
             if (response.error || response.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
+                console.log(response);
             }
             else{
                 this.visitors_viewers = response.output

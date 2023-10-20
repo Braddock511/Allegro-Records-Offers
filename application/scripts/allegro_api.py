@@ -364,7 +364,7 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
 
     return ("", "") if condition.upper() not in conditions else (condition, carton)
 
-def edit_description(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool) -> dict:
+def edit_description(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_description: bool, to_buy: bool) -> dict:
     condition_carton = get_condition_and_carton(credentials, offer_id)
 
     if not condition_carton:
@@ -390,48 +390,50 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
         if not "Wytwórnia" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and label != "-":
             offer['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
 
-    offer['description'] = {
-        'sections': [
-                    {
-                        'items': [
-                            {'type': 'IMAGE', 'url': images[0]},
-                            {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}
-                        ]
-                    },
-                    {
-                        'items': [
-                            {'type': 'TEXT', 'content': get_tracklist(record_id, credentials["api_discogs_token"])}
-                        ]
-                    },
-                    {
-                        'items': [
-                            {'type': 'IMAGE', 'url': images[1]}, 
-                            {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
-                        ]
-                    },
-                    {
-                        'items': [
-                            {'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}
-                        ]
-                    }
-                ]
-            }
+    if edit_description:
+        offer['description'] = {
+            'sections': [
+                        {
+                            'items': [
+                                {'type': 'IMAGE', 'url': images[0]},
+                                {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}
+                            ]
+                        },
+                        {
+                            'items': [
+                                {'type': 'TEXT', 'content': get_tracklist(record_id, credentials["api_discogs_token"])}
+                            ]
+                        },
+                        {
+                            'items': [
+                                {'type': 'IMAGE', 'url': images[1]}, 
+                                {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
+                            ]
+                        },
+                        {
+                            'items': [
+                                {'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}
+                            ]
+                        }
+                    ]
+                }
 
     offer['productSet'][0]['product']['images'] = images
 
     if price:
         offer['sellingMode'] = {"price": {"amount": price, "currency": "PLN"}}
     
-    if listing_similar:
-        # Convert auction to buy_now
-        offer['publication']['status'] = "ACTIVE"
+    if to_buy:
         offer['sellingMode']['format'] = "BUY_NOW"
         if offer['sellingMode'].get('startingPrice', ""):
             offer['sellingMode']['price'] = {"amount": offer['sellingMode']['startingPrice']['amount'], "currency": "PLN"}
         offer['publication']['duration'] = None
         offer['publication']['endedBy'] = None
         offer['publication']['endingAt'] = None
-        
+    
+    if listing_similar:
+        offer['publication']['status'] = "ACTIVE"
+                
         url = "https://api.allegro.pl/sale/product-offers"
         result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
     else:

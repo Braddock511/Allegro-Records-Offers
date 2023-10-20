@@ -177,7 +177,8 @@
                 failedFlag: false,
                 loading: {"flag": false, "message": ""},
                 activeRequests: 0,
-                newSearch: ""
+                newSearch: "",
+                userKey: this.$cookies.get('allegro-cred').userKey,
             }
         },
         methods:{
@@ -207,6 +208,7 @@
                 this.loading.message = this.$t("loading.listingOffer")
 
                 await axios.post("http://127.0.0.1:8000/discogs-listing",{
+                        userKey: this.userKey, 
                         listing_id: data.id,
                         mediaCondition: this.condition,
                         carton: this.carton,
@@ -282,6 +284,7 @@
                 this.next()
                 
                 axios.post("http://127.0.0.1:8000/allegro-listing", {
+                    userKey: this.userKey,
                     offer_data: selectedData,
                     carton: this.carton,
                     typeRecord: this.typeRecord,
@@ -328,7 +331,7 @@
                 }
                 else{
                     this.offerImages = []
-                    axios.post("http://127.0.0.1:8000/discogs-information-image", {typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                    axios.post("http://127.0.0.1:8000/discogs-information-image", {userKey: this.userKey, typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
                         this.discogsData = response.data.output
                         
                         for (let i = 0; i < this.numberImages; i++) {
@@ -345,7 +348,7 @@
                 this.loading.flag = true
                 this.loading.message = this.$t("loading.loadData")
 
-                axios.post("http://127.0.0.1:8000/discogs-information-new-search", {newSearch: this.newSearch, typeRecord: this.typeRecord}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                axios.post("http://127.0.0.1:8000/discogs-information-new-search", {userKey: this.userKey, newSearch: this.newSearch, typeRecord: this.typeRecord}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
                     this.discogsData = response.data.output
                     
                     this.newSearch = ""
@@ -391,7 +394,7 @@
         async beforeMount() {
             this.loading.flag =  true
             this.loading.message = this.$t("loading.loadData") 
-            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
+            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {userKey: this.userKey, typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
 
             try{
                 for (let i = 0; i < this.numberImages; i++) {

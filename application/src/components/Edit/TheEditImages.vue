@@ -27,13 +27,14 @@
                 allegroImages: "",
                 offerIndex: 0,
                 loading: false,
-                alert: {}
+                alert: {},
+                userKey: this.$cookies.get('allegro-cred').userKey,
             }
         },
         methods:{
             async clearImages(){
                 this.loading = true
-                this.clearImage = (await axios.post('http://127.0.0.1:8000/clear-image', {image: this.allegroImages[0]})).data
+                this.clearImage = (await axios.post('http://127.0.0.1:8000/clear-image', {userKey: this.userKey, image: this.allegroImages[0]})).data
                 if (this.clearImage.error || this.clearImage.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.clearFailed")}
                 }
@@ -46,7 +47,7 @@
                 this.loading = true
                 let otherImages = this.allegroImages.slice(1, this.allegroImages.length)
                 let newImages = ([this.clearImage, otherImages]).flat()
-                const response = (await axios.post('http://127.0.0.1:8000/allegro-edit-image', {offerID: this.allegroData.offers[this.offerIndex].id, images: newImages})).data
+                const response = (await axios.post('http://127.0.0.1:8000/allegro-edit-image', {userKey: this.userKey, offerID: this.allegroData.offers[this.offerIndex].id, images: newImages})).data
                 if (response.error || response.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.imageFailed")}
                     this.loading = false
@@ -65,7 +66,7 @@
                     return ""
                 }
                 else{
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/allegro-offer', {offerId: this.allegroData.offers[this.offerIndex].id})).data
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/allegro-offer', {userKey: this.userKey, offerId: this.allegroData.offers[this.offerIndex].id})).data
                     if (this.offerData.error || this.offerData.errors){
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
@@ -79,7 +80,7 @@
         },
         async beforeMount() {
             this.loading = true
-            this.offerData = (await axios.post('http://127.0.0.1:8000/allegro-offer', {offerId: this.allegroData.offers[0].id})).data
+            this.offerData = (await axios.post('http://127.0.0.1:8000/allegro-offer', {userKey: this.userKey, offerId: this.allegroData.offers[0].id})).data
             if (this.offerData.error || this.offerData.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }

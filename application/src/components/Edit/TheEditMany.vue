@@ -89,13 +89,14 @@
                 typeOffer: "all",
                 typeRecord: "all",
                 genre: "all",
-                loading: false
+                loading: false,
+                userKey: this.$cookies.get('allegro-cred').userKey,
             }
         },
         methods:{
             async getData(edit) {
                 this.loading = true
-                this.allegroData = (await axios.post('http://127.0.0.1:8000/allegro-offers', {limit: this.limit, offset: this.offset, typeOffer: this.typeOffer, typeRecord: this.typeRecord, genre: this.genre})).data.output
+                this.allegroData = (await axios.post('http://127.0.0.1:8000/allegro-offers', {userKey: this.userKey, limit: this.limit, offset: this.offset, typeOffer: this.typeOffer, typeRecord: this.typeRecord, genre: this.genre})).data.output
                 this.typeEdit = edit
                 this.loading = false
             },

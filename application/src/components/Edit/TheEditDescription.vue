@@ -47,7 +47,8 @@
                 country: "",
                 year: "",
                 loading: false,
-                alert: {}
+                alert: {},
+                userKey: this.$cookies.get('allegro-cred').userKey,
             }
         },
         methods:{
@@ -68,7 +69,7 @@
                         year: this.year ? this.year : "-",
                     }
                 this.loading = true
-                const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {offerId: this.allegroData.offers[this.offerIndex].id, images: this.offerData.offer.images, data: selectedData})).data
+                const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {userKey: this.userKey, offerId: this.allegroData.offers[this.offerIndex].id, images: this.offerData.offer.images, data: selectedData})).data
                 if (response.error || response.errors){
                     this.alert = {variant: "danger", message: this.$t("alerts.descFailed")}
                     this.loading = false
@@ -87,7 +88,7 @@
                     return ""
                 }
                 else{
-                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: this.offerIndex, allegroData: this.allegroData})).data
+                    this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {userKey: this.userKey, index: this.offerIndex, allegroData: this.allegroData})).data
                     if (this.allegroData.error || this.allegroData.errors){
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
                     }
@@ -103,7 +104,7 @@
         },
         async beforeMount() {
             this.loading = true
-            this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {index: 0, allegroData: this.allegroData})).data
+            this.offerData = (await axios.post('http://127.0.0.1:8000/discogs-information', {userKey: this.userKey, index: 0, allegroData: this.allegroData})).data
             if (this.allegroData.error || this.allegroData.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }

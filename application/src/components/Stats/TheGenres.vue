@@ -25,7 +25,8 @@
         async beforeMount(){
             if (this.genreBarplot == ""){
                     this.loading = true
-                    const response = (await axios.get('http://127.0.0.1:8000/genre-barplot')).data
+                    const userKey = this.$cookies.get('allegro-cred').userKey;
+                    const response = (await axios.post('http://127.0.0.1:8000/genre-barplot', {userKey: userKey})).data
                     if (response.error || response.errors)
                     {
                         this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}

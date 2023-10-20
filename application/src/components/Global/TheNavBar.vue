@@ -24,7 +24,7 @@
           <span @click="refreshDatabase">{{ $t('buttons.refresh') }}</span>
         </li>
         <hr>
-        <li style="display: flex; gap: 10px; padding: 10px;">
+        <li style="display: flex; gap: 10px; padding: 13.5px;">
           <img src="@/assets/poland.png" alt="poland" @click="changeLanguage('pl')">
           <img src="@/assets/uk.png" alt="uk" @click="changeLanguage('en')">
         </li> 
@@ -71,9 +71,11 @@
         methods:{
             async refreshDatabase(){
                 this.loading = true
-                await axios.get("http://127.0.0.1:8000/refresh-database")
-                const response_offers = (await axios.get('http://127.0.0.1:8000/store-all-offers')).data
-                const response_payments = (await axios.get('http://127.0.0.1:8000/store-all-payments')).data
+                const userKey = this.$cookies.get('allegro-cred').userKey;
+
+                await axios.post("http://127.0.0.1:8000/refresh-database", {userKey: userKey})
+                const response_offers = (await axios.post('http://127.0.0.1:8000/store-all-offers', {userKey: userKey})).data
+                const response_payments = (await axios.post('http://127.0.0.1:8000/store-all-payments', {userKey: userKey})).data
                 if (response_offers.error){
                     this.alert = {variant: "danger", message: this.$t("alerts.offersFailed")}
                     this.formDisplay = true
