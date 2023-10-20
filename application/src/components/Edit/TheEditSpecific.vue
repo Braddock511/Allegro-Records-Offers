@@ -145,65 +145,38 @@
                         price: this.price
                     }
                 }
-                if (this.allegroData.sellingMode.format=='BUY_NOW'){
-                    if (this.price !== ""){
-                        // Edit offer
-                        this.loading = true
-                        const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {
-                            userKey: this.userKey, 
-                            offerId: this.offerId, 
-                            images: this.img, 
-                            data: selectedData, 
-                            listing_similar: this.listing_similar, 
-                            editDescription: this.editDescription, 
-                            toBuy: this.toBuy
-                        })).data.output
-
-                        if (response.error || response.errors){
-                            this.alert = {variant: "danger", message: this.$t("alerts.failed")}
-                        }
-                        else{
-                            this.alert = {variant: "success", message: this.$t("alerts.success")}
-                            this.discogsData = ""
-                        }
+                // Edit offer
+                this.loading = true
+                axios.post("http://127.0.0.1:8000/allegro-edit-description", {
+                    userKey: this.userKey,
+                    offerId: this.offerId,
+                    images: this.img,
+                    data: selectedData,
+                    listing_similar: this.listing_similar,
+                    editDescription: this.editDescription,
+                    toBuy: this.toBuy
+                })
+                .then(response => {
+                    const responseData = response.data
+                    if (responseData.status == 500) {
+                        this.alert = {variant: "danger", message: `${this.$t("alerts.failed")} - ${responseData.error.errors[0].userMessage}`}
+                    }   
+                    else{
+                        this.alert = {variant: "success", message: this.$t("alerts.success")}
+                        this.discogsData = ""
+                        this.offerId = ""
                         this.label = ""
                         this.country = ""
                         this.year = ""
                         this.price = ""
-                        this.loading = false
                     }
-                    else{
-                        this.alert = {variant: "warning", message: this.$t("alerts.completePrice")}
-                    }
-                }
-                else{
-                    // Edit offer
-                    this.loading = true
-                    const response = (await axios.post("http://127.0.0.1:8000/allegro-edit-description", {
-                        userKey: this.userKey, 
-                        offerId: this.offerId, 
-                        images: this.img, 
-                        data: selectedData, 
-                        listing_similar: this.listing_similar,
-                        editDescription: this.editDescription, 
-                        toBuy: this.toBuy
-                    })).data.output
-
-                    if (response.errors){
-                        this.alert = {variant: "danger", message: this.$t("alerts.failed")}
-                    }
-                    else{
-                        this.alert = {variant: "success", message: this.$t("alerts.success")}
-                        this.discogsData = ""
-                    }
-                    this.label = ""
-                    this.country = ""
-                    this.year = ""
-                    this.price = ""
                     this.loading = false
-                }
+                })
+                .catch(error => {
+                    this.alert = {variant: "danger", message: `${this.$t("alerts.failed")} - ${error}`}
+                    this.loading = false
+                })
                 this.listing_similar = false
-                this.offerId = ""
             },
             async editImage(){
                 this.loading = true

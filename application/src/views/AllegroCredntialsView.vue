@@ -61,7 +61,7 @@
             async allegroToken() {
                 this.response = (await axios.post("http://127.0.0.1:8000/allegro-auth", {client_id: this.allegroId, client_secret: this.allegroSecret})).data.output
                 this.formDisplay = false
-                const tokenResponse = (await axios.post("http://127.0.0.1:8000/allegro-token", {user_key: this.userKey, discogs_token: this.discogsToken, client_id: this.allegroId, client_secret: this.allegroSecret, device_code: this.response["device_code"],})).data
+                const tokenResponse = (await axios.post("http://127.0.0.1:8000/allegro-token", {userKey: this.userKey, discogs_token: this.discogsToken, client_id: this.allegroId, client_secret: this.allegroSecret, device_code: this.response["device_code"],})).data
                 if (tokenResponse.error || tokenResponse.status == 401){
                     this.formDisplay = true
                     this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")}

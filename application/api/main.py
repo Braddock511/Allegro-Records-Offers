@@ -243,6 +243,10 @@ async def edit_offer(request: Request):
         credentials = db.get_credentials(user_key)
 
         result = allegro.edit_description(credentials, offer_id, images, new_data, listing_similar, edit_description, to_buy)
+
+        if "errors" in result:
+            return {"status": 500, "error": result}
+            
         return {"status": 200, "output": result}
         
     except Exception as e:
