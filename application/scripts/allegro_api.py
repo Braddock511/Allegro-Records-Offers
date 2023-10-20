@@ -365,12 +365,6 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
     return ("", "") if condition.upper() not in conditions else (condition, carton)
 
 def edit_description(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_description: bool, to_buy: bool) -> dict:
-    condition_carton = get_condition_and_carton(credentials, offer_id)
-
-    if not condition_carton:
-        return {}
-
-    condition, carton = condition_carton
     record_id = new_information['id']
     label = new_information['label'].replace("&", "")
     country = new_information['country'].replace("&", "")
@@ -384,13 +378,20 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
             type_record = x['values'][0]
     
     if type_record != "płyta DVD":
-        if not "Rok wydania" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and released != "-":
-            offer['productSet'][0]['product']['parameters'].append({"name": "Rok wydania", "values": [released]})
+        if not "Rok wydania" in [parameter['name'] for parameter in parameters] and released != "-":
+            parameters.append({"name": "Rok wydania", "values": [released]})
 
-        if not "Wytwórnia" in [parameter['name'] for parameter in offer['productSet'][0]['product']['parameters']] and label != "-":
-            offer['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
+        if not "Wytwórnia" in [parameter['name'] for parameter in parameters] and label != "-":
+            parameters.append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
 
     if edit_description:
+        condition_carton = get_condition_and_carton(credentials, offer_id)
+
+        if not condition_carton:
+            return {}
+
+        condition, carton = condition_carton
+    
         offer['description'] = {
             'sections': [
                         {
