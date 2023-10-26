@@ -104,11 +104,23 @@
             <tbody>
             <tr v-for="data in discogsData[recordIndex].information">
                 <td><a :href="data.uri" style="background-color: #203640; " target="_blank">{{ data.title }}</a></td>
-                <td>{{ data.label }}</td>
-                <td>{{ data.country }}</td>
-                <td>{{ data.year }}</td>
+                <td>
+                    <span v-if="data.label !== '-'">{{ data.label }}</span>
+                    <input v-else type="text" name="label" class="custom" placeholder="Label" v-model="label">
+                </td>
+                <td>
+                    <span v-if="data.country !== '-'">{{ data.country }}</span>
+                    <input v-else type="text" name="country" class="custom" placeholder="Country" v-model="country">
+                </td>
+                <td>
+                    <span v-if="data.year !== '-'">{{ data.year }}</span>
+                    <input v-else type="text" name="year" class="custom" placeholder="Year" v-model="year">
+                </td>
                 <td>{{ data.genre }}</td>
-                <td v-if="typeRecord == 'CD'">{{ data.barcode }}</td>
+                <td v-if="typeRecord == 'CD'">
+                    <span v-if="data.barcode !== '-'">{{ data.barcode }}</span>
+                    <input v-else type="text" name="barcode" class="custom" placeholder="-"  v-model="barcode">
+                </td>
                 <td class="media-condition" style="display: none">
                     {{ $t("table.condition") }}
                     <select v-model="condition">
@@ -145,7 +157,7 @@
         <h3>{{ loading.message }}</h3>
     </div>
     <TheAlert :alert="alert" />
-
+    
     <TheFailed :dataFailed="failed" :typeRecord="typeRecord" :carton="carton" :typeOffer=" this.typeOffer" :duration=" this.duration" :clear=" this.clear" v-if="failedFlag"/>
 </template>
   
@@ -207,7 +219,7 @@
                 this.loading.flag = true
                 this.loading.message = this.$t("loading.listingOffer")
 
-                await axios.post("http://127.0.0.1:8000/discogs-listing",{
+                await axios.post(`${url}/discogs-listing`,{
                         userKey: this.userKey, 
                         listing_id: data.id,
                         mediaCondition: this.condition,
@@ -282,22 +294,17 @@
                 // Send data 
                 this.loading.flag = true
                 this.next()
-                
-                axios.post("http://127.0.0.1:8000/allegro-listing", {
+                const requestData = {
                     userKey: this.userKey,
                     offer_data: selectedData,
                     carton: this.carton,
                     typeRecord: this.typeRecord,
                     typeOffer: this.typeOffer,
                     duration: this.duration,
-                    clear: this.clear}, { 
-                    headers: { 
-                        "Content-Type": "application/json", 
-                        "Access-Control-Allow-Origin": "*", 
-                        } 
-                    }).then((response) => {
+                    clear: this.clear
+                };
+                axios.post(`${url}/allegro-listing`, requestData).then((response) => {
                         response = response.data
-
                         if (response.error || response.output.errors) {
                             this.failed.push(selectedData)
                             this.alert = { variant: "danger", message: `${this.$t("alerts.listingFailed")} - ${selectedData.title}` }
@@ -331,7 +338,8 @@
                 }
                 else{
                     this.offerImages = []
-                    axios.post("http://127.0.0.1:8000/discogs-information-image", {userKey: this.userKey, typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                    axios.post(`${url}/discogs-information-image`, {userKey: this.userKey, typeRecord: this.typeRecord, index: this.currentIndex, numberImages: this.numberImages,}, { headers: { "Content-Type": "application/json" } })
+                    .then((response) =>{
                         this.discogsData = response.data.output
                         
                         for (let i = 0; i < this.numberImages; i++) {
@@ -339,16 +347,22 @@
                         }
                         
                         this.offerImages.reverse()
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error)
+                    })
+                    .finally(() => {
                         this.loading.message = "" 
                         this.loading.flag = false
                     })
+
                 }
             },
             async search(){
                 this.loading.flag = true
                 this.loading.message = this.$t("loading.loadData")
 
-                axios.post("http://127.0.0.1:8000/discogs-information-new-search", {userKey: this.userKey, newSearch: this.newSearch, typeRecord: this.typeRecord}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
+                axios.post(`${url}/discogs-information-new-search`, {userKey: this.userKey, newSearch: this.newSearch, typeRecord: this.typeRecord}, { headers: { "Content-Type": "application/json" } }).then((response) =>{
                     this.discogsData = response.data.output
                     
                     this.newSearch = ""
@@ -394,19 +408,23 @@
         async beforeMount() {
             this.loading.flag =  true
             this.loading.message = this.$t("loading.loadData") 
-            this.discogsData = (await axios.post('http://127.0.0.1:8000/discogs-information-image', {userKey: this.userKey, typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})).data.output
 
-            try{
+            await axios.post(`${url}/discogs-information-image`, {userKey: this.userKey, typeRecord: this.typeRecord, index: 0, numberImages: this.numberImages}, {headers: {'Content-Type': 'application/json'}})
+            .then((response) => {
+                this.discogsData = response.data.output
                 for (let i = 0; i < this.numberImages; i++) {
                     this.offerImages.push(this.discogsData[i].url)
                 }
                 this.offerImages.reverse()
-            }
-            catch{
+            })
+            .catch((error) => {
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
-            }
-            this.loading.message = ""
-            this.loading.flag =  false
+                console.error('Error:', error)
+            })
+            .finally(() => {
+                this.loading.message = ""
+                this.loading.flag = false
+            })
         },
         props: {
             typeRecord:{

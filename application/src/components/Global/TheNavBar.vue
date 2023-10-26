@@ -9,7 +9,6 @@
         </li>
         <hr>
         <li>
-          <span @click="option='many'">{{ $t("editView.many") }}</span>
           <span @click="option='specific'">{{ $t("editView.specific") }}</span>
           <span @click="option='swap'">{{ $t("editView.swap") }}</span>
         </li>
@@ -34,7 +33,6 @@
     
     <main v-if="!loading">
       <TheListingOptions v-if="option=='listing'"/>
-      <TheEditMany v-if="option=='many'"/>
       <TheEditSpecific v-if="option=='specific'"/>
       <TheSwap v-if="option=='swap'"/>
       <TheVisitors v-if="option=='visitors'"/>
@@ -53,7 +51,6 @@
     import axios from 'axios'
     import TheAlert from "@/components/Global/TheAlert.vue"
     import TheListingOptions from '@/components/Listing/TheListingOptions.vue'
-    import TheEditMany from '@/components/Edit/TheEditMany.vue'
     import TheEditSpecific from '@/components/Edit/TheEditSpecific.vue'
     import TheSwap from '@/components/Edit/TheSwap.vue'
     import TheVisitors from '@/components/Stats/TheVisitors.vue'
@@ -73,20 +70,10 @@
                 this.loading = true
                 const userKey = this.$cookies.get('allegro-cred').userKey;
 
-                await axios.post("http://127.0.0.1:8000/refresh-database", {userKey: userKey})
-                const response_offers = (await axios.post('http://127.0.0.1:8000/store-all-offers', {userKey: userKey})).data
-                const response_payments = (await axios.post('http://127.0.0.1:8000/store-all-payments', {userKey: userKey})).data
-                if (response_offers.error){
-                    this.alert = {variant: "danger", message: this.$t("alerts.offersFailed")}
-                    this.formDisplay = true
-                }
-                else if (response_payments.error){
-                    this.alert = {variant: "danger", message: this.$t("alerts.paymentsFailed")}
-                    this.formDisplay = true
-                }
-                else{
-                    this.$router.push("/")
-                }
+                await axios.post(`${url}/refresh-database`, {userKey: userKey})
+                await axios.post(`${url}/store-all-offers`, {userKey: userKey})
+                await axios.post(`${url}/store-all-payments`, {userKey: userKey})
+
                 this.loading = false
             },
             changeLanguage(locale) {
@@ -96,7 +83,6 @@
         components: {
           TheAlert,
           TheListingOptions,
-          TheEditMany,
           TheEditSpecific,
           TheSwap,
           TheVisitors,
@@ -112,9 +98,11 @@
 
     nav {
       width: 250px;
+      min-height: 100vh;
       background-color: #202020;
       transition: all .3s ease;
       box-shadow:4px 7px 10px rgba(0,0,0,.4);
+
       h2{
         margin-top: 5px;
         text-align: center;
@@ -125,23 +113,26 @@
         list-style-type:none;
         padding:0px;
         margin:0px;  
+        margin-left: 5px;
+        margin-right: 5px;
 
         li {
-          padding-bottom: 5px;
           cursor: pointer;
           span {
             display: block;
             padding: 15px;
             transition: all .3s ease;
-            font-size: 24px;
+            font-size: 18.5px;
 
             &:hover{
               background-color: #303030;
+              border-radius: 3%;
             }
           }
           
           img{
-            width: 50px;
+            width: 40px;
+            height: 40px;
 
             &:hover{
               opacity: .8;
@@ -171,7 +162,7 @@
       ul{
         li{
           img{
-            height: 50px;
+            height: 40px;
           }
         }
       }

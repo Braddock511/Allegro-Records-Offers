@@ -59,9 +59,9 @@
                 }
             },
             async allegroToken() {
-                this.response = (await axios.post("http://127.0.0.1:8000/allegro-auth", {client_id: this.allegroId, client_secret: this.allegroSecret})).data.output
+                this.response = (await axios.post(`${url}/allegro-auth`, {client_id: this.allegroId, client_secret: this.allegroSecret})).data.output
                 this.formDisplay = false
-                const tokenResponse = (await axios.post("http://127.0.0.1:8000/allegro-token", {userKey: this.userKey, discogs_token: this.discogsToken, client_id: this.allegroId, client_secret: this.allegroSecret, device_code: this.response["device_code"],})).data
+                const tokenResponse = (await axios.post(`${url}/allegro-token`, {userKey: this.userKey, discogs_token: this.discogsToken, client_id: this.allegroId, client_secret: this.allegroSecret, device_code: this.response["device_code"],})).data
                 if (tokenResponse.error || tokenResponse.status == 401){
                     this.formDisplay = true
                     this.alert = {variant: "danger", message: this.$t("alerts.tokenFailed")}
@@ -76,8 +76,8 @@
                     };
                     this.$cookies.set('allegro-cred', credData, '12h', '/', '', false, 'Lax');
                     this.loading = true
-                    const response_offers = (await axios.post('http://127.0.0.1:8000/store-all-offers', {userKey: this.userKey})).data
-                    const response_payments = (await axios.post('http://127.0.0.1:8000/store-all-payments', {userKey: this.userKey})).data
+                    const response_offers = (await axios.post(`${url}/store-all-offers`, {userKey: this.userKey})).data
+                    const response_payments = (await axios.post(`${url}/store-all-payments`, {userKey: this.userKey})).data
                     if (response_offers.error){
                         this.alert = {variant: "danger", message: this.$t("alerts.offersFailed")}
                         this.formDisplay = true

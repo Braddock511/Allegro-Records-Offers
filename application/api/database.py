@@ -112,7 +112,7 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
                 credentials_data = Credentials(**data_to_insert)
                 session.add(credentials_data)
                 session.commit()
-                post_false_flags()
+                post_false_flags(user_key)
                 
                 return True
     
@@ -123,7 +123,8 @@ def get_credentials(user_key: str) -> Dict[str, str]:
     with Session() as session:
         row = session.query(Credentials).filter_by(user_folder=KEYS[user_key]).one()
         credentials = row.__dict__
-
+        credentials['user_key'] = user_key
+    
     return credentials
 
 def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]]) -> None:
@@ -133,7 +134,7 @@ def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]]) 
         for text_from_image in text_from_images:
             for data_item in text_from_image:
                 session.add(ImageData(credentials_folder=KEYS[user_key], text_from_image=data_item['text_from_image'], url=data_item['url']))
-
+            
         session.commit()
 
 def get_text_from_image(user_key: str) -> List[Dict[str, Column[str]]]:

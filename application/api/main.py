@@ -1,8 +1,9 @@
 import asyncio
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from json import loads
+import json
 import database as db
+import models as models
 import allegro_api as allegro
 from   preprocessing_image import preprocess_vinyl_images, preprocess_cd_images, remove_background
 from   preprocessing_data import preprocess_data_parallel
@@ -21,11 +22,10 @@ app.add_middleware(
 )
 
 @app.post("/read-vinyl-image")
-async def read_vinyl_image(request: Request):
+async def read_vinyl_image(request: models.ImagesRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        images = response['images']
+        user_key = request.userKey
+        images = request.images
         text_from_images = []
         db.delete_image_data(user_key)
         credentials = db.get_credentials(user_key)
@@ -38,15 +38,14 @@ async def read_vinyl_image(request: Request):
         return {"status": 200, "output": text_from_images}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in read_vinyl_image: {str(e)}"}
+        return {"status": 500, "error": f"Exception in read_vinyl_image: {str(e)}"}
 
 
 @app.post("/read-cd-image")
-async def read_cd_image(request: Request):
+async def read_cd_image(request: models.ImagesRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        images = response['images']
+        user_key = request.userKey
+        images = request.images
         text_from_images = []
         db.delete_image_data(user_key)
         credentials = db.get_credentials(user_key)
@@ -59,14 +58,13 @@ async def read_cd_image(request: Request):
         return {"status": 200, "output": text_from_images}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in read_cd_image: {str(e)}"}
+        return {"status": 500, "error": f"Exception in read_cd_image: {str(e)}"}
 
 @app.post("/clear-image")
-async def clear_image(request: Request):
+async def clear_image(request: models.ImageRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        image = response['image']
+        user_key = request.userKey
+        image = request.image
         credentials = db.get_credentials(user_key)
         
         clear_image_url = remove_background(image, credentials)
@@ -74,10 +72,10 @@ async def clear_image(request: Request):
         return {"status": 200, "output": clear_image_url}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in clear_image: {str(e)}"}
+        return {"status": 500, "error": f"Exception in clear_image: {str(e)}"}
 
 @app.post("/discogs-information")
-async def discogs_info(request: Request):
+async def discogs_info(request: models.DiscogsInfoRequest):
     """
         Endpoint that receives a POST request with data about an offer for a record. The function processes the data to extract the necessary information, and then queries the Discogs API to retrieve additional information about the record.
 
@@ -88,10 +86,9 @@ async def discogs_info(request: Request):
             dict: A dictionary containing the status, offer information, and Discogs data.
     """
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        index = response['index']
-        allegro_data = response['allegroData']
+        user_key = request.userKey
+        index = request.index
+        allegro_data = request.allegroData 
         type_record = None
         offer_input_data = None
         credentials = db.get_credentials(user_key)
@@ -119,10 +116,10 @@ async def discogs_info(request: Request):
 
         return {"status": 200, "offer": offer_info, "output": discogs_data}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in discogs_info: {str(e)}"}
+        return {"status": 500, "error": f"Exception in discogs_info: {str(e)}"}
 
 @app.post("/discogs-information-image")
-async def image_data(request: Request):
+async def image_data(request: models.DiscogsInfoImageRequest):
     """
         Get Discogs information for vinyl or CD records from image data.
 
@@ -133,11 +130,10 @@ async def image_data(request: Request):
             dict: A dictionary containing the status and Discogs data for the records.
     """
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        index = response['index']
-        number_images = response['numberImages']
-        type_record = response['typeRecord']
+        user_key = request.userKey
+        index = request.index
+        number_images = request.numberImages
+        type_record = request.typeRecord
         credentials = db.get_credentials(user_key)
         image_data = db.get_text_from_image(user_key)
         image_data = image_data[index:index+number_images]
@@ -148,7 +144,7 @@ async def image_data(request: Request):
             text_from_image = data['text_from_image'] 
             url = data['url']
             
-            if text_from_image == "EMPTY":
+            if text_from_image == "{}":
                 discogs_data.append({"input_data": text_from_image, "information": "", "url": url})
             else:
                 if type_record == "Vinyl":
@@ -161,16 +157,16 @@ async def image_data(request: Request):
         return {"status": 200, "output": discogs_data}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in image_data: {str(e)}"}
+        return {"status": 500, "error": f"Exception in image_data: {str(e)}"}
 
 @app.post("/discogs-information-new-search")
-async def image_data(request: Request):
-    response = loads((await request.body()).decode('utf-8'))
-    user_key = response['userKey']
-    new_search = response['newSearch']
-    type_record = response.get('typeRecord', "")
+async def image_data(request: models.NewSearchRequest):
+    user_key = request.userKey
+    new_search = request.newSearch
+    type_record = request.typeRecord
+    
     if not type_record:
-        allegro_data = response['allegroData']
+        allegro_data = request.allegroData
         parameters = allegro_data['productSet'][0]['product']['parameters']
         for x in parameters:
             if x['name'] == 'Nośnik':
@@ -185,39 +181,36 @@ async def image_data(request: Request):
        
     
 @app.post("/clear-image-data")
-async def clear_image_data(request: Request):
+async def clear_image_data(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
+        user_key = request.userKey
         db.delete_image_data(user_key)
 
         return {"status": 200}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in clear_image_data: {str(e)}"}
+        return {"status": 500, "error": f"Exception in clear_image_data: {str(e)}"}
 
 
 @app.post("/allegro-auth")
-async def allegro_auth(request: Request):
+async def allegro_auth(request: models.AllegroAuthRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_id = response['client_id']
-        user_secret = response['client_secret']
+        user_id = request.client_id
+        user_secret = request.client_secret
         token_url = allegro.allegro_verification(user_id, user_secret)
 
         return {"status": 200, "output": token_url}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_auth: {str(e)}"}
+        return {"status": 500, "error": f"Exception in allegro_auth: {str(e)}"}
 
 @app.post("/allegro-token")
-async def allegro_token(request: Request):
+async def allegro_token(request: models.AllegroTokenRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        discogs_token = response['discogs_token']
-        user_id = response['client_id']
-        user_secret = response['client_secret']
-        device_code = response['device_code']
+        user_key = request.userKey
+        discogs_token = request.discogs_token
+        user_id = request.client_id
+        user_secret = request.client_secret
+        device_code = request.device_code
         user_token = allegro.get_allegro_token(user_id, user_secret, device_code)
 
         check_user = db.post_credentials(user_key, discogs_token, user_id, user_secret, user_token)
@@ -227,107 +220,82 @@ async def allegro_token(request: Request):
         return {"status": 401, "output": "Unauthorized"}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_token: {str(e)}"}
+        return {"status": 500, "error": f"Exception in allegro_token: {str(e)}"}
 
-@app.post("/allegro-edit-description")
-async def edit_offer(request: Request):
+@app.post("/allegro-edit")
+async def edit_offer(request: models.AllergoEditDescRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        offer_id = response['offerId']
-        images = response['images']
-        new_data = response['data']
-        listing_similar = response['listing_similar']
-        edit_description = response['editDescription']
-        to_buy = response['toBuy']
+        user_key = request.userKey
+        offer_id = request.offerId
+        images = request.images
+        new_edit_data = request.newEditData
+        listing_similar = request.listingSimilar
+        edit_price = request.editPrice
+        edit_description = request.editDescription
+        to_buy = request.toBuy
         credentials = db.get_credentials(user_key)
 
-        result = allegro.edit_description(credentials, offer_id, images, new_data, listing_similar, edit_description, to_buy)
+        result = allegro.edit_offer(credentials, offer_id, images, new_edit_data, listing_similar, edit_price, edit_description, to_buy)
 
         if "errors" in result:
-            return {"status": 500, "error": result}
-            
+            return {"status": 500, "error": result}     
         return {"status": 200, "output": result}
         
     except Exception as e:
-        return {"status": 404, "error": f"Exception in edit_offer: {str(e)}"}
+        return {"status": 500, "error": f"Exception in edit_offer: {str(e)}"}
     
 @app.post("/allegro-edit-image")
-async def edit_image(request: Request):
+async def edit_image(request: models.AllergoEditImageRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        offer_id = response['offerID']
-        images = response['images']
+        user_key = request.userKey
+        offer_id = request.offerId
+        images = request.images
         credentials = db.get_credentials(user_key)
 
         result = allegro.edit_images(credentials, offer_id, images)
-        
+        if "errors" in result:
+            return {"status": 500, "error": result}
         return {"status": 200, "output": result}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in edit-image: {str(e)}"}
-    
+        return {"status": 500, "error": f"Exception in edit-image: {str(e)}"}
+
 @app.post("/allegro-listing")
-async def allegro_listing(request: Request):
+async def allegro_listing(request: models.AllegroListingRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        offer_data = response['offer_data']
-        carton = response['carton']
-        type_record = response['typeRecord']
-        type_offer = response['typeOffer']
-        duration = response['duration']
-        clear = response['clear']
-        credentials = db.get_credentials(user_key)
-
-        result = allegro.create_offer(credentials, offer_data, carton, type_record, type_offer, duration, clear)
-
+        credentials = db.get_credentials(request.userKey)
+        result = allegro.create_offer(credentials, request.offer_data, request.carton, request.typeRecord, request.typeOffer, request.duration, request.clear)
         return {"status": 200, "output": result}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_listing: {str(e)}"}
+        return {"status": 500, "error": f"Exception in allegro_listing: {str(e)}"}
 
 @app.post("/allegro-offers")
-async def allegro_offers(request: Request):
+async def allegro_offers(request: models.AllegroOffersRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        limit = response['limit']
-        offset = response['offset']
-        type_offer = response['typeOffer']
-        type_record = response['typeRecord']
-        genre = response.get("genre", "all")
-        credentials = db.get_credentials(user_key)
-        
-        offers = allegro.get_my_offers(credentials, limit, offset, type_offer, type_record, genre)
+        credentials = db.get_credentials(request.userKey)
+        offers = allegro.get_my_offers(credentials, request.limit, request.offset, request.typeOffer, request.typeRecord, request.genre)
         return {"status": 200, "output": offers}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_offers: {str(e)}"}
+        return {"status": 500, "error": f"Exception in allegro_offers: {str(e)}"}
     
 @app.post("/allegro-offer")
-async def allegro_offer(request: Request):
+async def allegro_offer(request: models.AllegroOffersRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        offer_id = response['offerId']
-        credentials = db.get_credentials(user_key)
-        
-        offers = allegro.get_offer_info(credentials, offer_id)
-        
-        return {"status": 200, "output": offers}
+        credentials = db.get_credentials(request.userKey)        
+        offer = allegro.get_offer_info(credentials, request.offerId)
+        return {"status": 200, "output": offer}
     
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_offer: {str(e)}"}
+        return {"status": 500, "error": f"Exception in allegro_offer: {str(e)}"}
 
 @app.post("/store-all-offers")
-async def store_all_offers(request: Request):
+async def store_all_offers(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        credentials = db.get_credentials(user_key)
-        flags = db.get_flags(user_key)
+        user_key = request.userKey
+        credentials = db.get_credentials(request.userKey)
+        flags = db.get_flags(request.userKey)
         offers = []
         
         if not flags['load_offers']:
@@ -344,18 +312,26 @@ async def store_all_offers(request: Request):
 
             offers = sum(offers, [])
 
+            # TEMP FEATURE TO FIX OFFERS
+            import requests
+            for offer in offers:
+                offer_id = offer['id']
+                offer_info = allegro.get_offer_info(credentials, offer_id)
+                if offer_info['publication']['republish']:
+                    offer_info['publication']['republish'] = False
+                    requests.patch(url = f"https://api.allegro.pl/sale/product-offers/{offer_id}", headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer_info, verify=False)
+            
             db.post_allegro_offers(user_key, offers)
 
         return {"status": 200, "output": offers}
 
     except Exception as e:
-        return {"status": 404, "error": f"Exception in store_all_offers: {str(e)}"}
+        return {"status": 500, "error": f"Exception in store_all_offers: {str(e)}"}
 
 @app.post("/store-all-payments")
-async def store_all_payments(request: Request):
+async def store_all_payments(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
+        user_key = request.userKey
         credentials = db.get_credentials(user_key)
         flags = db.get_flags(user_key)
         payments = []
@@ -377,29 +353,26 @@ async def store_all_payments(request: Request):
         return {"status": 200, "output": payments}
     
     except Exception as e:
-        return {"status": 404, "error": f"Exception in store_all_payments: {str(e)}"}
+        return {"status": 500, "error": f"Exception in store_all_payments: {str(e)}"}
 
 @app.post("/allegro-visitors-viewers")
-async def allegro_visitors_viewers(request: Request):
+async def allegro_visitors_viewers(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        allegro_offers = db.get_allegro_offers(user_key)
+        allegro_offers = db.get_allegro_offers(request.userKey)
         output_offers = []
         for offer in allegro_offers:
-            offer = loads(offer['offer_data'])
+            offer = json.loads(offer['offer_data'])
             output_offers.append(offer)
 
         return {"status": 200, "output": output_offers}
     
     except Exception as e:
-        return {"status": 404, "error": f"Exception in allegro_visitors_viewers: {str(e)}"}
+        return {"status": 500, "error": f"Exception in allegro_visitors_viewers: {str(e)}"}
 
 @app.post("/sale-barplot")
-async def sale_barplot(request: Request):
+async def sale_barplot(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
+        user_key = request.userKey
         credentials = db.get_credentials(user_key)
         sales = db.get_payments(user_key)
         sale_barplot = annual_sale_barplot(credentials, sales)
@@ -407,18 +380,17 @@ async def sale_barplot(request: Request):
         return {"status": 200, "output": sale_barplot}
     
     except Exception as e:
-        return {"status": 404, "error": f"Exception in sale_barplot: {str(e)}"}
+        return {"status": 500, "error": f"Exception in sale_barplot: {str(e)}"}
     
 @app.post("/genre-barplot")
-async def genre_barplot(request: Request):
+async def genre_barplot(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
+        user_key = request.userKey
         credentials = db.get_credentials(user_key)
         allegro_offers = db.get_allegro_offers(user_key)
         output_offers = []
         for offer in allegro_offers:
-            offer = loads(offer['offer_data'])
+            offer = json.loads(offer['offer_data'])
             output_offers.append(offer)
 
         genre_barplot = create_genres_barplot(credentials, output_offers)
@@ -426,67 +398,43 @@ async def genre_barplot(request: Request):
         return {"status": 200, "output": genre_barplot}
     
     except Exception as e:
-        return {"status": 404, "error": f"Exception in genre_barplot: {str(e)}"}
+        return {"status": 500, "error": f"Exception in genre_barplot: {str(e)}"}
 
 @app.post("/refresh-database")
-async def refresh_database(request: Request):
+async def refresh_database(request: models.UserKeyRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
+        user_key = request.userKey
         db.delete_allegro_offers(user_key)
         db.delete_allegro_payments(user_key)
         db.post_false_flags(user_key)
 
         return {"status": 200}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in refresh_database: {str(e)}"}
+        return {"status": 500, "error": f"Exception in refresh_database: {str(e)}"}
     
 @app.post("/discogs-listing")
-async def discogs_listing(request: Request):
+async def discogs_listing(request: models.DiscogsListingRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        discogs_token = credentials['api_discogs_token']
-        listing_id = response['listing_id']
-        media_condition = response['mediaCondition']
-        sleeve_condition = response['sleeveCondition']
-        carton = response['carton']
-        price = response['price']
-        credentials = db.get_credentials(user_key)
-
-        result = create_offer(listing_id, media_condition, sleeve_condition, carton, price, discogs_token)
-
+        credentials = db.get_credentials(request.userKey)
+        result = create_offer(request.listing_id, request.mediaCondition, request.sleeveCondition, request.carton, request.price, credentials['api_discogs_token'])
         return {"status": 200, "output": result}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in discogs_listing: {str(e)}"}
+        return {"status": 500, "error": f"Exception in discogs_listing: {str(e)}"}
     
 @app.post("/swap-all")
-async def swap_all(request: Request):
+async def swap_all(request: models.SwapAllRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        swap_carton = response['swapCarton']
-        with_carton = response['withCarton']
-        credentials = db.get_credentials(user_key)
-
-        result = allegro.swap_cartons(credentials, swap_carton, with_carton)
-
+        credentials = db.get_credentials(request.userKey)
+        result = allegro.swap_cartons(credentials, request.swapCarton, request.withCarton)
         return {"status": 200, "output": result}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in swap_all: {str(e)}"}
+        return {"status": 500, "error": f"Exception in swap_all: {str(e)}"}
     
 @app.post("/swap-specific")
-async def swap_specific(request: Request):
+async def swap_specific(request: models.SwapSpecificRequest):
     try:
-        response = loads((await request.body()).decode('utf-8'))
-        user_key = response['userKey']
-        swap_carton = response['swapCarton']
-        with_carton = response['withCarton']
-        offer_id = response['offerId']
-        credentials = db.get_credentials(user_key)
-
-        result = allegro.swap_specific_carton(credentials, swap_carton, with_carton, offer_id)
-
+        credentials = db.get_credentials(request.userKey)
+        result = allegro.swap_specific_carton(credentials, request.swapCarton, request.withCarton, request.offerId)
         return {"status": 200, "output": result}
     except Exception as e:
-        return {"status": 404, "error": f"Exception in swap_specific: {str(e)}"}
+        return {"status": 500, "error": f"Exception in swap_specific: {str(e)}"}

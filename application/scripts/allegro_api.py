@@ -156,14 +156,14 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     country = offer_data['country'].replace("&", ", ")
     released = offer_data['year']
     genre = offer_data['genre']
-    price = offer_data['price']
+    price = offer_data['price'].replace(",", ".")
     images = offer_data['images']
     condition = offer_data['condition']
     barcode = ("".join(re.findall('\d+', offer_data['barcode']))).strip()
     tracklist = get_tracklist(record_id, credentials["api_discogs_token"])
 
     # Allegro data
-    allegro_offer = json.loads(get_allegro_offers()[0]['offer_data'])
+    allegro_offer = json.loads(get_allegro_offers(credentials['user_key'])[0]['offer_data'])
     allegro_id = allegro_offer['id']
     offer_info = get_offer_info(credentials, allegro_id)
     
@@ -364,12 +364,12 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
 
     return ("", "") if condition.upper() not in conditions else (condition, carton)
 
-def edit_description(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_description: bool, to_buy: bool) -> dict:
+def edit_offer(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_price: bool, edit_description: bool, to_buy: bool) -> dict:
     record_id = new_information['id']
     label = new_information['label'].replace("&", "")
     country = new_information['country'].replace("&", "")
     released = new_information['year'].replace("&", "")
-    price = new_information.get('price', "")
+    price = new_information.get('price', "").replace(",", ".")
     offer = get_offer_info(credentials, offer_id)
     parameters = offer['productSet'][0]['product']['parameters']
     
@@ -421,16 +421,18 @@ def edit_description(credentials: dict, offer_id: str, images: list, new_informa
 
     offer['productSet'][0]['product']['images'] = images
 
-    if price:
-        offer['sellingMode'] = {"price": {"amount": price, "currency": "PLN"}}
-    
+    if edit_price:
+        offer['sellingMode']['price'] = {"amount": price, "currency": "PLN"}
+    elif offer['sellingMode'].get('startingPrice', ""):
+        offer['sellingMode']['price'] = {"amount": offer['sellingMode']['startingPrice']['amount'], "currency": "PLN"}
+        
     if to_buy:
         offer['sellingMode']['format'] = "BUY_NOW"
-        if offer['sellingMode'].get('startingPrice', ""):
-            offer['sellingMode']['price'] = {"amount": offer['sellingMode']['startingPrice']['amount'], "currency": "PLN"}
+        
         offer['publication']['duration'] = None
         offer['publication']['endedBy'] = None
         offer['publication']['endingAt'] = None
+        offer['publication']['republish'] = False
     
     if listing_similar:
         offer['publication']['status'] = "ACTIVE"
@@ -495,7 +497,7 @@ def swap_cartons(credentials: dict, change_carton: str, change_to_carton: str) -
     """
     allegro_token = credentials["api_allegro_token"]
     
-    offers = get_allegro_offers()
+    offers = get_allegro_offers(credentials['user_key'])
     filter_offers = []
     for offer in offers:
         offer = json.loads(offer['offer_data'])

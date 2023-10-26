@@ -1,13 +1,40 @@
+import numpy as np
 import requests
 import base64
 import asyncio
 from PIL import Image
 from pyzbar import pyzbar
 from io import BytesIO
-import numpy as np
 from typing import Dict
 from rembg import remove
 from imageKit_api import upload_file_imageKit
+
+def resize_image(image_url: str, max_size_kb: int = 768) -> bytes:
+    try:
+        response = requests.get(image_url)
+        image_bytes = response.content        
+        img = Image.open(BytesIO(image_bytes))
+        max_size_bytes = max_size_kb * 1024
+
+        img_bytes = BytesIO()
+        img.save(img_bytes, format="JPEG")
+        current_size = len(img_bytes.getvalue())
+
+        if current_size <= max_size_bytes:
+            return base64.b64encode(img_bytes.getvalue())
+
+        # Calculate the new quality to reduce the size
+        quality = int((max_size_bytes / current_size) * 100)
+
+        # Reduce the image quality to fit the size limit
+        img = img.convert("RGB")
+        img_bytes = BytesIO()
+        img.save(img_bytes, format="JPEG", quality=quality)
+        
+        return base64.b64encode(img_bytes.getvalue())
+
+    except Exception as e:
+        return None
 
 def read_image(image: str, credentials: Dict[str, str]) -> tuple[str, str]:
     """
@@ -20,24 +47,21 @@ def read_image(image: str, credentials: Dict[str, str]) -> tuple[str, str]:
         Returns:
             tuple[str, str]: The extracted text and image URL.
     """
-    image = upload_file_imageKit(image, credentials)
-    image_url = image['url']
+    image_url = upload_file_imageKit(image, credentials)['url']
+    resized_image = resize_image(image_url)
+    resized_image_url = upload_file_imageKit(resized_image, credentials)['url']
     
     api_url = "https://api.ocr.space/parse/image"
     
     payload = {
         "apikey": credentials['api_ocr_space'],
         "language": "eng",
-        "url": image_url,
+        "url": resized_image_url,
         "filetype": "URL",
     }
 
     response = requests.post(api_url, data=payload)
     result = response.json()
-
-    # Check if OCR was successful
-    if result.get("IsErroredOnProcessing"):
-        return ("", image_url)
 
     # Extract the extracted text and image URL
     output_text = result.get("ParsedResults")[0].get("ParsedText").splitlines()
@@ -62,7 +86,7 @@ async def preprocess_vinyl_images(images: list, credentials: Dict[str, str]) -> 
     other_image_tasks = [asyncio.to_thread(upload_file_imageKit, other_image, credentials) for other_image in images[1:]]
     other_image_urls = await asyncio.gather(*other_image_tasks)
 
-    text_from_images.extend({"text_from_image": "EMPTY", "url": other_image_url['url']} for other_image_url in other_image_urls)
+    text_from_images.extend({"text_from_image": "{}", "url": other_image_url['url']} for other_image_url in other_image_urls)
     
     return text_from_images
 
@@ -108,14 +132,14 @@ async def preprocess_cd_images(images: list, credentials: Dict[str, str]) -> lis
     image_url_1 = await asyncio.to_thread(upload_file_imageKit, images[0], credentials)
 
     text_from_images = [
-        {"text_from_image": "EMPTY", "url": image_url_1['url']},
+        {"text_from_image": "{}", "url": image_url_1['url']},
         {"text_from_image": text_from_image, "url": image_url_2},
     ]
     # Other images
     other_image_tasks = [asyncio.to_thread(upload_file_imageKit, other_image, credentials) for other_image in images[2:]]
     other_image_urls = await asyncio.gather(*other_image_tasks)
 
-    text_from_images.extend({"text_from_image": "EMPTY", "url": other_image_url['url']} for other_image_url in other_image_urls)
+    text_from_images.extend({"text_from_image": "{}", "url": other_image_url['url']} for other_image_url in other_image_urls)
     
     return text_from_images
 

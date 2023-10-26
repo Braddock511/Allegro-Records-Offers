@@ -47,7 +47,7 @@ export default {
     },
     editView:{
       many: "Edit many offers",
-      specific: "Edit specific offer",
+      specific: "Edit offer",
       swap: "Swap carton labels",
     },
     editMany:{
@@ -67,6 +67,7 @@ export default {
       editOffer: "Edit offer",
       listingSimilar: "Listing similar",
       clearImage: "Clear image",
+      editPrice: "Edit price",
       editDescription: "Edit description",
       toBuy: "Offers will be changed to Buy Now"
     },
@@ -228,7 +229,7 @@ export default {
     },
     editView:{
       many: "Edytuj wiele ofert",
-      specific: "Edytuj konkretną ofertę",
+      specific: "Edytuj ofertę",
       swap: "Zamień oznaczenie kartonów"
     },
     editMany:{
@@ -248,6 +249,7 @@ export default {
       listingSimilar: "Wystaw podobną",
       editOffer: "Edytuj ofertę",
       clearImage: "Wyczyść tło",
+      editPrice: "Edit cenę",
       editDescription: "Edytuj opis",
       toBuy: "Oferty zostaną zmienione na Kup teraz"
     },
