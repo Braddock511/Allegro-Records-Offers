@@ -17,7 +17,33 @@
     --color-icons: #606468;
   }
 }
-
+input.border-css,
+button.border-css {
+  border: 1px solid rgba(0, 0, 0, 0.305);
+  transition: all 150ms ease;
+}
+input.border-css:hover,
+button.border-css:hover {
+  border: 1px solid hsla(262, 87%, 48%, 0.753);
+}
+select.select-css {
+  border: 1px solid transparent !important;
+  cursor: pointer;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  option {
+    background-color: var(--bg-dark-gray);
+    border: none;
+    text-overflow: ellipsis;
+    font-size: 0.9rem;
+    font-weight: 550;
+    cursor: pointer;
+    color: rgb(212, 212, 212);
+  }
+}
+select.select-css:hover {
+  border: 1px solid hsla(262, 87%, 48%, 0.753) !important ;
+}
 table {
   // scale: 0.8;
   select {
@@ -101,13 +127,9 @@ nav .xd {
   border-radius: 6px;
 }
 
-.swap-css {
-  text-align: center;
-}
-
-@media only screen and (min-width: 768px) {
-  .swap-css {
-    text-align: start;
+@media only screen and (min-width: 480px) {
+  .title-css {
+    margin: auto !important;
   }
 }
 

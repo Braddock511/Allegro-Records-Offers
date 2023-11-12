@@ -6,11 +6,11 @@
     ></div>
     <nav
       class="relative bg-primary-gray shadow max-h-full min-w-[90px] flex flex-col justify-between transition-all z-50"
+      @mouseenter="changeWidth"
+      @mouseleave="resetWidth"
     >
       <div
-        @mouseenter="changeWidth"
-        @mouseleave="resetWidth"
-        class="fixed bg-primary-gray shadow max-h-screen custom-scroll overflow-y-auto overflow-x-hidden shadow-neutral-500 px-2 flex flex-col justify-between py-5 transition-all"
+        class="fixed bg-primary-gray shadow max-h-screen custom-scroll overflow-y-auto h-full overflow-x-hidden shadow-neutral-500 px-2 flex flex-col justify-between py-5 transition-all"
         :class="
           isOpen === false
             ? 'fixed transition-all w-[90px]'

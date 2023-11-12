@@ -1,54 +1,77 @@
 <template>
   <TheHeader />
-  <section class="form-container" v-if="formDisplay">
-    <form @submit.prevent="allegroToken">
-      <div class="title">{{ $t("formContainer.credentials") }}</div>
-      <div class="input-container">
-        <input
-          v-model="userKey"
-          id="user-key"
-          class="input"
-          type="text"
-          :placeholder="$t('formContainer.userKey')"
-          required
-          style="width: 50%"
-        />
+  <section v-if="formDisplay" class="w-full flex justify-center items-center">
+    <form
+      @submit.prevent="allegroToken"
+      class="w-[30rem] h-[28rem] bg-lighter-black p-4 py-5 mt-12 rounded-xl flex flex-col gap-10"
+    >
+      <div class="text-2xl text-white font-semibold">
+        {{ $t("formContainer.credentials") }}
       </div>
-      <div class="input-container">
-        <input
-          v-model="discogsToken"
-          id="discogs-token"
-          class="input"
-          type="text"
-          placeholder="Discogs token"
-          required
-          style="width: 50%"
-        />&nbsp;
-      </div>
-      <div class="input-container">
-        <input
-          v-model="allegroId"
-          id="client-id"
-          class="input"
-          type="text"
-          :placeholder="$t('formContainer.clientId')"
-          required
-          style="width: 50%"
-        />
-      </div>
-      <div class="input-container">
-        <input
-          v-model="allegroSecret"
-          id="client-secret"
-          class="input"
-          type="text"
-          :placeholder="$t('formContainer.clientSecret')"
-          required
-          style="width: 50%"
-        />
+      <div class="px-4 h-full flex flex-col gap-5">
+        <div class="relative">
+          <label
+            for="user-key"
+            class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold"
+          >
+            {{ $t("formContainer.userKey") }}
+          </label>
+          <input
+            v-model="userKey"
+            id="user-key"
+            type="text"
+            required
+            class="bg-lighter-black font-semibold h-10 w-full p-1 rounded-md placeholder:text-center px-1 outline-none border-css"
+          />
+        </div>
+        <div class="relative">
+          <label
+            for="discogs-token"
+            class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold"
+          >
+            Discogs token
+          </label>
+          <input
+            v-model="discogsToken"
+            id="discogs-token"
+            type="text"
+            required
+            class="bg-lighter-black font-semibold h-10 w-full p-1 rounded-md placeholder:text-center px-1 outline-none border-css"
+          />
+        </div>
+        <div class="relative">
+          <label
+            for="client-id"
+            class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold"
+          >
+            {{ $t("formContainer.clientId") }}
+          </label>
+          <input
+            v-model="allegroId"
+            id="client-id"
+            type="text"
+            required
+            class="bg-lighter-black font-semibold h-10 w-full p-1 rounded-md placeholder:text-center px-1 outline-none border-css"
+          />
+        </div>
+        <div class="relative">
+          <label
+            for="client-secret"
+            class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold"
+          >
+            {{ $t("formContainer.clientSecret") }}
+          </label>
+          <input
+            v-model="allegroSecret"
+            id="client-secret"
+            type="text"
+            required
+            class="bg-lighter-black font-semibold h-10 w-full p-1 rounded-md placeholder:text-center px-1 outline-none border-css"
+          />
+        </div>
       </div>
       <button
-        class="btn btn-primary w-100"
+        class="btn btn-primary w-full"
         type="submit"
         style="padding: 0.5rem; margin-top: 30px; font-size: 20px"
       >
@@ -59,7 +82,7 @@
   <div id="confirm" v-if="!formDisplay && !loading">
     <a :href="response.verification_uri_complete" target="_blank"
       ><button
-        class="btn btn-primary w-100"
+        class="btn btn-primary w-full"
         type="button"
         style="padding: 0.5rem; font-size: 20px"
       >
@@ -178,15 +201,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-#confirm {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 200px;
-  a {
-    width: 30%;
-  }
-}
-</style>

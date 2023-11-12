@@ -1,13 +1,25 @@
 <template>
-  <header>
-    <h1><span>Allegro Offers</span></h1>
-    <div id="languages">
+  <header
+    class="h-20 bg-darker-gray flex justify-between items-center relative"
+  >
+    <span class="text-2xl title-css text-white font-semibold text-start ml-4"
+      >Allegro Offers</span
+    >
+    <div
+      class="h-full w-fit flex items-center py-4 gap-3 mr-5 absolute right-0"
+    >
       <img
         src="@/assets/poland.png"
         alt="poland"
+        class="h-full cursor-pointer"
         @click="changeLanguage('pl')"
       />
-      <img src="@/assets/uk.png" alt="uk" @click="changeLanguage('en')" />
+      <img
+        src="@/assets/uk.png"
+        alt="uk"
+        @click="changeLanguage('en')"
+        class="h-full cursor-pointer"
+      />
     </div>
   </header>
 </template>
@@ -21,42 +33,3 @@ export default {
   },
 };
 </script>
-
-<style scoped lang="scss">
-header {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  background-color: rgb(34, 36, 35);
-  padding: 15px;
-  #home {
-    display: block;
-    width: 250px;
-    span:hover {
-      opacity: 0.8;
-    }
-  }
-  #languages {
-    position: absolute;
-    right: 0;
-    display: flex;
-    gap: 10px;
-    img {
-      cursor: pointer;
-      width: 50px;
-      height: 50px;
-      &:hover {
-        opacity: 0.9;
-      }
-    }
-  }
-}
-@media only screen and (max-width: 500px) {
-  header {
-    width: 500px;
-    #languages {
-      position: static;
-    }
-  }
-}
-</style>

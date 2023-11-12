@@ -52,8 +52,8 @@
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto w-full custom-scrollbar">
-        <table className="table table-sm ">
+      <div class="overflow-x-auto w-full custom-scrollbar">
+        <table class="table table-sm">
           <thead class="thead-css h-14 text-base">
             <tr>
               <th></th>
@@ -757,67 +757,36 @@ export default {
   async beforeMount() {
     this.loading.flag = false;
     this.loading.message = this.$t("loading.loadData");
-    this.discogsData = [
-      {
-        input_data: [],
-        information: [
-          {
-            id: "dsds",
-            label: "dsds",
-            country: "dsds",
-            year: "dsds",
-            uri: "dsds",
-            genre: "dsds",
-            title: "dsds",
-            price: "dsds",
-            barcode: "dsds",
-            community: "dsds",
-          },
-          {
-            id: "-",
-            label: "-",
-            country: "-",
-            uri: "-",
-            genre: "-",
-            title: "-",
-            price: "-",
-            barcode: "-",
-            community: "-",
-          },
-        ],
-        url: "",
-      },
-    ];
-    console.log(this.discogsData);
-    // await axios
-    //   .post(
-    //     `${url}/discogs-information-image`,
-    //     {
-    //       userKey: this.userKey,
-    //       typeRecord: this.typeRecord,
-    //       index: 0,
-    //       numberImages: this.numberImages,
-    //     },
-    //     { headers: { "Content-Type": "application/json" } }
-    //   )
-    //   .then((response) => {
-    //     this.discogsData = response.data.output;
-    //     for (let i = 0; i < this.numberImages; i++) {
-    //       this.offerImages.push(this.discogsData[i].url);
-    //     }
-    //     this.offerImages.reverse();
-    //   })
-    //   .catch((error) => {
-    //     this.alert = {
-    //       variant: "danger",
-    //       message: this.$t("alerts.someWrong"),
-    //     };
-    //     console.error("Error:", error);
-    //   })
-    //   .finally(() => {
-    //     this.loading.message = "";
-    //     this.loading.flag = false;
-    //   });
+    this.discogsData = "";
+    await axios
+      .post(
+        `${url}/discogs-information-image`,
+        {
+          userKey: this.userKey,
+          typeRecord: this.typeRecord,
+          index: 0,
+          numberImages: this.numberImages,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      )
+      .then((response) => {
+        this.discogsData = response.data.output;
+        for (let i = 0; i < this.numberImages; i++) {
+          this.offerImages.push(this.discogsData[i].url);
+        }
+        this.offerImages.reverse();
+      })
+      .catch((error) => {
+        this.alert = {
+          variant: "danger",
+          message: this.$t("alerts.someWrong"),
+        };
+        console.error("Error:", error);
+      })
+      .finally(() => {
+        this.loading.message = "";
+        this.loading.flag = false;
+      });
   },
   props: {
     typeRecord: {

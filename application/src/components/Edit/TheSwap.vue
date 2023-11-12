@@ -1,12 +1,12 @@
 <template>
   <section v-if="!loading && !displaySpecific">
     <form>
-      <div class="text-3xl text-white font-semibold swap-css">
+      <div class="text-3xl text-white font-semibold text-center">
         {{ $t("swap.title") }}
       </div>
-      <div class="text-xl swap-css w-full">{{ $t("swap.info") }}</div>
+      <div class="text-xl text-center w-full">{{ $t("swap.info") }}</div>
       <div
-        class="w-full md:w-fit justify-center items-center flex-wrap md:flex-nowrap flex-col flex md:flex-row md:gap-10"
+        class="w-full justify-center items-center flex-wrap md:flex-nowrap flex-col flex md:flex-row md:gap-10"
       >
         <div class="mt-5 flex flex-col gap-1 items-center">
           <span class="text-base text-slate-100 h-auto min-h-[28px]">{{
@@ -58,14 +58,14 @@
 
   <section v-if="!loading && displaySpecific">
     <form class="mt-10">
-      <div class="text-3xl text-white font-semibold swap-css">
+      <div class="text-3xl text-white font-semibold text-center">
         {{ $t("swap.title") }}
       </div>
-      <div class="text-xl swap-css">
+      <div class="text-xl text-center">
         {{ $t("swap.info") }}
       </div>
       <div
-        class="w-full md:w-fit justify-center items-center flex-wrap md:flex-nowrap flex-col flex md:flex-row md:gap-10"
+        class="w-full justify-center items-center flex-wrap md:flex-nowrap flex-col flex md:flex-row md:gap-10"
       >
         <div class="mt-5 flex flex-col gap-1 items-center">
           <span class="text-base h-auto min-h-[28px] text-slate-100">

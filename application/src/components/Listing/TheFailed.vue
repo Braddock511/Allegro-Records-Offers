@@ -1,47 +1,57 @@
 <template>
-  <div class="data" v-if="dataFailed.length > 0 && !loading.flag">
-    <h1 style="width: 100%; margin-top: 10px; text-align: center">
+  <div
+    class="overflow-x-auto w-full custom-scrollbar"
+    v-if="dataFailed.length > 0 && !loading.flag"
+  >
+    <div class="text-center text-3xl text-slate-100 font-semibold">
       {{ $t("table.unlisted") }}
-    </h1>
-    <table>
-      <tr>
-        <td>
-          <h2>{{ $t("table.image") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.title") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.label") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.country") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.year") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.genre") }}</h2>
-        </td>
-        <td v-if="typeRecord == 'CD'">
-          <h2>{{ $t("table.barcode") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.condition") }}</h2>
-        </td>
-        <td>
-          <h2>{{ $t("table.price") }}</h2>
-        </td>
-        <td><h3>Allegro</h3></td>
-      </tr>
-
-      <tbody>
-        <tr v-for="index in dataFailed.length" :key="index">
+    </div>
+    <table class="table table-sm mt-10">
+      <thead class="thead-css h-14 text-base">
+        <tr>
+          <th></th>
+          <th>
+            {{ $t("table.image") }}
+          </th>
+          <th>
+            {{ $t("table.title") }}
+          </th>
+          <th>
+            {{ $t("table.label") }}
+          </th>
+          <th>
+            {{ $t("table.country") }}
+          </th>
+          <th>
+            {{ $t("table.year") }}
+          </th>
+          <th>
+            {{ $t("table.genre") }}
+          </th>
+          <th v-if="typeRecord == 'CD'">
+            {{ $t("table.barcode") }}
+          </th>
+          <th>
+            {{ $t("table.condition") }}
+          </th>
+          <th>
+            {{ $t("table.price") }}
+          </th>
+          <th>Allegro</th>
+        </tr>
+      </thead>
+      <tbody class="tab-css">
+        <tr
+          v-for="index in dataFailed.length"
+          :key="index"
+          class="mapping odd:bg-lighter-gray even:bg-lighter-gray"
+        >
+          <th>{{ index }}</th>
           <td>
             <img
               :src="dataFailed[index - 1].images[0]"
               alt="preview image"
-              style="width: 150px; height: 150px"
+              class="w-32 h-32"
             />
           </td>
           <td>{{ dataFailed[index - 1].title }}</td>
@@ -54,9 +64,8 @@
           <td>{{ dataFailed[index - 1].price }}</td>
           <td>
             <button
-              class="btn btn-primary w-100 allegro"
+              class="btn btn-primary w-full allegro"
               type="submit"
-              style="padding: 0.5rem"
               @click="listingOfferAllegro(dataFailed[index - 1])"
             >
               {{ $t("table.send") }}
@@ -65,41 +74,24 @@
         </tr>
       </tbody>
     </table>
-
-    <button
-      class="btn btn-primary w-50"
-      type="submit"
-      style="padding: 0.5rem; font-size: 20px"
-    >
-      <a
-        href="https://allegro.pl/offer/"
-        style="color: white"
-        target="_blank"
-        >{{ $t("table.allegroForm") }}</a
-      >
+  </div>
+  <div class="flex gap-6 mt-5 justify-center flex-wrap">
+    <button class="btn btn-primary text-lg w-auto" type="submit">
+      <a href="https://allegro.pl/offer/" target="_blank">{{
+        $t("table.allegroForm")
+      }}</a>
     </button>
-    <button
-      class="btn btn-primary w-50"
-      type="submit"
-      style="padding: 0.5rem; font-size: 20px"
-      @click="back"
-    >
+    <button class="btn btn-primary text-lg w-auto" type="submit" @click="back">
       {{ $t("table.back") }}
     </button>
   </div>
 
   <div
-    class="data"
     v-if="dataFailed.length == 0"
-    style="justify-content: center"
+    class="flex flex-col gap-2 text-2xl items-center w-full mt-10 text-white font-semibold"
   >
-    <h1>{{ $t("listingView.allListed") }}</h1>
-    <button
-      class="btn btn-primary w-50"
-      type="submit"
-      style="padding: 0.5rem; font-size: 20px"
-      @click="back"
-    >
+    {{ $t("listingView.allListed") }}
+    <button class="btn btn-primary w-40 text-base" type="submit" @click="back">
       {{ $t("table.back") }}
     </button>
   </div>
@@ -210,17 +202,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-@media screen and (max-width: 1800px) {
-  tr:nth-child(1) {
-    display: none;
-  }
-
-  tbody {
-    tr {
-      display: block !important;
-    }
-  }
-}
-</style>
