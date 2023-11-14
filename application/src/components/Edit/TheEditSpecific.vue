@@ -11,10 +11,10 @@
             name="offer-id"
             v-model="offerId"
             required
-            class="bg-light-black rounded-lg px-2"
+            class="text-center bg-light-black rounded-lg px-10"
           />
         </div>
-        <div class="flex gap-2 flex-wrap justify-center">
+        <div class="flex gap-2 flex-wrap justify-center flex-column">
           <label class="label cursor-pointer gap-1">
             <span class="label-text text-base">
               {{ $t("editSpecific.editPrice") }}</span
@@ -49,7 +49,7 @@
             />
           </label>
         </div>
-        <button class="btn btn-primary w-100" type="submit" @click="getOffer">
+        <button class="btn btn-primary w-40" type="submit" @click="getOffer">
           {{ $t("editSpecific.edit") }}
         </button>
       </form>
@@ -57,7 +57,7 @@
   </span>
   <span v-if="!loading">
     <div class="flex flex-col items-center mt-10" v-if="discogsData">
-      <TheSlider :images="img.slice()"></TheSlider>
+      <TheSlider :images="img.slice()" @click="displayTable"></TheSlider>
       <div class="flex gap-4">
         <button class="btn btn-primary w-32" type="type" @click="editImage">
           {{ $t("editSpecific.clearImage") }}
@@ -73,7 +73,7 @@
           {{ $t("table.back") }}
         </button>
       </div>
-      <div className="overflow-x-auto w-full custom-scrollbar">
+      <div id="tableData" className="overflow-x-auto w-full custom-scrollbar">
         <table class="mt-10 table table-sm">
           <thead class="thead-css h-14 text-base">
             <tr>
@@ -116,6 +116,7 @@
                   </select>
                 </div>
               </th>
+              <th>{{ $t("table.price") }}</th>
               <th>{{ $t("editSpecific.editOffer") }}</th>
               <th>
                 {{ $t("editSpecific.listingSimilar") }}

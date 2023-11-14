@@ -12,7 +12,7 @@ export default {
       listingOffers: "Listing offers",
       editOffers: "Edit offers",
       statistics: "Statistics",
-      refresh: "Refresh offers and payments",
+      refresh: "Refresh offers",
       enterAllegroCredentials: "Connect with Allegro",
     },
     headerNavBar: {
@@ -30,9 +30,9 @@ export default {
       confirm: "Confirm",
     },
     statistics: {
-      visitorsViewers: "Visitors and viewers statistics",
-      sales: "Sales statistics",
-      genres: "Genres statistics",
+      visitorsViewers: "Visitors and viewers",
+      sales: "Sales",
+      genres: "Genres",
       name: "Name (Click to go to the offer)",
       visitors: "Visitors",
       watchers: "Watchers",
@@ -206,7 +206,7 @@ export default {
       listingOffers: "Wystaw oferty",
       editOffers: "Edytuj oferty",
       statistics: "Statystyki",
-      refresh: "Odśwież oferty i sprzedaż",
+      refresh: "Odśwież oferty",
       enterAllegroCredentials: "Połącz z Allegro",
     },
     headerNavBar: {
@@ -224,9 +224,9 @@ export default {
       confirm: "Potwierdź",
     },
     statistics: {
-      visitorsViewers: "Statystyki wizyt i obserwacji",
-      sales: "Statystyki sprzedaży",
-      genres: "Statystyka gatunków",
+      visitorsViewers: "Wizyty i obserwacje",
+      sales: "Sprzedaż",
+      genres: "Gatunki",
       name: "Nazwa (Kliknij, aby przejść do oferty)",
       visitors: "Wizyty",
       watchers: "Obserwacje",
@@ -250,7 +250,7 @@ export default {
     editView: {
       many: "Edytuj wiele ofert",
       specific: "Edytuj ofertę",
-      swap: "Zamień oznaczenie kartonów",
+      swap: "Oznaczenie kartonów",
     },
     editMany: {
       offerType: "Rodzaje ofert",

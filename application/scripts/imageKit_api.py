@@ -15,7 +15,8 @@ def upload_file_imageKit(image: str|bytes, credentials: Dict[str, str]) -> Dict[
     
     imagekit = ImageKit(**imageKit_config)
 
-    while True:
+    # 5 attemptions
+    for _ in range(5):
         try:
             result = imagekit.upload_file(file=image, file_name=f'{image[:10]}.png', options=image_options)
             return result.response_metadata.raw

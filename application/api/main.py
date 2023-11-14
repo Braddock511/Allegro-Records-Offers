@@ -52,7 +52,7 @@ async def read_cd_image(request: models.ImagesRequest):
         
         preprocess_tasks = [preprocess_cd_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
-            
+
         db.post_text_from_image(user_key, text_from_images)
 
         return {"status": 200, "output": text_from_images}
@@ -222,6 +222,16 @@ async def allegro_token(request: models.AllegroTokenRequest):
     except Exception as e:
         return {"status": 500, "error": f"Exception in allegro_token: {str(e)}"}
 
+@app.post("/allegro-user")
+async def allegro_user(request: models.UserKeyRequest):
+    try:
+        credentials = db.get_credentials(request.userKey)
+        user = allegro.get_user_info(credentials)
+        return {"status": 200, "output": user}
+
+    except Exception as e:
+        return {"status": 500, "error": f"Exception in allegro_user: {str(e)}"}
+
 @app.post("/allegro-edit")
 async def edit_offer(request: models.AllergoEditDescRequest):
     try:
@@ -265,6 +275,8 @@ async def allegro_listing(request: models.AllegroListingRequest):
     try:
         credentials = db.get_credentials(request.userKey)
         result = allegro.create_offer(credentials, request.offer_data, request.carton, request.typeRecord, request.typeOffer, request.duration, request.clear)
+        if "errors" in result:
+            return {"status": 500, "error": result} 
         return {"status": 200, "output": result}
 
     except Exception as e:
@@ -311,15 +323,6 @@ async def store_all_offers(request: models.UserKeyRequest):
                 i+=1
 
             offers = sum(offers, [])
-
-            # TEMP FEATURE TO FIX OFFERS
-            import requests
-            for offer in offers:
-                offer_id = offer['id']
-                offer_info = allegro.get_offer_info(credentials, offer_id)
-                if offer_info['publication']['republish']:
-                    offer_info['publication']['republish'] = False
-                    requests.patch(url = f"https://api.allegro.pl/sale/product-offers/{offer_id}", headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer_info, verify=False)
             
             db.post_allegro_offers(user_key, offers)
 

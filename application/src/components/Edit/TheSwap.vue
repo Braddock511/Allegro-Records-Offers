@@ -86,9 +86,7 @@
             {{ $t("swap.swapOffer") }}
           </button>
         </div>
-        <div class="h-auto min-h-[28px] mt-6">
-          <v-icon name="co-swap-horizontal" class="text-white" scale="1.2" />
-        </div>
+
         <div class="mt-5 flex flex-col gap-2 items-center h-auto">
           <span class="text-base h-auto min-h-[28px] text-slate-100">
             {{ $t("swap.orFile") }}</span

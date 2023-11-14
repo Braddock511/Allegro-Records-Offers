@@ -74,16 +74,16 @@
         </tr>
       </tbody>
     </table>
-  </div>
-  <div class="flex gap-6 mt-5 justify-center flex-wrap">
-    <button class="btn btn-primary text-lg w-auto" type="submit">
-      <a href="https://allegro.pl/offer/" target="_blank">{{
-        $t("table.allegroForm")
-      }}</a>
-    </button>
-    <button class="btn btn-primary text-lg w-auto" type="submit" @click="back">
-      {{ $t("table.back") }}
-    </button>
+    <div class="flex gap-6 mt-5 justify-center flex-wrap">
+      <button class="btn btn-primary text-lg w-auto" type="submit">
+        <a href="https://allegro.pl/offer/" target="_blank">{{
+          $t("table.allegroForm")
+        }}</a>
+      </button>
+      <button class="btn btn-primary text-lg w-auto" type="submit" @click="back">
+        {{ $t("table.back") }}
+      </button>
+    </div>
   </div>
 
   <div

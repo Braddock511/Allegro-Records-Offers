@@ -29,10 +29,13 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
 
         if response.status_code == 200:
             return token['access_token']
-        
-def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str = "all") -> dict:
-    allegro_token = credentials["api_allegro_token"]
     
+def get_user_info(credentials: dict):
+    headers = {'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
+    result = requests.get("https://api.allegro.pl/me", headers=headers, verify=False).json()
+    return result
+
+def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str = "all") -> dict:
     if type_record == "Vinyl":
         categories = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
         
@@ -54,21 +57,16 @@ def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, t
     elif type_offer == "AUCTION":
         type_offer = "&sellingMode.format=AUCTION"
 
-    headers = {'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
+    headers = {'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
     url = f"https://api.allegro.pl/sale/offers?publication.status=ACTIVE&limit={limit}&offset={offset}{type_offer}{genre}"
-    result = requests.get(url, headers=headers, verify=False)
+    result = requests.get(url, headers=headers, verify=False).json()
     
-    return result.json()
+    return result
 
 def get_offer_info(credentials: dict, offer_id: int) -> dict:
-    allegro_token = credentials["api_allegro_token"]
-
-    headers = {'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
-    url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
-    
-    result = requests.get(url, headers=headers, verify=False)
-    
-    return result.json()
+    headers = {'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
+    result = requests.get(f"https://api.allegro.pl/sale/product-offers/{offer_id}", headers=headers, verify=False).json()
+    return result
 
 def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
     """
@@ -156,7 +154,8 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     country = offer_data['country'].replace("&", ", ")
     released = offer_data['year']
     genre = offer_data['genre']
-    price = offer_data['price'].replace(",", ".")
+    price = offer_data['price']
+    price = price.replace(",", ".") if isinstance(price, str) else price
     images = offer_data['images']
     condition = offer_data['condition']
     barcode = ("".join(re.findall('\d+', offer_data['barcode']))).strip()
@@ -369,7 +368,7 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
     label = new_information['label'].replace("&", "")
     country = new_information['country'].replace("&", "")
     released = new_information['year'].replace("&", "")
-    price = new_information.get('price', "").replace(",", ".")
+    price = new_information.get('price', "")
     offer = get_offer_info(credentials, offer_id)
     parameters = offer['productSet'][0]['product']['parameters']
     
@@ -420,7 +419,8 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
                 }
 
     offer['productSet'][0]['product']['images'] = images
-
+    price = price.replace(",", ".") if isinstance(price, str) else price
+    
     if edit_price:
         offer['sellingMode']['price'] = {"amount": price, "currency": "PLN"}
     elif offer['sellingMode'].get('startingPrice', ""):

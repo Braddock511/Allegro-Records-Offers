@@ -202,12 +202,10 @@
             class="w-full h-10 flex px-2 gap-3 items-center bg-gray-800 py-7 rounded-lg truncate"
             :class="isOpen ? 'justify-start' : 'justify-center'"
           >
-            <div class="w-10 h-10 rounded-full bg-neutral-900"></div>
             <div
               class="truncate text-slate-300"
-              :class="isOpen === false ? 'hidden' : 'block'"
             >
-              example@example.com
+              {{ login }}
             </div>
           </div>
         </div>
@@ -228,9 +226,9 @@
 
       <TheAlert :alert="alert" />
     </div>
-    <div id="loading" v-if="loading">
-      <img src="@/assets/spinner.gif" alt="loading" />
-    </div>
+  </div>
+  <div id="loading" v-if="loading">
+    <img src="@/assets/spinner.gif" alt="loading" />
   </div>
 </template>
 
@@ -248,6 +246,7 @@ export default {
   data() {
     return {
       option: "listing",
+      login: this.$cookies.get("allegro-cred").login,
       loading: false,
       alert: {},
       divWidth: 90,
@@ -284,9 +283,11 @@ export default {
 
       await axios.post(`${url}/refresh-database`, { userKey: userKey });
       await axios.post(`${url}/store-all-offers`, { userKey: userKey });
-      await axios.post(`${url}/store-all-payments`, { userKey: userKey });
+      await axios.post(`${url}/store-all-payments`, { userKey: userKey })
+      .finally(() => {
+          this.loading = false;
+      });
 
-      this.loading = false;
     },
     changeLanguage(locale) {
       this.$i18n.locale = locale;

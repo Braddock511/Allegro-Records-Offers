@@ -23,10 +23,10 @@
     <div v-if="cartonFlag && !failedFlag && !loading.flag">
       <div class="flex flex-col items-center mb-16">
         <TheSlider :images="offerImages"></TheSlider>
-        <h3>
+        <span class="text-xl mt-5 mb-5">
           {{ $t("table.condition") }}:
           {{ conditions[currentIndex / numberImages] }}
-        </h3>
+        </span>
         <div class="w-full flex justify-center">
           <button
             class="btn btn-primary w-1/2 p-2 text-xl"
@@ -62,7 +62,7 @@
               <th>{{ $t("table.country") }}</th>
               <th>{{ $t("table.year") }}</th>
               <th>{{ $t("table.genre") }}</th>
-              <th :class="typeRecord === 'CD' ? 'flex' : 'hidden'">
+              <th :class="typeRecord === 'CD' ? 'display' : 'hidden'">
                 {{ $t("table.barcode") }}
               </th>
               <th class="w-[100px]">
@@ -77,7 +77,7 @@
                     <select
                       v-model="condition"
                       id="head-price"
-                      class="select-css h-8 w-full p-1 rounded-md placeholder:text-center border-none bg-oceans text-sm truncate outline-none"
+                      class="select-css h-8 w-full p-1 rounded-md text-gray-100 placeholder:text-center border-none bg-oceans text-sm truncate outline-none"
                     >
                       <option value="Near Mint (NM or M-)">
                         {{ $t("table.mintMinus") }}
@@ -143,7 +143,7 @@
               <td>
                 <select
                   v-model="genre"
-                  class="select-css h-7 p-1 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold"
+                  class="select-css h-7 p-1 rounded-md text-gray-100 placeholder:text-center border-none bg-oceans px-1 font-semibold"
                 >
                   <option value="ballad">
                     {{ $t("genre_options.ballad") }}
@@ -201,7 +201,7 @@
                   <option value="sets">{{ $t("genre_options.sets") }}</option>
                 </select>
               </td>
-              <td :class="typeRecord === 'CD' ? 'flex' : 'hidden'">
+              <td :class="typeRecord === 'CD' ? 'display' : 'hidden'">
                 <input
                   type="text"
                   name="barcode"
@@ -214,7 +214,7 @@
                 <input
                   type="number"
                   name="price"
-                  class="h-7 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold"
+                  class="text-center h-7 rounded-md placeholder:text-center text-gray-100 border-none bg-oceans px-1 font-semibold"
                   min="1"
                   v-model="price"
                 />
@@ -242,7 +242,7 @@
                   <select
                     id="head-sleeve"
                     v-model="sleeveCondition"
-                    class="select-css font-semibold h-8 p-1 rounded-md placeholder:text-center border-none bg-oceans px-1 outline-none"
+                    class="select-css font-semibold h-8 p-1 rounded-md text-gray-100 placeholder:text-center border-none bg-oceans px-1 outline-none"
                   >
                     <option value="Near Mint (NM or M-)">
                       {{ $t("table.mintMinus") }}
@@ -348,7 +348,7 @@
                 <input
                   type="number"
                   name="price"
-                  class="h-8 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold"
+                  class="text-center h-8 rounded-md placeholder:text-center text-gray-100 border-none bg-oceans px-1 font-semibold"
                   min="1"
                   :placeholder="
                     roundedPriceToPLN(
@@ -467,6 +467,7 @@ import axios from "axios";
 export default {
   data() {
     return {
+      discogsData: "",
       condition: "Near Mint (NM or M-)",
       sleeveCondition: "Near Mint (NM or M-)",
       carton: "",
@@ -742,7 +743,9 @@ export default {
       return finalValue;
     },
     confirmCarton() {
-      this.cartonFlag = true;
+      if (this.carton != ""){
+        this.cartonFlag = true;
+      }
     },
     showImage() {
       this.show();
@@ -757,7 +760,6 @@ export default {
   async beforeMount() {
     this.loading.flag = false;
     this.loading.message = this.$t("loading.loadData");
-    this.discogsData = "";
     await axios
       .post(
         `${url}/discogs-information-image`,

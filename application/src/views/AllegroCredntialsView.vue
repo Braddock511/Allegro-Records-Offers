@@ -3,7 +3,7 @@
   <section v-if="formDisplay" class="w-full flex justify-center items-center">
     <form
       @submit.prevent="allegroToken"
-      class="w-[30rem] h-[28rem] bg-lighter-black p-4 py-5 mt-12 rounded-xl flex flex-col gap-10"
+      class="w-[40rem] h-[28rem] bg-lighter-black p-4 py-5 mt-12 rounded-xl flex flex-col gap-10"
     >
       <div class="text-2xl text-white font-semibold">
         {{ $t("formContainer.credentials") }}
@@ -70,16 +70,16 @@
           />
         </div>
       </div>
-      <button
-        class="btn btn-primary w-full"
-        type="submit"
+      <button 
+        class="btn btn-primary w-full" 
+        type="submit" 
         style="padding: 0.5rem; margin-top: 30px; font-size: 20px"
-      >
+        >
         {{ $t("formContainer.button") }}
       </button>
     </form>
   </section>
-  <div id="confirm" v-if="!formDisplay && !loading">
+  <div class="flex justify-center items-center mt-20" v-if="!formDisplay && !loading">
     <a :href="response.verification_uri_complete" target="_blank"
       ><button
         class="btn btn-primary w-full"
@@ -108,6 +108,7 @@ export default {
       discogsToken: "",
       allegroId: "",
       allegroSecret: "",
+      login: "",
       response: "",
       formDisplay: true,
       loading: false,
@@ -125,6 +126,7 @@ export default {
         this.discogsToken = savedCred.discogsToken || "";
         this.allegroId = savedCred.allegroId || "";
         this.allegroSecret = savedCred.allegroSecret || "";
+        this.login = savedCred.login || "";
       }
     },
     async allegroToken() {
@@ -151,12 +153,14 @@ export default {
           message: this.$t("alerts.tokenFailed"),
         };
       } else {
+        const user = (await axios.post(`${url}/allegro-user`, {userKey: this.userKey})).data.output
         const credData = {
           flag: true,
           userKey: this.userKey,
           discogsToken: this.discogsToken,
           allegroId: this.allegroId,
           allegroSecret: this.allegroSecret,
+          login: user.login, 
         };
         this.$cookies.set(
           "allegro-cred",

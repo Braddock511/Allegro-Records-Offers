@@ -28,14 +28,14 @@
               class="bg-lighter-black w-full rounded-md text-white px-2 h-auto min-h-[28px] hidden"
               id="files"
               type="file"
-              ref="fileInput"
+              ref="imageInput"
               multiple
               required
             />
             <button
               class="bg-lighter-black w-full rounded-md text-white px-2 h-10 min-h-[28px] border-css"
               type="button"
-              @click="openFileInput"
+              @click="openFileImageInput"
             >
               <span
                 class="bg-gray-400 px-4 text-black rounded-xl text-base font-semibold"
@@ -83,17 +83,6 @@
               <option value="P10D">10 {{ $t("listingView.day") }}</option>
             </select>
           </div>
-          <label class="label cursor-pointer gap-1 w-fit">
-            <span class="label-text text-base">
-              {{ $t("listingView.clearFirstImage") }}</span
-            >
-            <input
-              type="checkbox"
-              checked="checked"
-              v-model="clear"
-              class="checkbox h-5 w-5 checkbox-primary bg-gray-600"
-            />
-          </label>
           <div class="relative">
             <label
               for="number-images"
@@ -116,15 +105,16 @@
               >{{ $t("conditionFile") }}&nbsp;</label
             >
             <input
-              type="file"
               @change="handleConditionFile"
+              type="file"
               accept=".txt"
+              ref="txtInput"
               class="bg-lighter-black w-full rounded-md text-white px-2 min-h-[28px] h-10 hidden"
             />
             <button
               class="bg-lighter-black w-full rounded-md text-white px-2 h-10 min-h-[28px] border-css"
               type="button"
-              @click="openFileInput"
+              @click="openFileTxtInput"
             >
               <span
                 class="bg-gray-400 px-4 text-black rounded-xl text-base font-semibold"
@@ -133,6 +123,17 @@
               >
             </button>
           </div>
+          <label class="label cursor-pointer gap-1 w-fit">
+            <span class="label-text text-base">
+              {{ $t("listingView.clearFirstImage") }}</span
+            >
+            <input
+              type="checkbox"
+              checked="checked"
+              v-model="clear"
+              class="checkbox h-5 w-5 checkbox-primary bg-gray-600"
+            />
+          </label>
           <div class="flex flex-col gap-1 px-2">
             <p>1. {{ $t("listingView.imageOrder") }}</p>
             <p>2. {{ $t("listingView.paymentLocationDelivery") }}</p>
@@ -170,7 +171,7 @@ export default {
     return {
       images: [],
       numberImages: 3,
-      read: "asd",
+      read: "",
       files: "",
       typeRecord: "Vinyl",
       typeOffer: "BUY_NOW",
@@ -183,8 +184,12 @@ export default {
     };
   },
   methods: {
-    openFileInput() {
-      this.$refs.fileInput.click();
+    openFileImageInput() {
+      this.$refs.imageInput.click();
+    },
+
+    openFileTxtInput() {
+      this.$refs.txtInput.click();
     },
 
     handleImagesFiles(event) {
