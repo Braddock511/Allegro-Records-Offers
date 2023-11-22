@@ -17,6 +17,13 @@
     --color-icons: #606468;
   }
 }
+
+html:has(.vel-modal) {
+  .vel-modal {
+    max-height: 100vh;
+  }
+}
+
 input.border-css,
 button.border-css {
   border: 1px solid rgba(0, 0, 0, 0.305);
@@ -180,7 +187,7 @@ input {
   }
 }
 
-#loading{
+#loading {
   width: 100%;
   height: 500px;
   display: flex;

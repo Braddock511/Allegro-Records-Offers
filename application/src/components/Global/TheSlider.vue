@@ -1,5 +1,5 @@
 <template>
-  <span v-if="!loading">
+  <div class="h-full" v-if="!loading">
     <vue-easy-lightbox
       scrollEnabled
       escEnabled
@@ -25,7 +25,7 @@
         &#8250;
       </div>
     </div>
-  </span>
+  </div>
   <div id="loading" v-if="loading">
     <img src="@/assets/spinner.gif" alt="loading" />
     <h3>{{ $t("loading.loadImages") }}</h3>
