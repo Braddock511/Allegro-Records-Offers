@@ -1,6 +1,6 @@
 <template>
   <span>
-    <section class="" v-if="!discogsData && !loading">
+    <section v-if="!discogsData && !loading">
       <form class="flex flex-col items-center gap-2">
         <div class="text-2xl text-white font-bold">
           {{ $t("editSpecific.offerId") }}
@@ -55,8 +55,8 @@
       </form>
     </section>
   </span>
-  <span v-if="!loading">
-    <div class="flex flex-col items-center mt-10" v-if="discogsData">
+  <div v-if="!loading">
+    <div class="flex h-full flex-col items-center mt-10" v-if="discogsData">
       <TheSlider :images="img.slice()" @click="displayTable"></TheSlider>
       <div class="flex gap-4">
         <button class="btn btn-primary w-32" type="type" @click="editImage">
@@ -73,7 +73,10 @@
           {{ $t("table.back") }}
         </button>
       </div>
-      <div id="tableData" className="overflow-x-auto w-full custom-scrollbar">
+      <div
+        id="tableData"
+        className="overflow-x-auto w-full custom-scrollbar mt-20"
+      >
         <table class="mt-10 table table-sm">
           <thead class="thead-css h-14 text-base">
             <tr>
@@ -87,7 +90,7 @@
               <th>
                 {{ $t("table.year") }}
               </th>
-              <th v-if="!editPrice">
+              <th v-if="editPrice">
                 <div class="relative">
                   <label
                     for="condition"
@@ -116,7 +119,6 @@
                   </select>
                 </div>
               </th>
-              <th>{{ $t("table.price") }}</th>
               <th>{{ $t("editSpecific.editOffer") }}</th>
               <th>
                 {{ $t("editSpecific.listingSimilar") }}
@@ -341,27 +343,27 @@
             </tr>
           </tbody>
         </table>
-        <div class="flex flex-col justify-center items-center mt-10 gap-3">
-          <label
-            for="searcher"
-            class="text-[1.5rem] font-bold leading-tight tracking-tight text-center"
-          >
-            {{ $t("table.notFound") }}
-          </label>
-          <input
-            type="text"
-            id="searcher"
-            class="h-8 rounded-md placeholder:text-center border-none bg-lighter-black px-1 font-semibold"
-            v-model="newSearch"
-            placeholder="-"
-          />
-          <button class="btn btn-primary" type="submit" @click="search">
-            {{ $t("table.search") }}
-          </button>
-        </div>
+      </div>
+      <div class="flex flex-col justify-center items-center mt-10 gap-3">
+        <label
+          for="searcher"
+          class="text-[1.5rem] font-bold leading-tight tracking-tight text-center"
+        >
+          {{ $t("table.notFound") }}
+        </label>
+        <input
+          type="text"
+          id="searcher"
+          class="h-8 rounded-md placeholder:text-center border-none bg-lighter-black px-1 font-semibold"
+          v-model="newSearch"
+          placeholder="-"
+        />
+        <button class="btn btn-primary" type="submit" @click="search">
+          {{ $t("table.search") }}
+        </button>
       </div>
     </div>
-  </span>
+  </div>
   <div id="loading" v-if="loading">
     <img src="@/assets/spinner.gif" alt="loading" />
   </div>
@@ -378,7 +380,7 @@ export default {
       allegroData: "",
       discogsData: "",
       offerId: "",
-      img: "s",
+      img: "",
       label: "",
       country: "",
       year: "",
