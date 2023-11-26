@@ -138,7 +138,8 @@ def remove_not_allowed_characters(text: str) -> str:
     
     matches = re.findall(pattern, text, flags=re.UNICODE)    
     cleaned_text = ''.join(matches)
-    
+    cleaned_text = cleaned_text.replace("*", "")
+     
     return cleaned_text
 
 def preprocess_data(chunk: list, discogs_token: str) -> list:

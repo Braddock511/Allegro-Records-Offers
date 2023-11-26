@@ -15,7 +15,7 @@
       <button
         class="btn btn-primary w-[300px] p-2 text-xl"
         type="button"
-        @click="confirmCarton"
+        @click="this.cartonFlag = true;"
       >
         {{ $t("carton.confirm") }}
       </button>
@@ -581,9 +581,10 @@ export default {
           quantity: data.quantity,
           images: this.offerImages,
           condition: this.condition,
+          error: ""
         };
       } else {
-        if (this.title === "" || this.price === "") {
+        if (this.title === "" || this.price === "" || this.label === "" || this.year === "") {
           this.alert = {
             variant: "warning",
             message: this.$t("alerts.complete"),
@@ -591,7 +592,7 @@ export default {
           return;
         }
 
-        if (this.title.length + 3 >= 50) {
+        if (this.title.length + 3 >= 75) {
           this.alert = {
             variant: "warning",
             message: this.$t("alerts.toLong"),
@@ -611,6 +612,7 @@ export default {
           quantity: "",
           images: this.offerImages,
           condition: this.condition,
+          error: ""
         };
       }
 
@@ -630,15 +632,17 @@ export default {
         .post(`${url}/allegro-listing`, requestData)
         .then((response) => {
           response = response.data;
-          if (response.error || response.output.errors) {
+          if (response.status == 500) {
+            selectedData.error = response.error
             this.failed.push(selectedData);
             this.alert = {
-              variant: "danger",
-              message: `${this.$t("alerts.listingFailed")} - ${
-                selectedData.title
-              }`,
-            };
-          } else {
+                variant: "danger",
+                message: `${this.$t("alerts.failed")} - ${
+                  selectedData.title
+                }`,
+              };
+            }
+          else {
             this.alert = {
               variant: "success",
               message: `${this.$t("alerts.listingSuccess")} - ${
@@ -711,6 +715,7 @@ export default {
             userKey: this.userKey,
             newSearch: this.newSearch,
             typeRecord: this.typeRecord,
+            allegroData: {},
           },
           { headers: { "Content-Type": "application/json" } }
         )
@@ -741,11 +746,6 @@ export default {
         finalValue = 0;
       }
       return finalValue;
-    },
-    confirmCarton() {
-      if (this.carton != ""){
-        this.cartonFlag = true;
-      }
     },
     showImage() {
       this.show();
