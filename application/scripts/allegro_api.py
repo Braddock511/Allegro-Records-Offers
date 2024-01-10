@@ -150,8 +150,8 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     # Discogs data
     record_id = offer_data['id']
     title = (offer_data['title']).strip()
-    label = offer_data['label'].replace("&", "")
-    country = offer_data['country'].replace("&", ", ")
+    label = offer_data['label']
+    country = offer_data['country']
     released = offer_data['year']
     genre = offer_data['genre']
     price = offer_data['price']
@@ -253,7 +253,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
 
             "images": images,
 
-            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
+            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label.replace("&", "&amp;")}</b></p><p><b>KRAJ POCHODZENIA: {country.replace("&", "&amp;")}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
 
             "stock": {"available": 1},
 
@@ -306,7 +306,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
 
             "images": images,
 
-            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
+            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label.replace("&", "&amp;")}</b></p><p><b>KRAJ POCHODZENIA: {country.replace("&", "&amp;")}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
 
             "stock": {"available": 1},
 
@@ -346,7 +346,7 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
     conditions = ['M', 'MINT', '-M', 'M-', 'MINT-', '-MINT', 'MINT-.', '  MINT-', 'MINT, FOLIA',
                 'EX', 'EX+', 'EX++', 'EX-', 'EX.', 'EXCELLENT', 
                 'VG', 'VG+', 'VG++','VG-', 'VERY GOOD', 'BARDZO DOBRY', 'BARDZO DOBRY.',
-                'G', 'GOOD', 'GOOD+', 'DOBRY', 'MINT-.DO UMYCIA', "MINT. NOWA ZAFOLIOWANA",
+                'G', 'GOOD', 'GOOD+', 'DOBRY', "F", 'MINT-.DO UMYCIA', "MINT. NOWA ZAFOLIOWANA",
                 'BARDZO DOBRY.PŁYTA DO UMYCIA', 'BARDZO DOBRY.DROBNE RYSKI', 'BARDZO DOBRY.DO UMYCIA']
 
     # Find the condition of the product in the description
@@ -368,9 +368,9 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
 
 def edit_offer(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_price: bool, edit_description: bool, to_buy: bool) -> dict:
     record_id = new_information['id']
-    label = new_information['label'].replace("&", "")
-    country = new_information['country'].replace("&", "")
-    released = new_information['year'].replace("&", "")
+    label = new_information['label']
+    country = new_information['country']
+    released = new_information['year']
     price = new_information.get('price', "")
     offer = get_offer_info(credentials, offer_id)
     parameters = offer['productSet'][0]['product']['parameters']
@@ -399,7 +399,7 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
                         {
                             'items': [
                                 {'type': 'IMAGE', 'url': images[0]},
-                                {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label}</b></p><p><b>KRAJ POCHODZENIA: {country}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}
+                                {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label.replace("&", "&amp;")}</b></p><p><b>KRAJ POCHODZENIA: {country.replace("&", "&amp;")}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}
                             ]
                         },
                         {
@@ -410,7 +410,7 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
                         {
                             'items': [
                                 {'type': 'IMAGE', 'url': images[1]}, 
-                                {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>ZAPRASZAM NA INNE MOJE AUKCJE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
+                                {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
                             ]
                         },
                         {
@@ -528,4 +528,11 @@ def swap_cartons(credentials: dict, change_carton: str, change_to_carton: str) -
         url = f"https://api.allegro.pl/sale/product-offers/{offer['id']}"
         result = requests.patch(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
         
+    return result.json()
+
+def orders(credentials: dict):
+    allegro_token = credentials["api_allegro_token"]
+    url = f"https://api.allegro.pl/order/checkout-forms"
+    result = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, verify=False)
+
     return result.json()

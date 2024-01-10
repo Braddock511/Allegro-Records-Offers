@@ -1,6 +1,7 @@
 import multiprocessing
 from typing import List, Dict
 from chunks import search_data, preprocess_data
+
 def search_data_parallel(text_from_image: List[str], discogs_token: str, type_record: str, image_data: bool) -> List[Dict[str, str]]:
     """
         Searches for data in parallel for the given text from images using multiprocessing.

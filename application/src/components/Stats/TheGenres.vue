@@ -27,7 +27,7 @@ export default {
       this.loading = true;
       const userKey = this.$cookies.get("allegro-cred").userKey;
       const response = (
-        await axios.post(`${url}/genre-barplot`, { userKey: userKey })
+        await axios.post(`${baseUrl}/genre-barplot`, { userKey: userKey })
       ).data;
       if (response.error || response.errors) {
         this.alert = {

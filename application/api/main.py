@@ -441,3 +441,24 @@ async def swap_specific(request: models.SwapSpecificRequest):
         return {"status": 200, "output": result}
     except Exception as e:
         return {"status": 500, "error": f"Exception in swap_specific: {str(e)}"}
+
+@app.post("/get-orders-detail")
+async def get_orders(request: models.UserKeyRequest):
+    try:
+        credentials = db.get_credentials(request.userKey)
+        orders = allegro.orders(credentials)["checkoutForms"]
+        order_details = []
+
+        for order in orders:
+            items = order["lineItems"]
+            status = order["fulfillment"]["status"]
+            pickup_id = order["delivery"]["pickupPoint"]["id"]
+            street = order["delivery"]["address"]["street"]
+            city = order["delivery"]["address"]["city"]
+
+            if status == "NEW":
+                order_details.append({"items": [allegro.get_offer_info(credentials, item["offer"]["id"]) for item in items], "pickup_id": pickup_id, "street": street, "city": city})
+
+        return {"status": 200, "output": order_details}
+    except Exception as e:
+        return {"status": 500, "error": f"Exception in swap_specific: {str(e)}"}

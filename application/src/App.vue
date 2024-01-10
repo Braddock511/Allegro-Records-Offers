@@ -4,9 +4,7 @@
   </div>
 </template>
 
-
 <script>
-
   export default {
       created() {
         if (!this.$cookies.get('allegro-cred')) {

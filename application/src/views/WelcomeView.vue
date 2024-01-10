@@ -1,20 +1,14 @@
 <template>
   <TheNavBar v-if="isCookieSet" />
   <div v-if="!loading && !isCookieSet">
-    <TheHeader />
+    <TheHeader/>
     <main>
       <div id="info" class="mt-10 flex flex-col gap-10 text-center px-10 mx-auto w-1/2">
         <div class="text-3xl text-white">{{ $t("info.title") }}</div>
         <p class="text-lg text-slate-400e">{{ $t("info.description") }}</p>
-        <router-link to="/allegro-credentials"
-          ><button
-            class="btn btn-primary w-75"
-            type="button"
-            style="padding: 0.5rem; font-size: 20px"
-          >
-            {{ $t("buttons.enterAllegroCredentials") }}
-          </button></router-link
-        >
+        <router-link to="/allegro-credentials">
+          <button class="btn btn-primary w-75" type="button" style="padding: 0.5rem; font-size: 20px" >{{ $t("buttons.enterAllegroCredentials") }}</button>
+        </router-link>
       </div>
     </main>
   </div>

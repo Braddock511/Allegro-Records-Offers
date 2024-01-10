@@ -1,5 +1,5 @@
 # WEB
-FROM node:18 as build-stage
+FROM node:slim as build-stage
 
 WORKDIR /app
 

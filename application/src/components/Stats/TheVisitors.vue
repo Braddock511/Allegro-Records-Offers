@@ -54,15 +54,14 @@
         async beforeMount(){
             this.loading = true
             const userKey = this.$cookies.get('allegro-cred').userKey;
-            const response = (await axios.post(`${url}/allegro-visitors-viewers`, {userKey: userKey})).data
+            const response = (await axios.post(`${baseUrl}/allegro-visitors-viewers`, {userKey: userKey})).data
             if (response.error || response.errors){
                 this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
             }
             else{
                 this.visitors_viewers = response.output
                 this.alert = {variant: "success", message: this.$t("alerts.statistics")}
-            }
-            
+            } 
             this.loading = false
         },
         components:{

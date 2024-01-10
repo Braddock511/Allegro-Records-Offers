@@ -12,6 +12,7 @@ export default {
       listingOffers: "Listing offers",
       editOffers: "Edit offers",
       statistics: "Statistics",
+      ordersDetail: "Order detail",
       refresh: "Refresh offers",
       enterAllegroCredentials: "Connect with Allegro",
     },
@@ -19,6 +20,7 @@ export default {
       listing: "Listing",
       editOffers: "Edit",
       statistics: "Statistics",
+      orders: "Orders",
       other: "Other",
     },
     formContainer: {
@@ -99,6 +101,10 @@ export default {
     carton: {
       enter_carton: "Enter carton",
       confirm: "Confirm",
+    },
+    orders: {
+      details: "Details",
+      allSent: "All orders have been sent"
     },
     table: {
       title: "Title",
@@ -206,6 +212,7 @@ export default {
       listingOffers: "Wystaw oferty",
       editOffers: "Edytuj oferty",
       statistics: "Statystyki",
+      ordersDetail: "Szczegóły",
       refresh: "Odśwież oferty",
       enterAllegroCredentials: "Połącz z Allegro",
     },
@@ -213,6 +220,7 @@ export default {
       listing: "Wystawianie",
       editOffers: "Edycja",
       statistics: "Statystyki",
+      orders: "Zamówienia",
       other: "Inne",
     },
     formContainer: {
@@ -292,6 +300,10 @@ export default {
     carton: {
       enter_carton: "Karton",
       confirm: "Potwierdź",
+    },
+    orders: {
+      details: "Dane do zamówienia",
+      allSent: "Wszystkie zamówienia zostały wysłane"
     },
     table: {
       title: "Tytuł",

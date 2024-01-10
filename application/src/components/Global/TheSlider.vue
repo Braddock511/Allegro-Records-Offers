@@ -10,20 +10,12 @@
       @hide="visible = false"
     >
     </vue-easy-lightbox>
-    <div class="slider">
-      <div class="arrow-left" @click="prevImage" style="left: 10px">
-        &#8249;
-      </div>
+    <div class="slider" :style="sliderStyle">
+      <div class="arrow-left" @click="prevImage" style="left: 10px">&#8249;</div>
       <div class="image-container">
-        <img
-          :src="images[currentIndex]"
-          alt="Slider Image"
-          @click="visible = true"
-        />
+        <img :src="images[currentIndex]" alt="Slider Image" @click="visible = true" />
       </div>
-      <div class="arrow-right" @click="nextImage" style="right: 10px">
-        &#8250;
-      </div>
+      <div class="arrow-right" @click="nextImage" style="right: 10px">&#8250;</div>
     </div>
   </div>
   <div id="loading" v-if="loading">
@@ -77,6 +69,10 @@ export default {
       type: Array,
       required: true,
     },
+    sliderStyle: {
+      type: String,
+      default: ""
+    }
   },
   components: {
     VueEasyLightbox,
@@ -114,7 +110,6 @@ export default {
     align-items: center;
     img {
       max-width: 100%;
-      height: 560px;
       object-fit: contain;
       cursor: pointer;
       &:hover {

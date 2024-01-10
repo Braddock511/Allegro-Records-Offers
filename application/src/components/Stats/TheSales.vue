@@ -1,14 +1,6 @@
 <template>
   <span v-if="!loading" style="flex-direction: column; width: 100%">
-    <div
-      class="data"
-      style="
-        width: 100%;
-        flex-direction: row;
-        justify-content: center;
-        flex-wrap: wrap;
-      "
-    >
+    <div class="data" style="width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap;">
       <img :src="saleBarplot" alt="bar plot" style="width: 100%" />
     </div>
   </span>
@@ -34,20 +26,16 @@ export default {
     if (this.saleBarplot == "") {
       this.loading = true;
       const userKey = this.$cookies.get("allegro-cred").userKey;
-      const response = (
-        await axios.post(`${url}/sale-barplot`, { userKey: userKey })
-      ).data;
+      const response = (await axios.post(`${baseUrl}/sale-barplot`, { userKey: userKey })).data;
       if (response.error || response.errors) {
         this.alert = {
           variant: "danger",
-          message: this.$t("alerts.someWrong"),
-        };
+          message: this.$t("alerts.someWrong")};
       } else {
         this.saleBarplot = response.output;
         this.alert = {
           variant: "success",
-          message: this.$t("alerts.statistics"),
-        };
+          message: this.$t("alerts.statistics")};
       }
       this.loading = false;
     }
