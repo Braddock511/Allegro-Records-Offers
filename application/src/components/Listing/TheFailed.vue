@@ -1,47 +1,54 @@
 <template>
-  <div class="overflow-x-auto w-full custom-scrollbar" v-if="dataFailed.length > 0 && !loading.flag">
-    <div class="text-center text-3xl text-slate-100 font-semibold">
-      {{ $t("table.unlisted") }}
-    </div>
-    <table class="table table-sm mt-10">
-      <thead class="thead-css h-14 text-base">
-        <tr>
-          <th></th>
-          <th>{{ $t("table.image") }}</th>
-          <th>{{ $t("table.title") }}</th>
-          <th>{{ $t("table.label") }}</th>
-          <th>{{ $t("table.country") }}</th>
-          <th>{{ $t("table.year") }}</th>
-          <th>{{ $t("table.genre") }}</th>
-          <th v-if="typeRecord == 'CD'">{{ $t("table.barcode") }}</th>
-          <th>{{ $t("table.condition") }}</th>
-          <th>{{ $t("table.price") }}</th>
-          <th>Error</th>
-          <th>Allegro</th>
+  <div class="overflow-x-auto w-full custom-scrollbar" v-if="dataFailed.length > 0">
+    <div v-if="!loading.flag">
+      <div class="text-center text-3xl text-slate-100 font-semibold">
+        {{ $t("table.unlisted") }}
+      </div>
+      <table class="table table-sm mt-10">
+        <thead class="thead-css h-14 text-base">
+          <tr>
+            <th></th>
+            <th>{{ $t("table.image") }}</th>
+            <th>{{ $t("table.title") }}</th>
+            <th>{{ $t("table.label") }}</th>
+            <th>{{ $t("table.country") }}</th>
+            <th>{{ $t("table.year") }}</th>
+            <th>{{ $t("table.genre") }}</th>
+            <th v-if="typeRecord == 'CD'">{{ $t("table.barcode") }}</th>
+            <th>{{ $t("table.condition") }}</th>
+            <th>{{ $t("table.price") }}</th>
+            <th>Error</th>
+            <th>Allegro</th>
+          </tr>
+        </thead>
+        <tbody class="tab-css">
+        <tr v-for="index in dataFailed.length" :key="index" class="mapping odd:bg-lighter-gray even:bg-lighter-gray" >
+          <th>{{ index }}</th>
+          <td><img :src="dataFailed[index - 1].images[0]" alt="preview image" class="w-32 h-32"/></td>
+          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].title" /></td>
+          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].label" /></td>
+          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].country" /></td>
+          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].year" /></td>
+          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].genre" /></td>
+          <td v-if="typeRecord == 'CD'"><input class="w-32" type="text" v-model="dataFailed[index - 1].barcode" /></td>
+          <td>{{ dataFailed[index - 1].condition }}</td>
+          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].price" /></td>
+          <td style="width: 25%;" v-if="dataFailed[index - 1].error.errors && dataFailed[index - 1].error.errors.length > 0">
+              {{ dataFailed[index - 1].error.errors[0].userMessage }}
+          </td>
+          <td style="width: 25%;" v-else>
+              -
+          </td>
+          <td><button class="btn btn-primary w-full allegro" type="submit" @click="listingOfferAllegro(dataFailed[index - 1], index-1)" >{{ $t("table.send") }}</button></td>
         </tr>
-      </thead>
-      <tbody class="tab-css">
-      <tr v-for="index in dataFailed.length" :key="index" class="mapping odd:bg-lighter-gray even:bg-lighter-gray" >
-        <th>{{ index }}</th>
-        <td><img :src="dataFailed[index - 1].images[0]" alt="preview image" class="w-32 h-32"/></td>
-        <td><input class="w-32" type="text" v-model="dataFailed[index - 1].title" /></td>
-        <td><input class="w-32" type="text" v-model="dataFailed[index - 1].label" /></td>
-        <td><input class="w-32" type="text" v-model="dataFailed[index - 1].country" /></td>
-        <td><input class="w-32" type="text" v-model="dataFailed[index - 1].year" /></td>
-        <td>{{ dataFailed[index - 1].genre }}</td>
-        <td v-if="typeRecord == 'CD'"><input class="w-32" type="text" v-model="dataFailed[index - 1].barcode" /></td>
-        <td>{{ dataFailed[index - 1].condition }}</td>
-        <td><input class="w-32" type="text" v-model="dataFailed[index - 1].price" /></td>
-        <td style="width: 25%;">{{ dataFailed[index - 1].error.errors[0].userMessage }}</td>
-        <td><button class="btn btn-primary w-full allegro" type="submit" @click="listingOfferAllegro(dataFailed[index - 1], index-1)" >{{ $t("table.send") }}</button></td>
-      </tr>
-    </tbody>
-    </table>
-    <div class="flex gap-6 mt-5 justify-center flex-wrap">
-      <button class="btn btn-primary text-lg w-auto" type="submit">
-        <a href="https://allegro.pl/offer/" target="_blank">{{$t("table.allegroForm")}}</a>
-      </button>
-      <button class="btn btn-primary text-lg w-auto" type="submit" @click="back">{{ $t("table.back") }}</button>
+      </tbody>
+      </table>
+      <div class="flex gap-6 mt-5 justify-center flex-wrap">
+        <button class="btn btn-primary text-lg w-auto" type="submit">
+          <a href="https://allegro.pl/offer/" target="_blank">{{$t("table.allegroForm")}}</a>
+        </button>
+        <button class="btn btn-primary text-lg w-auto" type="submit" @click="back">{{ $t("table.back") }}</button>
+      </div>
     </div>
   </div>
 
