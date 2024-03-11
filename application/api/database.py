@@ -44,6 +44,10 @@ class Credentials(Base):
         api_allegro_secret = Column(String)
         api_allegro_token = Column(String)
 
+        payments = Column(String)
+        location = Column(String)
+        delivery = Column(String)
+
 class ImageData(Base):
     __tablename__ = "image_data"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -76,7 +80,7 @@ Base.metadata.create_all(engine)
 # Database scripts
 Session = sessionmaker(bind=engine)
 
-def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro_secret: str, allegro_token: str) -> bool:
+def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro_secret: str, allegro_token: str, payments: str, location: str, delivery: str) -> bool:
     if user_key in KEYS.keys():
         Session = sessionmaker(bind=engine)
         
@@ -92,6 +96,9 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
                 credentials_data.api_allegro_id = allegro_id
                 credentials_data.api_allegro_secret = allegro_secret
                 credentials_data.api_allegro_token = allegro_token
+                credentials_data.payments = payments
+                credentials_data.location = location
+                credentials_data.delivery = delivery
 
                 session.commit()
                 return True
@@ -106,7 +113,11 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
                     "api_ocr_space": environ.get("API_OCR_SPACE"),
                     "api_allegro_id": allegro_id,
                     "api_allegro_secret": allegro_secret,
-                    "api_allegro_token": allegro_token
+                    "api_allegro_token": allegro_token,
+                    # "api_allgero_refresh_token": refresh_token,
+                    "payments": payments,
+                    "location": location,
+                    "delivery": delivery,
                 }
 
                 credentials_data = Credentials(**data_to_insert)

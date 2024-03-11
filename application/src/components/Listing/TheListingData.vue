@@ -80,7 +80,7 @@
                   <option value="metal">{{ $t("genre_options.metal") }}</option>
                   <option value="alternative">{{ $t("genre_options.alternative") }}</option>
                   <option value="electronic">{{ $t("genre_options.electronic") }}</option>
-                  <option value="film">{{ $t("genre_options.film") }}</option>
+                  <option value="stage & screen">{{ $t("genre_options.film") }}</option>
                   <option value="classical">{{ $t("genre_options.classical") }}</option>
                   <option value="religious">{{ $t("genre_options.religious") }}</option>
                   <option value="new">{{ $t("genre_options.new") }}</option>
@@ -461,7 +461,7 @@ export default {
     roundedPriceToPLN(price) {
       let finalValue;
       if (price) {
-        const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01;
+        const roundedValue = Math.round((price.value * 4) / 10) * 10 - 0.01;
         finalValue = roundedValue < 19.99 ? 19.99 : roundedValue;
       } else {
         finalValue = 0;
@@ -471,7 +471,7 @@ export default {
     roundedPriceToEUR(price) {
       let finalValue;
       if (price) {
-        const roundedValue = Math.round((price * 0.3) / 10) * 10 - 0.01;
+        const roundedValue = Math.round((price * 0.4) / 10) * 10 - 0.01;
         finalValue = roundedValue < 3.99 ? 3.99 : roundedValue;
       } else {
         finalValue = 0;

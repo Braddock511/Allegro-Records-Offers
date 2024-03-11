@@ -213,7 +213,16 @@ async def allegro_token(request: models.AllegroTokenRequest):
         device_code = request.device_code
         user_token = allegro.get_allegro_token(user_id, user_secret, device_code)
 
-        check_user = db.post_credentials(user_key, discogs_token, user_id, user_secret, user_token)
+        temp_cred = {"api_allegro_token": user_token}
+        allegro_offer = allegro.get_my_offers(temp_cred, 1, 0, "all")['offers'][0]
+        allegro_id = allegro_offer['id']
+        offer_info = allegro.get_offer_info(temp_cred, allegro_id)
+        
+        payments = json.dumps(offer_info['payments'])
+        location = json.dumps(offer_info['location'])
+        delivery = json.dumps(allegro_offer['delivery'])
+
+        check_user = db.post_credentials(user_key, discogs_token, user_id, user_secret, user_token, payments, location, delivery)
         if check_user:
             return {"status": 200, "output": user_token}
 
@@ -286,7 +295,7 @@ async def allegro_listing(request: models.AllegroListingRequest):
 async def allegro_offers(request: models.AllegroOffersRequest):
     try:
         credentials = db.get_credentials(request.userKey)
-        offers = allegro.get_my_offers(credentials, request.limit, request.offset, request.typeOffer, request.typeRecord, request.genre)
+        offers = allegro.get_my_offers(credentials, request.limit, request.offset, request.typeOffer, request.genre)
         return {"status": 200, "output": offers}
 
     except Exception as e:
@@ -314,7 +323,7 @@ async def store_all_offers(request: models.UserKeyRequest):
             i = 0
             
             while True:
-                allegro_offers = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "all", "all")
+                allegro_offers = allegro.get_my_offers(credentials, 1000, 1000*i, "all", "all")
                 offers.append(allegro_offers['offers'])
 
                 if not allegro_offers['offers']:

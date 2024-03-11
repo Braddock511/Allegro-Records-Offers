@@ -46,9 +46,6 @@
                 <div class="flex gap-3 text-icon hover:text-blue-600 font-semibold leading-tight items-center p-2 rounded-lg cursor-pointer border-2 border-transparent hover:bg-gray-800 hover:border-slate-700 transition-colors hover:border-3 text-[0.9rem]" @click="option = 'sales'" :class="isOpen === false ? 'w-fit' : 'w-full'" >
                   <span class="truncate text-slate-300" :class="isOpen === false ? 'hidden' : 'block'" >{{ $t("statistics.sales") }}</span >
                 </div>
-                <div class="flex gap-3 text-icon hover:text-blue-600 font-semibold leading-tight items-center p-2 rounded-lg cursor-pointer border-2 border-transparent hover:bg-gray-800 hover:border-slate-700 transition-colors hover:border-3 text-[0.9rem]" @click="option = 'genres'" :class="isOpen === false ? 'w-fit' : 'w-full'" >
-                  <span class="truncate text-slate-300" :class="isOpen === false ? 'hidden' : 'block'" >{{ $t("statistics.genres") }}</span >
-                </div>
               </div>
             </div>
             <div class="group">
@@ -93,7 +90,6 @@
         <TheSwap v-if="option == 'swap'" />
         <TheVisitors v-if="option == 'visitors'" />
         <TheSales v-if="option == 'sales'" />
-        <TheGenres v-if="option == 'genres'" />
         <TheOrders v-if="option == 'orders'"/>
       </main>
       <TheAlert :alert="alert" />
@@ -111,7 +107,6 @@ import TheListingOptions from "@/components/Listing/TheListingOptions.vue";
 import TheEditSpecific from "@/components/Edit/TheEditSpecific.vue";
 import TheSwap from "@/components/Edit/TheSwap.vue";
 import TheVisitors from "@/components/Stats/TheVisitors.vue";
-import TheGenres from "@/components/Stats/TheGenres.vue";
 import TheSales from "@/components/Stats/TheSales.vue";
 import TheOrders from "@/components/Orders/TheOrders.vue";
 
@@ -172,7 +167,6 @@ export default {
     TheEditSpecific,
     TheSwap,
     TheVisitors,
-    TheGenres,
     TheSales,
     TheOrders
   },

@@ -10,6 +10,8 @@ from preprocessing_image import remove_background
 
 urllib3.disable_warnings()
 
+genres = {"latin": "muzyka klasyczna", "ballad": "ballada, poezja śpiewana", "blues": "blues, rhythm'n'blues", "country": "country", "dance": "dance", "disco": "disco polo, biesiadna, karaoke", "children's": "dla dzieci", "folk, world, & country": "ethno, folk, world music", "ethno": "ethno, folk, world music", "jazz": "jazz, swing", "carols": "kolędy", "metal": "metal", "alternative": "muzyka alternatywna", "electronic": "muzyka elektroniczna", "stage & screen": "muzyka filmowa", "classical": "muzyka klasyczna", "religious": "muzyka religijna, oazowa", "new": "nowe brzmienia", "opera": "opera, operetka", "pop": "pop", "hip hop": "rap, hip-hop", "reggae": "reggae, ska", "rock": "rock", "rock'n'roll": "rock'n'roll", "single": "single", "compilations": "składanki", "funk / soul": "soul, funk", "soul": "soul, funk", "synth-pop": "synth-pop", "other": "pozostałe", "sets": "zestawy, pakiety", "non-music": "pozostałe"}
+
 def allegro_verification(client_id: str, client_secret: str) -> str:
     payload = {'client_id': client_id}
     headers = {'Content-type': 'application/x-www-form-urlencoded'}
@@ -35,18 +37,10 @@ def get_user_info(credentials: dict):
     result = requests.get("https://api.allegro.pl/me", headers=headers, verify=False).json()
     return result
 
-def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, type_record: str, genre: str = "all") -> dict:
-    if type_record == "Vinyl":
-        categories = {"all": 279, "ballad": 1410, "blues": 1411, "folk, world, & country": 5639, "country": 1145, "dance": 5638, "kids": 5626, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 322237, "latin": 286, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip-hop": 261040, "rap": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531}
-        
-    elif type_record == "CD":
-        categories = {"all": 175, "ballad": 1361, "blues": 261036, "folk, world, & country": 261100, "country": 1143, "dance": 261035, "disco": 89757, "kids": 261028, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "latin": 9536, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261039, "hip-hop": 261044, "rap": 261044, "reggae": 1413, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530}
-    else:
-        genre = ""
-
+def get_my_offers(credentials: dict, limit: int, offset: int, type_offer: str, genre: str = "") -> dict:
     if genre:
-        genre = categories.get(genre)
-        genre = f"&category.id={genre}"
+        genre = genres.get(genre)
+        genre = f"&gatunek={genre}"
 
     if type_offer == "all":
         type_offer = ""
@@ -135,16 +129,15 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
         if any(count > 1 for count in count_error):
             break
 
+        # TODO ERROR TRANLSATE
+        if 'errors' in result:
+            1
+
         result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=data, verify=False).json()
 
     return result
 
 def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
-    if type_record in {"Vinyl", "Winyl"}:
-        categories = {"all": 279, "latin": 286, "ballad": 1410, "blues": 1411, "country": 1145, "dance": 5638, "children's": 5626, "folk, world, & country": 5639, "ethno": 5639, "jazz": 289, "carols": 5625, "metal": 260981, "alternative": 10830, "electronic": 261112, "film": 292, "classical": 286, "new": 284, "opera": 261156, "pop": 261039, "hip hop": 261040, "reggae": 1413, "rock": 261043, "rock'n'roll": 5623, "single": 261041, "compilations": 1419, "funk / soul": 1420, "soul": 1420, "synth-pop": 321961, "other": 293, "sets": 9531, "non-music": 293}
-    elif type_record == "CD":
-        categories = {"all": 175, "latin": 9536, "ballad": 1361, "blues": 261036, "country": 1143, "dance": 261035, "disco": 89757, "children's": 261028, "folk, world, & country": 261100, "ethno": 261100, "jazz": 260, "carols": 5607, "metal": 261128, "alternative": 261029, "electronic": 261111, "film": 322237, "classical": 9536, "religious": 89751, "new": 261042, "opera": 9537, "pop": 261127, "hip hop": 261044, "reggae": 182, "rock": 261110, "rock'n'roll": 5605, "single": 322236, "compilations": 261102, "funk / soul": 181,"soul": 181, "synth-pop": 321960, "other": 191, "sets": 9530, "non-music": 191}
-
     conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
 
     # Discogs data
@@ -161,14 +154,10 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     barcode = ("".join(re.findall('\d+', offer_data['barcode']))).strip()
     tracklist = get_tracklist(record_id, credentials["api_discogs_token"])
 
-    # Allegro data
-    allegro_offer = json.loads(get_allegro_offers(credentials['user_key'])[0]['offer_data'])
-    allegro_id = allegro_offer['id']
-    offer_info = get_offer_info(credentials, allegro_id)
-    
-    payments = offer_info['payments']
-    location = offer_info['location']
-    delivery = allegro_offer['delivery']
+    # Allegro data    
+    payments = json.loads(credentials['payments'])
+    location = json.loads(credentials['location'])
+    delivery = json.loads(credentials['delivery'])
     duration_offer = None
     republish = False
     selling = {
@@ -178,7 +167,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
             "currency": "PLN"
         }
     }
-    category = categories.get(genre.lower())
+    genre = genres.get(genre.lower())
     condition = conditions.get(condition)
     author = (title.split("-")[0]).strip()
     try:
@@ -221,7 +210,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
                 "product": {
                     "name": title,
                     "category": {
-                        "id": category
+                        "id": 1
                     },
                     "parameters": [
                         {
@@ -235,7 +224,11 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
                         {
                             "name": "Nośnik",
                             "values": ["Winyl"]
-                        }
+                        },
+                        {
+                            "name": "Gatunek",
+                            "values": [genre]
+                        },
                     ],
 
                     "images": images,
@@ -270,7 +263,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
                 "product": {
                     "name": title,
                     "category": {
-                        "id": category
+                        "id": 1
                     },
                     "parameters": [
                         {
@@ -288,6 +281,10 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
                         {
                             'name': 'EAN (GTIN)',
                             'values': [barcode]
+                        },
+                        {
+                            "name": "Gatunek",
+                            "values": [genre]
                         },
                     ],
 
@@ -315,13 +312,20 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
             'delivery': delivery
         }
 
+    label_name, series = label.split(" | ")
+    parameters = data['productSet'][0]['product']['parameters']
+    
     # If year release is empty add new
-    if not "Rok wydania" in [parameter['name'] for parameter in data['productSet'][0]['product']['parameters']] and released != "-": 
-        data['productSet'][0]['product']['parameters'].append({"name": "Rok wydania", "values": [released]})
+    if not "Rok wydania" in [parameter['name'] for parameter in parameters] and released != "-": 
+        parameters.append({"name": "Rok wydania", "values": [released]})
 
-    # If year label is empty add new
-    if not "Wytwórnia" in [parameter['name'] for parameter in data['productSet'][0]['product']['parameters']] and label != "-": 
-        data['productSet'][0]['product']['parameters'].append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
+    # If label is empty add new
+    if not "Wytwórnia" in [parameter['name'] for parameter in parameters] and label != "-": 
+        parameters.append({"name": "Wytwórnia", "values": [label_name]})
+
+    # If series is empty add new
+    if not "Seria" in [parameter['name'] for parameter in parameters] and series != "-": 
+        parameters.append({"name": "Seria", "values": [series]})
 
     url = 'https://api.allegro.pl/sale/product-offers'
     result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=data, verify=False).json()
@@ -379,12 +383,17 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
         if x['name'] == 'Nośnik':
             type_record = x['values'][0]
     
+    label_name, series = label.split(" | ")
+
     if type_record != "płyta DVD":
         if not "Rok wydania" in [parameter['name'] for parameter in parameters] and released != "-":
             parameters.append({"name": "Rok wydania", "values": [released]})
 
         if not "Wytwórnia" in [parameter['name'] for parameter in parameters] and label != "-":
-            parameters.append({"name": "Wytwórnia", "values": [label.split(" | ")[0]]})
+            parameters.append({"name": "Wytwórnia", "values": [label_name]})
+
+        if not "Seria" in [parameter['name'] for parameter in parameters] and label != "-": 
+            parameters.append({"name": "Wytwórnia", "values": [series]})
 
     if edit_description:
         condition_carton = get_condition_and_carton(credentials, offer_id)
