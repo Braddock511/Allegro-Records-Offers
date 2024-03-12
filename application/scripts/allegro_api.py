@@ -77,7 +77,7 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
     errors = []
     url = 'https://api.allegro.pl/sale/product-offers'
 
-    for _ in range(5):
+    for _ in range(3):
         if 'errors' not in result:
             break
         
@@ -86,13 +86,7 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
 
         if 'Request Timeout' not in error_messages:
             for msg in error_messages:
-                if "Existing Product related" in msg:
-                    category = re.findall(r"product category .*", msg)[0]
-                    new_genre = re.sub(r"\D", "", category)
-                    data['productSet'][0]['product']['category']['id'] = new_genre
-                    errors.append("Genre")
-
-                elif "Wykonawca" in msg:
+                if "Wykonawca" in msg:
                     artist = re.findall(r"parameter value .*", msg)[0]
                     new_artist = re.sub(r'\((.*?)\)', r'\1', artist.replace("parameter value", "")).strip()
                     data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist]

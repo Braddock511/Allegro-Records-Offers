@@ -24,6 +24,8 @@
                 barcode: '-',
                 condition: this.condition,
                 images: this.offerImages,
+                error: '',
+                isHidden: false,
               });
               next();">{{ $t("table.next") }}</button>
         </div>
@@ -117,24 +119,27 @@
               </td>
             </tr>
             <tr v-for="(data, index) in discogsData[recordIndex].information" class="mapping odd:bg-dark-gray even:bg-lighter-gray">
-              <th class="number-css">{{ index + 1 }}</th>
-              <td><a :href="data.uri" target="_blank">{{ data.title }}</a></td>
+              <th class="number-css"><img @click="toggleEditing(index)" src="@/assets/edit.png" alt="edit" style="width: 40px; min-width: 40px; cursor: pointer;"></th>
               <td>
-                <span v-if="data.label !== '-'">{{ data.label }}</span>
-                <input v-else type="text" name="label" class="h-8 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold hover:bg-opacity-0" placeholder="Label" v-model="label"/>
+                  <span v-if="editingIndex !== index"><a :href="data.uri" target="_blank">{{ data.title }}</a></span>
+                  <input v-else v-model="editedTitle" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td>
-                <span v-if="data.country !== '-'">{{ data.country }}</span>
-                <input v-else type="text" name="country" class="h-8 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold" placeholder="Country" v-model="country"/>
+                <span v-if="editingIndex !== index">{{ data.label }}</span>
+                <input v-else v-model="editedLabel" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td>
-                <span v-if="data.year !== '-'">{{ data.year }}</span>
-                <input v-else type="text" name="year" class="h-8 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold" placeholder="Year" v-model="year" />
+                <span v-if="editingIndex !== index">{{ data.country }}</span>
+                <input v-else v-model="editedCountry" @keyup.enter="saveChanges" class="input-field"/>
+              </td>
+              <td>
+                <span v-if="editingIndex !== index">{{ data.year }}</span>
+                <input v-else v-model="editedYear" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td>{{ data.genre }}</td>
               <td v-if="typeRecord == 'CD'">
-                <span v-if="data.barcode !== '-'">{{ data.barcode }}</span>
-                <input v-else type="text" name="barcode" class="h-8 rounded-md placeholder:text-center border-none bg-oceans px-1 font-semibold" placeholder="-" v-model="barcode" />
+                <span v-if="editingIndex !== index">{{ data.barcode !== '-' ? data.barcode : '-' }}</span>
+                <input v-else v-model="editedBarcode" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td class="hidden">{{ $t("table.condition") }}
                 <select v-model="condition">
@@ -238,6 +243,12 @@ export default {
       activeRequests: 0,
       newSearch: "",
       userKey: this.$cookies.get("allegro-cred").userKey,
+      editingIndex: null,
+      editedTitle: '',
+      editedLabel: '',
+      editedCountry: '',
+      editedYear: '',
+      editedBarcode: '',
     };
   },
   methods: {
@@ -263,6 +274,8 @@ export default {
         id: data.id,
         condition: this.condition,
         price: this.price,
+        error: "",
+        isHidden: false,
       };
 
       // Send data
@@ -296,23 +309,46 @@ export default {
         })
         .finally(() => {
           this.activeRequests += 1;
+          this.resetVariables();
+          this.next();
         });
-
-      this.resetVariables();
-      await this.next();
     },
     async listingOfferAllegro(data) {
       let selectedData = {};
 
-      if (this.price === "") {
+      if (this.price === "" || (!data.title && (this.title === "" || this.label === "" || this.year === ""))) {
         this.alert = {
           variant: "warning",
-          message: this.$t("alerts.complete"),
+          message: this.$t("alerts.complete")
         };
         return;
       }
 
-      if (data.title !== undefined) {
+      if (!data.title) {
+        if (this.title.length + 3 >= 75) {
+          this.alert = {
+            variant: "warning",
+            message: this.$t("alerts.toLong"),
+          };
+          return;
+        }
+
+        selectedData = {
+          id: "",
+          title: this.title,
+          label: this.label || "-",
+          country: this.country || "-",
+          year: this.year || "-",
+          genre: this.genre,
+          price: this.price,
+          barcode: this.barcode || "-",
+          quantity: "",
+          images: this.offerImages,
+          condition: this.condition,
+          error: "",
+          isHidden: false,
+        };
+      } else {
         selectedData = {
           id: data.id,
           title: data.title,
@@ -325,38 +361,8 @@ export default {
           quantity: data.quantity,
           images: this.offerImages,
           condition: this.condition,
-          error: ""
-        };
-      } else {
-        if (this.title === "" || this.price === "" || this.label === "" || this.year === "") {
-          this.alert = {
-            variant: "warning",
-            message: this.$t("alerts.complete"),
-          };
-          return;
-        }
-
-        if (this.title.length + 3 >= 75) {
-          this.alert = {
-            variant: "warning",
-            message: this.$t("alerts.toLong"),
-          };
-          return;
-        }
-
-        selectedData = {
-          id: "",
-          title: this.title,
-          label: this.label ? this.label : "-",
-          country: this.country ? this.country : "-",
-          year: this.year ? this.year : "-",
-          genre: this.genre,
-          price: this.price,
-          barcode: this.barcode ? this.barcode : "-",
-          quantity: "",
-          images: this.offerImages,
-          condition: this.condition,
-          error: ""
+          error: "",
+          isHidden: false,
         };
       }
 
@@ -372,6 +378,7 @@ export default {
         duration: this.duration,
         clear: this.clear,
       };
+
       axios.post(`${baseUrl}/allegro-listing`, requestData).then((response) => {
           response = response.data;
           if (response.status == 500) {
@@ -379,17 +386,13 @@ export default {
             this.failed.push(selectedData);
             this.alert = {
                 variant: "danger",
-                message: `${this.$t("alerts.failed")} - ${
-                  selectedData.title
-                }`,
+                message: `${this.$t("alerts.failed")} - ${selectedData.title}`,
               };
             }
           else {
             this.alert = {
               variant: "success",
-              message: `${this.$t("alerts.listingSuccess")} - ${
-                selectedData.title
-              }`,
+              message: `${this.$t("alerts.listingSuccess")} - ${selectedData.title}`,
             };
           }
         }).finally(() => {
@@ -478,15 +481,41 @@ export default {
       }
       return finalValue;
     },
-    showImage() {
-      this.show();
+    toggleEditing(index) {
+      if (this.editingIndex === index) {
+        this.saveChanges();
+      } else {
+        this.startEditing(index);
+      }
     },
-    show() {
-      this.visible = true;
+    startEditing(index) {
+      const info = this.discogsData[this.recordIndex].information[index];
+      this.editingIndex = index;
+      this.editedTitle = info.title;
+      this.editedLabel = info.label;
+      this.editedCountry = info.country;
+      this.editedYear = info.year;
+      this.editedBarcode = info.barcode;
     },
-    handleHide() {
-      this.visible = false;
+    saveChanges() {
+      const info = this.discogsData[this.recordIndex].information[this.editingIndex];
+      if (info) {
+        info.title = this.editedTitle;
+        info.label = this.editedLabel;
+        info.country = this.editedCountry;
+        info.year = this.editedYear;
+        info.barcode = this.editedBarcode;
+      }
+      this.cancelEditing();
     },
+    cancelEditing() {
+      this.editingIndex = null;
+      this.editedTitle = '';
+      this.editedLabel = '';
+      this.editedCountry = '';
+      this.editedYear = '';
+      this.editedBarcode = '';
+    }
   },
   async beforeMount() {
     this.loading.flag = false;

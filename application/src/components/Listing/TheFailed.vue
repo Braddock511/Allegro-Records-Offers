@@ -1,8 +1,8 @@
 <template>
-  <div class="overflow-x-auto w-full custom-scrollbar" v-if="dataFailed.length > 0">
+  <div class="overflow-x-auto w-full custom-scrollbar" v-if="dataFailed.filter(element => element.isListed == true).length != dataFailed.length">
     <div v-if="!loading.flag">
       <div class="text-center text-3xl text-slate-100 font-semibold">
-        {{ $t("table.unlisted") }}
+        {{ $t("table.unlisted") }} {{ dataFailed.filter(element => element.isListed == true).length }}/{{ dataFailed.length }}
       </div>
       <table class="table table-sm mt-10">
         <thead class="thead-css h-14 text-base">
@@ -22,24 +22,26 @@
           </tr>
         </thead>
         <tbody class="tab-css">
-        <tr v-for="index in dataFailed.length" :key="index" class="mapping odd:bg-lighter-gray even:bg-lighter-gray" >
-          <th>{{ index }}</th>
-          <td><img :src="dataFailed[index - 1].images[0]" alt="preview image" class="w-32 h-32"/></td>
-          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].title" /></td>
-          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].label" /></td>
-          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].country" /></td>
-          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].year" /></td>
-          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].genre" /></td>
-          <td v-if="typeRecord == 'CD'"><input class="w-32" type="text" v-model="dataFailed[index - 1].barcode" /></td>
-          <td>{{ dataFailed[index - 1].condition }}</td>
-          <td><input class="w-32" type="text" v-model="dataFailed[index - 1].price" /></td>
-          <td style="width: 25%;" v-if="dataFailed[index - 1].error.errors && dataFailed[index - 1].error.errors.length > 0">
-              {{ dataFailed[index - 1].error.errors[0].userMessage }}
-          </td>
-          <td style="width: 25%;" v-else>
-              -
-          </td>
-          <td><button class="btn btn-primary w-full allegro" type="submit" @click="listingOfferAllegro(dataFailed[index - 1], index-1)" >{{ $t("table.send") }}</button></td>
+        <tr v-for="index in dataFailed.length" :key="index" class="mapping odd:bg-lighter-gray even:bg-lighter-gray">
+          <template v-if="!dataFailed[index - 1].isHidden">
+            <th>{{ index }}</th>
+            <td><img :src="dataFailed[index - 1].images[0]" alt="preview image" class="w-32 h-32"/></td>
+            <td><input class="w-32" type="text" v-model="dataFailed[index - 1].title" /></td>
+            <td><input class="w-32" type="text" v-model="dataFailed[index - 1].label" /></td>
+            <td><input class="w-32" type="text" v-model="dataFailed[index - 1].country" /></td>
+            <td><input class="w-32" type="text" v-model="dataFailed[index - 1].year" /></td>
+            <td><input class="w-32" type="text" v-model="dataFailed[index - 1].genre" /></td>
+            <td v-if="typeRecord == 'CD'"><input class="w-32" type="text" v-model="dataFailed[index - 1].barcode" /></td>
+            <td>{{ dataFailed[index - 1].condition }}</td>
+            <td><input class="w-32" type="text" v-model="dataFailed[index - 1].price" /></td>
+            <td style="width: 25%;" v-if="dataFailed[index - 1].error">
+                {{ dataFailed[index - 1]?.error?.errors?.[0]?.userMessage ?? '-' }}
+            </td>
+            <td style="width: 25%;" v-else>
+                -
+            </td>
+            <td><button class="btn btn-primary w-full allegro" type="submit" @click="listingOfferAllegro(dataFailed[index - 1], index-1)" >{{ $t("table.send") }}</button></td>
+          </template>
         </tr>
       </tbody>
       </table>
@@ -82,8 +84,12 @@ export default {
       window.location.reload();
     },
     async listingOfferAllegro(selectedData, index) {
-      this.loading.flag = true;
       const userKey = this.$cookies.get("allegro-cred").userKey;
+      this.dataFailed[index]["isHidden"] = true;
+
+      if (this.dataFailed.every(element => element.isHidden == true)) {
+          this.loading.flag = true;
+      }
 
       axios.post(`${baseUrl}/allegro-listing`, {
             userKey: userKey,
@@ -95,19 +101,23 @@ export default {
             clear: this.clear,}, {headers: {"Content-Type": "application/json","Access-Control-Allow-Origin": "*"}}
         ).then((response) => {
           response = response.data;
-          
           if (response.error || response.output.errors) {
             this.alert = {
               variant: "danger",
               message: `${this.$t("alerts.listingFailed")} - ${selectedData.title}`};
+              this.dataFailed[index]["isHidden"] = false;
+              this.dataFailed[index]["error"] = response.error;
+
           } else {
             this.alert = {
               variant: "success",
               message: `${this.$t("alerts.listingSuccess")} - ${selectedData.title}`};
-            this.dataFailed.splice(index, 1);
+              this.dataFailed[index]["isListed"] = true;
           }
         }).finally(() => {
-          this.loading.flag = false;
+          if (this.dataFailed.some(element => element.isHidden == false) || this.dataFailed.every(element => element.isListed == true)) {
+            this.loading.flag = false;
+          }
         });
     },
   },
