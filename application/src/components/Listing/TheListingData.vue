@@ -8,7 +8,7 @@
     <div v-if="cartonFlag && !failedFlag && !loading.flag">
       <div class="flex flex-col items-center mb-16">
         <TheSlider :images="offerImages"></TheSlider>
-        <span class="text-xl mt-5 mb-5">{{ $t("table.condition") }}:{{ conditions[currentIndex / numberImages] }}</span>
+        <span class="text-xl mt-5 mb-5">{{ $t("table.condition") }}: {{ conditions[currentIndex / numberImages] }}</span>
         <div class="w-full flex justify-center">
           <button class="btn btn-primary w-1/2 p-2 text-xl" type="submit" 
           @click="
@@ -124,7 +124,7 @@
                   <span v-if="editingIndex !== index"><a :href="data.uri" target="_blank">{{ data.title }}</a></span>
                   <input v-else v-model="editedTitle" @keyup.enter="saveChanges" class="input-field"/>
               </td>
-              <td>
+              <td :class="data.label === '-' ? 'border-solid border-2 border-red-500' : ''">
                 <span v-if="editingIndex !== index">{{ data.label }}</span>
                 <input v-else v-model="editedLabel" @keyup.enter="saveChanges" class="input-field"/>
               </td>
@@ -132,12 +132,12 @@
                 <span v-if="editingIndex !== index">{{ data.country }}</span>
                 <input v-else v-model="editedCountry" @keyup.enter="saveChanges" class="input-field"/>
               </td>
-              <td>
+              <td :class="data.year === '-' ? 'border-solid border-2 border-red-500' : ''">
                 <span v-if="editingIndex !== index">{{ data.year }}</span>
                 <input v-else v-model="editedYear" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td>{{ data.genre }}</td>
-              <td v-if="typeRecord == 'CD'">
+              <td :class="data.barcode === '-' ? 'border-solid border-2 border-red-500' : ''" v-if="typeRecord == 'CD'">
                 <span v-if="editingIndex !== index">{{ data.barcode !== '-' ? data.barcode : '-' }}</span>
                 <input v-else v-model="editedBarcode" @keyup.enter="saveChanges" class="input-field"/>
               </td>
@@ -342,7 +342,6 @@ export default {
           genre: this.genre,
           price: this.price,
           barcode: this.barcode || "-",
-          quantity: "",
           images: this.offerImages,
           condition: this.condition,
           error: "",
@@ -358,7 +357,6 @@ export default {
           genre: data.genre,
           price: this.price,
           barcode: data.barcode,
-          quantity: data.quantity,
           images: this.offerImages,
           condition: this.condition,
           error: "",

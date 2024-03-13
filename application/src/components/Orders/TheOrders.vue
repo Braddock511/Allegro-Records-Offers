@@ -11,7 +11,7 @@
       <tr v-for="items in order.items" class="mapping odd:bg-dark-gray even:bg-lighter-gray">
         <td class="w-4/12"><TheSlider :images="items.images" :sliderStyle="'width: 350px;'"></TheSlider></td>
         <td class="w-4/12 text-left">{{ items.name }}</td>
-        <td class="w-4/12 text-left">{{ orders[index].city }} {{ orders[index].street }} - {{ orders[index].pickup_id }}</td>
+       <td class="w-4/12 text-left">{{ orders[index].pickup_point.address.city }}, {{ orders[index].pickup_point.address.street }} - {{ orders[index].pickup_point.id }}</td>
       </tr>
     </tbody>
   </table>

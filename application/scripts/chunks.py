@@ -2,6 +2,22 @@ import re
 from typing import List, Dict
 from discogs_api import get_vinyl, get_cd, get_price
 
+def valid_label(label: str, catno: str) -> str:
+    if label:
+        corrected_label = {"teldec": "TELDEC", "berlin classics": "Classics"}
+        return f"{corrected_label.get(label.lower(), label)} | {catno}"
+    return "-"
+
+def valid_barcode(barcode: str) -> str:
+    if barcode:
+        return barcode.replace(" ", "")
+    return "-"
+
+def valid_year(year: str) -> str:
+    if year:
+        return year
+    return "-"
+
 def remove_text_in_parentheses(text: str) -> str:
     """
         Removes text enclosed in parentheses from a given string.
@@ -132,14 +148,14 @@ def remove_not_allowed_characters(text: str) -> str:
         Returns:
             str: The modified string with unwanted characters removed.
     """
-    polish_chars_pattern = r'[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]'    
-    ascii_pattern = r'[\x00-\x7F]'    
-    pattern = f'{polish_chars_pattern}|{ascii_pattern}'
+    chars_pattern = r'[ąćęłńóśźżĄĆĘŁŃÓŚŹŻäëïöüÿÄËÏÖÜŸáéíóúýÁÉÍÓÚÝàèìòùÀÈÌÒÙâêîôûÂÊÎÔÛãñõÃÑÕßçÇøØåÅæÆœŒř]'
+    ascii_pattern = r'[\x00-\x7F]'
+    pattern = f'{chars_pattern}|{ascii_pattern}'
     
-    matches = re.findall(pattern, text, flags=re.UNICODE)    
+    matches = re.findall(pattern, text, flags=re.UNICODE)
     cleaned_text = ''.join(matches)
     cleaned_text = cleaned_text.replace("*", "")
-     
+    
     return cleaned_text
 
 def preprocess_data(chunk: list, discogs_token: str) -> list:
@@ -166,9 +182,9 @@ def preprocess_data(chunk: list, discogs_token: str) -> list:
             genre = result['genre'][0]
             title = remove_not_allowed_characters(result['title'])
             country = result.get('country', '-')
-            year = result.get('year') or result.get('released') if (result.get('year') or result.get('released')) else '-'
-            barcode = result.get('barcode', [''])[0].replace(" ", "") if result.get('barcode') else '-'
-            label = result.get('label', [''])[0] + " | " + result.get('catno', '') if result.get('label') else '-'
+            year = valid_year(result.get('year', result.get('released', '')))
+            barcode = valid_barcode(result.get("barcode", "")[0])
+            label = valid_label(result.get("label", "")[0], result.get("catno", "-"))
             community_want_have = result['community']
 
         information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, 

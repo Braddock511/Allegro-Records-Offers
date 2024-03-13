@@ -123,11 +123,13 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
         if any(count > 1 for count in count_error):
             break
 
-        # TODO ERROR TRANLSATE
-        if 'errors' in result:
-            1
-
         result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=data, verify=False).json()
+
+    if 'errors' in result:
+        code = result["errors"][0]["code"]
+
+        if code == "UploadImageRequestTimeoutException":
+            result["errors"][0]["userMessage"] = "Błąd wysyłania zdjęć. Spróbuj jeszcze raz"
 
     return result
 

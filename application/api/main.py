@@ -461,13 +461,12 @@ async def get_orders(request: models.UserKeyRequest):
         for order in orders:
             items = order["lineItems"]
             status = order["fulfillment"]["status"]
-            pickup_id = order["delivery"]["pickupPoint"]["id"]
-            street = order["delivery"]["address"]["street"]
-            city = order["delivery"]["address"]["city"]
 
             if status == "NEW":
-                order_details.append({"items": [allegro.get_offer_info(credentials, item["offer"]["id"]) for item in items], "pickup_id": pickup_id, "street": street, "city": city})
+                if delivery := order["delivery"]:
+                    if pickup_point := delivery.get("pickupPoint", ""):
+                        order_details.append({"items": [allegro.get_offer_info(credentials, item["offer"]["id"]) for item in items], "pickup_point": pickup_point})
 
         return {"status": 200, "output": order_details}
     except Exception as e:
-        return {"status": 500, "error": f"Exception in swap_specific: {str(e)}"}
+        return {"status": 500, "error": f"Exception in get_orders: {str(e)}"}
