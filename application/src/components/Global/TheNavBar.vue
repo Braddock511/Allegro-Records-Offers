@@ -25,6 +25,11 @@
                   <span class="truncate text-slate-300" :class="isOpen === false ? 'hidden' : 'block'">{{ $t("buttons.listingOffers") }}</span>
                 </div>
               </div>
+              <div class="px-2 flex flex-col gap-1 py-1 items-center">
+                <div class="flex gap-3 text-icon hover:text-blue-600 font-semibold leading-tight items-center p-2 rounded-lg cursor-pointer border-2 border-transparent hover:bg-gray-800 hover:border-slate-700 hover:border-3 transition-colors text-[0.9rem] group" @click="option = 'history'" :class="isOpen === false ? 'w-fit' : 'w-full'">
+                  <span class="truncate text-slate-300" :class="isOpen === false ? 'hidden' : 'block'">{{ $t("buttons.listingHistory") }}</span>        
+                </div>
+              </div>
             </div>
             <div class="group">
               <div class="xd font-semibold text-sm group-hover:text-blue-600" :class="isOpen === false ? 'hidden' : 'text-start'" >{{ $t("headerNavBar.editOffers") }}</div>
@@ -86,6 +91,7 @@
     <div class="overflow-x-auto p-5 w-full" :class="isOpen ? 'blur-[2px]' : 'blur-none'">
       <main v-if="!loading">
         <TheListingOptions v-if="option == 'listing'" />
+        <TheListingHistory v-if="option == 'history'" />
         <TheEditSpecific v-if="option == 'specific'" />
         <TheSwap v-if="option == 'swap'" />
         <TheVisitors v-if="option == 'visitors'" />
@@ -104,6 +110,7 @@
 import axios from "axios";
 import TheAlert from "@/components/Global/TheAlert.vue";
 import TheListingOptions from "@/components/Listing/TheListingOptions.vue";
+import TheListingHistory from "@/components/Listing/TheListingHistory.vue";
 import TheEditSpecific from "@/components/Edit/TheEditSpecific.vue";
 import TheSwap from "@/components/Edit/TheSwap.vue";
 import TheVisitors from "@/components/Stats/TheVisitors.vue";
@@ -164,6 +171,7 @@ export default {
   components: {
     TheAlert,
     TheListingOptions,
+    TheListingHistory,
     TheEditSpecific,
     TheSwap,
     TheVisitors,

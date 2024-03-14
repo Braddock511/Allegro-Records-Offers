@@ -10,11 +10,17 @@ export default {
     buttons: {
       options: "Options",
       listingOffers: "Listing offers",
+      listingHistory: "History",
       editOffers: "Edit offers",
       statistics: "Statistics",
       ordersDetail: "Order detail",
       refresh: "Refresh offers",
       enterAllegroCredentials: "Connect with Allegro",
+    },
+    history:{
+      date: "Date",
+      load: "Load",
+      empty: "No history"
     },
     headerNavBar: {
       listing: "Listing",
@@ -99,7 +105,7 @@ export default {
       orFile: "Or attach a txt file with the id of the offers",
     },
     carton: {
-      enter_carton: "Enter carton",
+      enter_carton: "Carton",
       confirm: "Confirm",
     },
     orders: {
@@ -210,11 +216,17 @@ export default {
     buttons: {
       options: "Opcje",
       listingOffers: "Wystaw oferty",
+      listingHistory: "Historia",
       editOffers: "Edytuj oferty",
       statistics: "Statystyki",
       ordersDetail: "Szczegóły",
       refresh: "Odśwież oferty",
       enterAllegroCredentials: "Połącz z Allegro",
+    },
+    history:{
+      date: "Data",
+      load: "Wczytaj",
+      empty: "Brak historii"
     },
     headerNavBar: {
       listing: "Wystawianie",

@@ -388,8 +388,8 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
         if not "Wytwórnia" in [parameter['name'] for parameter in parameters] and label != "-":
             parameters.append({"name": "Wytwórnia", "values": [label_name]})
 
-        if not "Seria" in [parameter['name'] for parameter in parameters] and label != "-": 
-            parameters.append({"name": "Wytwórnia", "values": [series]})
+        if not "Seria" in [parameter['name'] for parameter in parameters] and series != "-": 
+            parameters.append({"name": "Seria", "values": [series]})
 
     if edit_description:
         condition_carton = get_condition_and_carton(credentials, offer_id)

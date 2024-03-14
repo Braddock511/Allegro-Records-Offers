@@ -13,10 +13,10 @@
             </button>
           </div>
           <div class="relative">
-            <div class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold" >{{ $t("vinyl") }} / CD</div>
+            <div class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold" >CD / {{ $t("vinyl") }}</div>
             <select v-model="typeRecord" class="select-css h-10 w-full p-1 rounded-md placeholder:text-center bg-lighter-black text-sm truncate outline-none" >
-              <option value="Vinyl">{{ $t("vinyl") }}</option>
               <option value="CD">CD</option>
+              <option value="Vinyl">{{ $t("vinyl") }}</option>
             </select>
           </div>
           <div class="relative flex flex-col gap-2 items-center">
@@ -36,6 +36,10 @@
           <div class="relative">
             <label for="number-images" class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold" >{{ $t("listingView.numberImages") }}</label >
             <input v-model="numberImages" id="number-images" type="number" min="2" class="bg-lighter-black font-semibold h-10 w-full p-1 rounded-md placeholder:text-center px-1 outline-none border-css" required />
+          </div>
+          <div class="relative">
+            <label for="carton" class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold" >{{ $t("carton.enter_carton") }}</label >
+            <input v-model="carton" id="carton" type="text" class="bg-lighter-black font-semibold h-10 w-full p-1 rounded-md placeholder:text-center px-1 outline-none border-css" required />
           </div>
           <div class="relative">
             <label for="number-images" class="absolute flex justify-center items-center text-gray-300 left-2 h-[1.5px] bg-lighter-black px-1 text-sm font-semibold" >{{ $t("conditionFile") }}&nbsp;</label>
@@ -69,7 +73,9 @@
     :clear="clear"
     :numberImages="numberImages"
     :numberFiles="files.length"
-    :conditions="conditions"/>
+    :conditions="conditions"
+    :listingId="listingId"
+    :carton="carton"/> 
 </template>
 
 <script>
@@ -83,11 +89,12 @@ export default {
       numberImages: 3,
       read: "",
       files: "",
-      typeRecord: "Vinyl",
+      typeRecord: "CD",
       typeOffer: "BUY_NOW",
       duration: "P1D",
       conditionFile: null,
       conditions: [],
+      carton: "",
       clear: false,
       loading: false,
       alert: {},
@@ -159,8 +166,20 @@ export default {
       const splitImages = this.splitImages(this.images, this.numberImages);
       const userKey = this.$cookies.get("allegro-cred").userKey;
       const endpoint = this.typeRecord === "Vinyl" ? "read-vinyl-image" : "read-cd-image";
+      const listing = {
+        typeRecord: this.typeRecord,
+        typeOffer: this.typeOffer,
+        duration: this.duration,
+        clear: this.clear,
+        numberImages: this.numberImages,
+        numberFiles: this.files.length,
+        conditions: this.conditions,
+        listingId: this.listingId,
+        carton: this.carton
+      }
 
-      this.read = await axios.post(`${baseUrl}/${endpoint}`, { userKey, images: splitImages }, { headers: { "Content-Type": "application/json" }});
+      this.read = await axios.post(`${baseUrl}/${endpoint}`, { userKey, images: splitImages, listing: listing }, { headers: { "Content-Type": "application/json" }});
+      this.listingId = this.read.data.listingId
       this.loading = false;
     },
   },

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 class ImagesRequest(BaseModel):
     userKey: str
     images: list
+    listing: dict
 
 class ImageRequest(BaseModel):
     userKey: str
@@ -18,6 +19,7 @@ class DiscogsInfoImageRequest(BaseModel):
     index: int
     numberImages: int
     typeRecord: str
+    listingId: str
 
 class NewSearchRequest(BaseModel):
     userKey: str
@@ -82,6 +84,7 @@ class DiscogsListingRequest(BaseModel):
     sleeveCondition: str
     carton: str
     price: str
+    images: list
     
 class SwapAllRequest(BaseModel):
     userKey: str
@@ -93,3 +96,6 @@ class SwapSpecificRequest(BaseModel):
     swapCarton: str
     withCarton: str
     offerId: str
+
+class Listing(BaseModel):
+    listing: str

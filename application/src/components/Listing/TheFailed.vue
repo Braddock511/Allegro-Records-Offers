@@ -79,8 +79,6 @@ export default {
   },
   methods: {
     async back() {
-      const userKey = this.$cookies.get("allegro-cred").userKey;
-      await axios.post(`${baseUrl}/clear-image-data`, { userKey: userKey }, { headers: { "Content-Type": "application/json" } } );
       window.location.reload();
     },
     async listingOfferAllegro(selectedData, index) {

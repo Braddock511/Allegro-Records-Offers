@@ -1,7 +1,9 @@
 import json
+import uuid
+from datetime import datetime
 from sqlalchemy import create_engine, Column, String, Integer, Boolean, ForeignKey
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from os import environ
 from typing import List, Dict
 
@@ -54,6 +56,23 @@ class ImageData(Base):
     credentials_folder = Column(String, ForeignKey("credentials.user_folder"))
     text_from_image = Column(String)
     url = Column(String)
+    listing_id = Column(String, ForeignKey("listing.id"))
+    listed = Column(Boolean)
+    listing = relationship("Listing", back_populates="images")
+
+class Listing(Base):
+    __tablename__ = "listing"
+    id = Column(String, primary_key=True)
+    carton = Column(String)
+    typeRecord = Column(String)
+    typeOffer = Column(String)
+    duration = Column(String)
+    clear = Column(String)
+    numberImages = Column(String)
+    numberFiles = Column(String)
+    conditions = Column(String)
+    date = Column(String)
+    images = relationship("ImageData", back_populates="listing")
 
 class AllegroOffers(Base):
     __tablename__ = "allegro_offers"
@@ -138,32 +157,79 @@ def get_credentials(user_key: str) -> Dict[str, str]:
     
     return credentials
 
-def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]]) -> None:
+def get_listing_ids(user_key: str) -> List[str]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
+        rows = session.query(ImageData.listing_id, Listing.carton, Listing.date, Listing.numberFiles)\
+                      .join(Listing, ImageData.listing_id == Listing.id)\
+                      .filter(ImageData.credentials_folder == KEYS[user_key]).all()
+
+        listing_ids = {(row.listing_id, row.carton, row.date) for row in rows}
+
+    return list(listing_ids)
+
+def offer_listend(images_url: List[str]) -> None:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        for image_url in images_url:
+            image_data = session.query(ImageData).filter_by(url=image_url).first()
+            image_data.listed = True
+
+        session.commit()
+
+def get_listing(listing_id: str) -> List[Dict[str, Column[str]]]:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        rows = session.query(ImageData).filter_by(listing_id=listing_id, listed=False).order_by(ImageData.id).all()
+        data_image = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
+
+        listing = session.query(Listing).filter_by(id=listing_id).first()
+        listing.conditions = [item.strip() for item in listing.conditions.replace("{", "").replace("}", "").split(',')] # Convert psql list string to really list
+        listing.numberImages = int(listing.numberImages)
+        listing.numberFiles = len(data_image)
+        listing.clear = bool(listing.clear)
+
+    return listing
+
+def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]], listing_data: str) -> None:
+    Session = sessionmaker(bind=engine)
+    unique_listing_id = str(uuid.uuid4())
+    date = datetime.now().strftime('%d.%m.%Y')
+
+    with Session() as session:
+        new_listing = Listing(id=unique_listing_id, carton=listing_data["carton"], typeRecord=listing_data["typeRecord"], typeOffer=listing_data["typeOffer"], 
+                              duration=listing_data["duration"], clear=listing_data["clear"], numberImages=listing_data["numberImages"],
+                              numberFiles=listing_data["numberFiles"], conditions=listing_data["conditions"], date=date)
+        session.add(new_listing)
+
         for text_from_image in text_from_images:
             for data_item in text_from_image:
-                session.add(ImageData(credentials_folder=KEYS[user_key], text_from_image=data_item['text_from_image'], url=data_item['url']))
+                session.add(ImageData(credentials_folder=KEYS[user_key], text_from_image=data_item['text_from_image'], url=data_item['url'], listing_id=unique_listing_id, listed=False))
             
         session.commit()
 
-def get_text_from_image(user_key: str) -> List[Dict[str, Column[str]]]:
+    return unique_listing_id
+
+def get_text_from_image(listing_id: str) -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        # Get all rows from the image_data table
-        rows = session.query(ImageData).filter_by(credentials_folder=KEYS[user_key]).all()
-        data_image = [{"text_from_image": row.text_from_image, "url": row.url} for row in rows]
+        rows = session.query(ImageData).filter_by(listing_id=listing_id, listed=False).order_by(ImageData.id).all()
+        data_image = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
+
         session.commit()
 
     return data_image
 
-def delete_image_data(user_key: str) -> None:
+def delete_image_data(listing_id: str) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        session.query(ImageData).filter(ImageData.credentials_folder == KEYS[user_key]).delete()
+        session.query(ImageData).filter(ImageData.listing_id == listing_id).delete()
+        session.query(Listing).filter(Listing.id == listing_id).delete()
         session.commit()
 
 def post_allegro_offers(user_key: str, offers: List[Dict[str, str]]) -> None:

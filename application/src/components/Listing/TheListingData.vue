@@ -1,11 +1,6 @@
 <template>
-  <div class="w-full">
-    <div v-if="!cartonFlag && !loading.flag" id="carton" class="flex flex-col gap-2 text-center items-center justify-center" >
-      <span class="text-xl font-semibold">{{ $t("carton.enter_carton") }}</span>
-      <input type="text" name="carton" v-model="carton" class="p-1 font-semibold bg-darker-gray rounded-lg px-2 max-w-xs min-w-[300px]" />
-      <button class="btn btn-primary w-[300px] p-2 text-xl" type="button" @click="this.cartonFlag = true;" >{{ $t("carton.confirm") }}</button>
-    </div>
-    <div v-if="cartonFlag && !failedFlag && !loading.flag">
+<div class="w-full">
+    <div v-if="!failedFlag && !loading.flag">
       <div class="flex flex-col items-center mb-16">
         <TheSlider :images="offerImages"></TheSlider>
         <span class="text-xl mt-5 mb-5">{{ $t("table.condition") }}: {{ conditions[currentIndex / numberImages] }}</span>
@@ -213,7 +208,7 @@
 </template>
 
 <script>
-import TheSlider from "@/components/Global/TheSlider.vue";
+import TheSlider from "@/components/Global/TheSlider.vue"; 
 import TheAlert from "@/components/Global/TheAlert.vue";
 import TheFailed from "@/components/Listing/TheFailed.vue";
 import axios from "axios";
@@ -223,7 +218,6 @@ export default {
       discogsData: "",
       condition: "Near Mint (NM or M-)",
       sleeveCondition: "Near Mint (NM or M-)",
-      carton: "",
       title: "",
       label: "",
       country: "",
@@ -236,7 +230,6 @@ export default {
       offerImages: [],
       failed: [],
       alert: {},
-      cartonFlag: false,
       visible: false,
       failedFlag: false,
       loading: { flag: false, message: "" },
@@ -289,6 +282,7 @@ export default {
             carton: this.carton,
             sleeveCondition: this.sleeveCondition,
             price: this.roundedPriceToEUR(this.price),
+            images: this.offerImages
           },
           { headers: { "Content-Type": "application/json" } }
         ).then((response) => {
@@ -422,6 +416,7 @@ export default {
               typeRecord: this.typeRecord,
               index: this.currentIndex,
               numberImages: this.numberImages,
+              listingId: this.listingId
             },
             { headers: { "Content-Type": "application/json" } }
           ).then((response) => {
@@ -516,13 +511,14 @@ export default {
     }
   },
   async beforeMount() {
-    this.loading.flag = false;
+    this.loading.flag = true;
     this.loading.message = this.$t("loading.loadData");
     await axios.post(`${baseUrl}/discogs-information-image`, {
           userKey: this.userKey,
           typeRecord: this.typeRecord,
           index: 0,
           numberImages: this.numberImages,
+          listingId: this.listingId
         },
         { headers: { "Content-Type": "application/json" } }
       ).then((response) => {
@@ -540,7 +536,7 @@ export default {
       }).finally(() => {
         this.loading.message = "";
         this.loading.flag = false;
-      });
+      }); 
   },
   props: {
     typeRecord: {
@@ -573,6 +569,14 @@ export default {
       type: Array,
       required: false,
     },
+    listingId: {
+      type: String,
+      required: true,
+    },
+    carton: {
+      type: String,
+      required: true,
+    }
   },
   components: {
     TheSlider,

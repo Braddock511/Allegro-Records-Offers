@@ -26,16 +26,16 @@ async def read_vinyl_image(request: models.ImagesRequest):
     try:
         user_key = request.userKey
         images = request.images
+        listing_data = request.listing
         text_from_images = []
-        db.delete_image_data(user_key)
         credentials = db.get_credentials(user_key)
 
         preprocess_tasks = [preprocess_vinyl_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
 
-        db.post_text_from_image(user_key, text_from_images)
+        listing_id = db.post_text_from_image(user_key, text_from_images, listing_data)
 
-        return {"status": 200, "output": text_from_images}
+        return {"status": 200, "output": text_from_images, "listingId": listing_id}
 
     except Exception as e:
         return {"status": 500, "error": f"Exception in read_vinyl_image: {str(e)}"}
@@ -46,19 +46,37 @@ async def read_cd_image(request: models.ImagesRequest):
     try:
         user_key = request.userKey
         images = request.images
+        listing_data = request.listing
         text_from_images = []
-        db.delete_image_data(user_key)
         credentials = db.get_credentials(user_key)
         
         preprocess_tasks = [preprocess_cd_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
 
-        db.post_text_from_image(user_key, text_from_images)
+        listing_id = db.post_text_from_image(user_key, text_from_images, listing_data)
 
-        return {"status": 200, "output": text_from_images}
+        return {"status": 200, "output": text_from_images, "listingId": listing_id}
 
     except Exception as e:
         return {"status": 500, "error": f"Exception in read_cd_image: {str(e)}"}
+
+@app.post("/listing-ids")
+async def listing_ids(request: models.UserKeyRequest):
+    try:
+        user_key = request.userKey
+        listing_ids = db.get_listing_ids(user_key)
+        return {"status": 200, "output": listing_ids}
+    except Exception as e:
+        return {"status": 500, "error": f"Exception in listing_ids: {str(e)}"}
+
+@app.post("/load-listing")
+async def listing_ids(request: models.Listing):
+    try:
+        listing = request.listing
+        listing_data = db.get_listing(listing)
+        return {"status": 200, "output": listing_data}
+    except Exception as e:
+        return {"status": 500, "error": f"Exception in listing_ids: {str(e)}"}
 
 @app.post("/clear-image")
 async def clear_image(request: models.ImageRequest):
@@ -134,8 +152,9 @@ async def image_data(request: models.DiscogsInfoImageRequest):
         index = request.index
         number_images = request.numberImages
         type_record = request.typeRecord
+        listing_id = request.listingId
         credentials = db.get_credentials(user_key)
-        image_data = db.get_text_from_image(user_key)
+        image_data = db.get_text_from_image(listing_id)
         image_data = image_data[index:index+number_images]
         discogs_data = []
         
@@ -148,7 +167,7 @@ async def image_data(request: models.DiscogsInfoImageRequest):
                 discogs_data.append({"input_data": text_from_image, "information": "", "url": url})
             else:
                 if type_record == "Vinyl":
-                    information = preprocess_data_parallel(text_from_image, credentials, type_record)   
+                    information = preprocess_data_parallel(text_from_image, credentials, type_record)
                 elif type_record == "CD":
                     information = preprocess_data_parallel(text_from_image, credentials, type_record, False)
                 
@@ -181,10 +200,10 @@ async def image_data(request: models.NewSearchRequest):
        
     
 @app.post("/clear-image-data")
-async def clear_image_data(request: models.UserKeyRequest):
+async def clear_image_data(request: models.Listing):
     try:
-        user_key = request.userKey
-        db.delete_image_data(user_key)
+        listing_id = request.listing
+        db.delete_image_data(listing_id)
 
         return {"status": 200}
     except Exception as e:
@@ -286,6 +305,8 @@ async def allegro_listing(request: models.AllegroListingRequest):
         result = allegro.create_offer(credentials, request.offer_data, request.carton, request.typeRecord, request.typeOffer, request.duration, request.clear)
         if "errors" in result:
             return {"status": 500, "error": result} 
+
+        db.offer_listend(request.offer_data["images"])
         return {"status": 200, "output": result}
 
     except Exception as e:
@@ -429,6 +450,11 @@ async def discogs_listing(request: models.DiscogsListingRequest):
     try:
         credentials = db.get_credentials(request.userKey)
         result = create_offer(request.listing_id, request.mediaCondition, request.sleeveCondition, request.carton, request.price, credentials['api_discogs_token'])
+
+        if result.status == 500:
+            return {"status": 500, "error": result} 
+        
+        db.offer_listend(request.images)
         return {"status": 200, "output": result}
     except Exception as e:
         return {"status": 500, "error": f"Exception in discogs_listing: {str(e)}"}
