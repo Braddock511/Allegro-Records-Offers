@@ -74,7 +74,7 @@
     :numberImages="numberImages"
     :numberFiles="files.length"
     :conditions="conditions"
-    :listingId="listingId"
+    :imageData="imageData"
     :carton="carton"/> 
 </template>
 
@@ -174,12 +174,11 @@ export default {
         numberImages: this.numberImages,
         numberFiles: this.files.length,
         conditions: this.conditions,
-        listingId: this.listingId,
         carton: this.carton
       }
 
       this.read = await axios.post(`${baseUrl}/${endpoint}`, { userKey, images: splitImages, listing: listing }, { headers: { "Content-Type": "application/json" }});
-      this.listingId = this.read.data.listingId
+      this.imageData = this.read.data.image_data
       this.loading = false;
     },
   },

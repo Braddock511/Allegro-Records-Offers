@@ -20,7 +20,7 @@ def allegro_verification(client_id: str, client_secret: str) -> str:
 
     return response.json()
 
-def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> str:
+def get_allegro_tokens(client_id: str, client_secret: str, device_code: str) -> str:
     while True:
         sleep(1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
@@ -30,8 +30,22 @@ def get_allegro_token(client_id: str, client_secret: str, device_code: str) -> s
         token = json.loads(response.text)
 
         if response.status_code == 200:
-            return token['access_token']
+            return token['access_token'], token['refresh_token']
     
+def refresh_token(credentials: dict) -> str:
+    while True:
+        sleep(1)
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        data = {'grant_type': 'refresh_token', 'refresh_token': credentials['api_allgero_refresh_token']}
+        response = requests.post("https://allegro.pl/auth/oauth/token", auth=(credentials['api_allegro_id'], credentials['api_allegro_secret']), headers=headers, data=data, verify=False)
+
+        token = json.loads(response.text)
+        
+        if response.status_code == 200:
+            return token['access_token'], token['refresh_token']
+        elif response.status_code == 400:
+            return None, None
+
 def get_user_info(credentials: dict):
     headers = {'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}
     result = requests.get("https://api.allegro.pl/me", headers=headers, verify=False).json()
@@ -172,7 +186,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
         name = ""
         
     # Combine author, name, and carton
-    full_name = (f'{author} - {name}.{carton}' if len(f'{author} - {name}.{carton}') <= 50 and name != "" else f'{author}.{carton}').strip()
+    full_name = (f'{author} - {name}.{carton}' if len(f'{author} - {name}.{carton}') <= 75 and name != "" else f'{author}.{carton}').strip()
 
     # If the length is still greater than 50, truncate the author name
     if len(full_name) > 75:
@@ -337,11 +351,16 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
     url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
     product = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}).json()
 
-    name = product['name']
-    carton = f'.{name.split(".")[-1]}'
-    if len(carton) > 4:
-        carton = f'.{name.split(")")[-1]}'
     description = product['description']
+    try:
+        carton = re.findall(r'KARTON: .*', str(description))[0]
+        carton = carton.split("KARTON: ")[-1]
+        carton = re.sub(r"<.*", '', carton)
+    except IndexError:
+        name = product['name']
+        carton = f'.{name.split(".")[-1]}'
+        if len(carton) > 4:
+            carton = f'.{name.split(")")[-1]}'
 
     conditions = ['M', 'MINT', '-M', 'M-', 'MINT-', '-MINT', 'MINT-.', '  MINT-', 'MINT, FOLIA',
                 'EX', 'EX+', 'EX++', 'EX-', 'EX.', 'EXCELLENT', 

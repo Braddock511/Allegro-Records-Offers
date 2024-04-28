@@ -19,16 +19,6 @@ services:
     build: 
       context: . 
       dockerfile: Dockerfile.api 
-    environment: 
-      - POSTGRES_USER=postgres 
-      - POSTGRES_PASSWORD=admin 
-      - POSTGRES_HOST=db 
-      - POSTGRES_PORT=5432 
-      - POSTGRES_DB=postgres 
-      - API_IMAGEKIT_ID=
-      - API_IMAGEKIT_SECRET=
-      - API_IMAGEKIT_ENDPOINT=
-      - API_OCR_SPACE=
     ports: 
       - 8000:80 
     networks: 
@@ -41,11 +31,7 @@ services:
     container_name: db 
     image: postgres 
     environment: 
-      - POSTGRES_USER=postgres 
-      - POSTGRES_PASSWORD=admin 
-      - POSTGRES_HOST=db 
-      - POSTGRES_PORT=5432 
-      - POSTGRES_DB=postgres 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes: 
       - db_data:/var/lib/postgresql/data 
     networks: 

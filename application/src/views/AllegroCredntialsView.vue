@@ -54,20 +54,7 @@ export default {
       alert: {},
     };
   },
-  created() {
-    this.loadSavedData();
-  },
   methods: {
-    loadSavedData() {
-      const savedCred = this.$cookies.get("allegro-cred");
-      if (savedCred.flag) {
-        this.userKey = savedCred.userKey || "";
-        this.discogsToken = savedCred.discogsToken || "";
-        this.allegroId = savedCred.allegroId || "";
-        this.allegroSecret = savedCred.allegroSecret || "";
-        this.login = savedCred.login || "";
-      }
-    },
     async allegroToken() {
       this.response = (
         await axios.post(`${baseUrl}/allegro-auth`, {
@@ -95,10 +82,8 @@ export default {
         const credData = {
           flag: true,
           userKey: this.userKey,
-          discogsToken: this.discogsToken,
-          allegroId: this.allegroId,
-          allegroSecret: this.allegroSecret,
           login: user.login, 
+          refreshToken: tokenResponse.output,
         };
         this.$cookies.set("allegro-cred", credData, "12h", "/", "", false, "Lax");
         this.loading = true;

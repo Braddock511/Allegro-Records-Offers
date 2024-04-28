@@ -33,9 +33,9 @@ async def read_vinyl_image(request: models.ImagesRequest):
         preprocess_tasks = [preprocess_vinyl_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
 
-        listing_id = db.post_text_from_image(user_key, text_from_images, listing_data)
+        image_data = db.post_text_from_image(user_key, text_from_images, listing_data)
 
-        return {"status": 200, "output": text_from_images, "listingId": listing_id}
+        return {"status": 200, "output": text_from_images, "image_data": image_data}
 
     except Exception as e:
         return {"status": 500, "error": f"Exception in read_vinyl_image: {str(e)}"}
@@ -53,9 +53,9 @@ async def read_cd_image(request: models.ImagesRequest):
         preprocess_tasks = [preprocess_cd_images(chunk_images, credentials) for chunk_images in images]
         text_from_images = await asyncio.gather(*preprocess_tasks)
 
-        listing_id = db.post_text_from_image(user_key, text_from_images, listing_data)
+        image_data = db.post_text_from_image(user_key, text_from_images, listing_data)
 
-        return {"status": 200, "output": text_from_images, "listingId": listing_id}
+        return {"status": 200, "output": text_from_images, "image_data": image_data}
 
     except Exception as e:
         return {"status": 500, "error": f"Exception in read_cd_image: {str(e)}"}
@@ -73,8 +73,8 @@ async def listing_ids(request: models.UserKeyRequest):
 async def listing_ids(request: models.Listing):
     try:
         listing = request.listing
-        listing_data = db.get_listing(listing)
-        return {"status": 200, "output": listing_data}
+        listing_data, image_data = db.get_listing(listing)
+        return {"status": 200, "output": listing_data, "image_data": image_data}
     except Exception as e:
         return {"status": 500, "error": f"Exception in listing_ids: {str(e)}"}
 
@@ -152,9 +152,8 @@ async def image_data(request: models.DiscogsInfoImageRequest):
         index = request.index
         number_images = request.numberImages
         type_record = request.typeRecord
-        listing_id = request.listingId
+        image_data = request.image_data
         credentials = db.get_credentials(user_key)
-        image_data = db.get_text_from_image(listing_id)
         image_data = image_data[index:index+number_images]
         discogs_data = []
         
@@ -230,9 +229,9 @@ async def allegro_token(request: models.AllegroTokenRequest):
         user_id = request.client_id
         user_secret = request.client_secret
         device_code = request.device_code
-        user_token = allegro.get_allegro_token(user_id, user_secret, device_code)
+        access_token, refresh_token = allegro.get_allegro_tokens(user_id, user_secret, device_code)
 
-        temp_cred = {"api_allegro_token": user_token}
+        temp_cred = {"api_allegro_token": access_token}
         allegro_offer = allegro.get_my_offers(temp_cred, 1, 0, "all")['offers'][0]
         allegro_id = allegro_offer['id']
         offer_info = allegro.get_offer_info(temp_cred, allegro_id)
@@ -241,14 +240,29 @@ async def allegro_token(request: models.AllegroTokenRequest):
         location = json.dumps(offer_info['location'])
         delivery = json.dumps(allegro_offer['delivery'])
 
-        check_user = db.post_credentials(user_key, discogs_token, user_id, user_secret, user_token, payments, location, delivery)
+        check_user = db.post_credentials(user_key, discogs_token, user_id, user_secret, access_token, payments, location, delivery, refresh_token)
         if check_user:
-            return {"status": 200, "output": user_token}
+            return {"status": 200, "output": refresh_token}
 
         return {"status": 401, "output": "Unauthorized"}
 
     except Exception as e:
         return {"status": 500, "error": f"Exception in allegro_token: {str(e)}"}
+
+@app.post("/refresh-token")
+async def refresh_token(request: models.UserKeyRequest):
+    try:
+        credentials = db.get_credentials(request.userKey)
+        access_token, refresh_token = allegro.refresh_token(credentials)
+        if access_token:
+            credentials["api_allegro_token"] = access_token
+            credentials["api_allgero_refresh_token"] = refresh_token
+            db.post_credentials(credentials["user_key"], credentials["api_discogs_token"], credentials["api_allegro_id"], credentials["api_allegro_secret"], credentials["api_allegro_token"], credentials["payments"], credentials["location"], credentials["delivery"], credentials["api_allgero_refresh_token"])
+            return {"status": 200}
+        else:
+            return {"status": 400}
+    except Exception as e:
+        return {"status": 500, "error": f"Exception in refresh_token: {str(e)}"}
 
 @app.post("/allegro-user")
 async def allegro_user(request: models.UserKeyRequest):

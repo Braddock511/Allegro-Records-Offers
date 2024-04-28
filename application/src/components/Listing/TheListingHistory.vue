@@ -29,7 +29,7 @@
     :numberImages="listing_data.numberImages"
     :numberFiles="listing_data.numberFiles"
     :conditions="listing_data.conditions"
-    :listingId="listing_id"
+    :imageData="imageData"
     :carton="listing_data.carton"/> 
 
 </template>
@@ -49,7 +49,9 @@ export default {
   methods: {
     async load(id){
       this.listing_id = id
-      this.listing_data = (await axios.post(`${baseUrl}/load-listing`, { listing: id}, { headers: { "Content-Type": "application/json" }})).data.output
+      const response = (await axios.post(`${baseUrl}/load-listing`, { listing: id}, { headers: { "Content-Type": "application/json" }})).data
+      this.listing_data = response.output
+      this.imageData = response.image_data
     },
     async deleteListing(id){
       await axios.post(`${baseUrl}/clear-image-data`, { listing: id}, { headers: { "Content-Type": "application/json" }})

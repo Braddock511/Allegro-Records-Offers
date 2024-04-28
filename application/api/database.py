@@ -1,27 +1,16 @@
 import json
 import uuid
 from datetime import datetime
-from sqlalchemy import create_engine, Column, String, Integer, Boolean, ForeignKey
+from sqlalchemy import create_engine, Column, String, Integer, Boolean, ForeignKey, and_
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from os import environ
 from typing import List, Dict
+from settings import get_settings
 
-user = environ.get("POSTGRES_USER")
-password = environ.get("POSTGRES_PASSWORD")
-host = environ.get("POSTGRES_HOST")
-port = environ.get("POSTGRES_PORT")
-db = environ.get("POSTGRES_DB")
+settings = get_settings()
 
-if not user:
-    user = "postgres"
-    password = "admin"
-    host = "localhost"
-    port = "5432"
-    db = "postgres"
-
-# Create database
-SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL 
 KEYS = {"test": ""}
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -45,6 +34,7 @@ class Credentials(Base):
         api_allegro_id = Column(String)
         api_allegro_secret = Column(String)
         api_allegro_token = Column(String)
+        api_allgero_refresh_token = Column(String)
 
         payments = Column(String)
         location = Column(String)
@@ -99,7 +89,7 @@ Base.metadata.create_all(engine)
 # Database scripts
 Session = sessionmaker(bind=engine)
 
-def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro_secret: str, allegro_token: str, payments: str, location: str, delivery: str) -> bool:
+def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro_secret: str, allegro_token: str, payments: str, location: str, delivery: str, refresh_token: str) -> bool:
     if user_key in KEYS.keys():
         Session = sessionmaker(bind=engine)
         
@@ -115,6 +105,7 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
                 credentials_data.api_allegro_id = allegro_id
                 credentials_data.api_allegro_secret = allegro_secret
                 credentials_data.api_allegro_token = allegro_token
+                credentials_data.api_allgero_refresh_token = refresh_token
                 credentials_data.payments = payments
                 credentials_data.location = location
                 credentials_data.delivery = delivery
@@ -125,19 +116,21 @@ def post_credentials(user_key: str, discogs_token: str, allegro_id: str, allegro
             except NoResultFound:
                 
                 data_to_insert = {
-                    "user_folder": user_folder,
-                    "api_imagekit_id": environ.get("API_IMAGEKIT_ID"),
-                    "api_imagekit_secret": environ.get("API_IMAGEKIT_SECRET"),
-                    "api_imagekit_endpoint": environ.get("API_IMAGEKIT_ENDPOINT"),
-                    "api_ocr_space": environ.get("API_OCR_SPACE"),
+                    "user_folder": KEYS[user_key],
+                    "api_imagekit_id": settings.API_IMAGEKIT_ID,
+                    "api_imagekit_secret": settings.API_IMAGEKIT_SECRET,
+                    "api_imagekit_endpoint": settings.API_IMAGEKIT_ENDPOINT,
+                    "api_ocr_space": settings.API_OCR_SPACE,
+                    "api_discogs_token": settings.API_DISCOGS_TOKEN,
                     "api_allegro_id": allegro_id,
                     "api_allegro_secret": allegro_secret,
                     "api_allegro_token": allegro_token,
-                    # "api_allgero_refresh_token": refresh_token,
+                    "api_allgero_refresh_token": refresh_token,
                     "payments": payments,
                     "location": location,
                     "delivery": delivery,
                 }
+
 
                 credentials_data = Credentials(**data_to_insert)
                 session.add(credentials_data)
@@ -183,18 +176,28 @@ def get_listing(listing_id: str) -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        rows = session.query(ImageData).filter_by(listing_id=listing_id, listed=False).order_by(ImageData.id).all()
-        data_image = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
+        rows = session.query(ImageData).filter(and_(ImageData.listing_id == listing_id, ImageData.listed == False)).all()
+        image_data = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
 
         listing = session.query(Listing).filter_by(id=listing_id).first()
         listing.conditions = [item.strip() for item in listing.conditions.replace("{", "").replace("}", "").split(',')] # Convert psql list string to really list
         listing.numberImages = int(listing.numberImages)
-        listing.numberFiles = len(data_image)
-        listing.clear = bool(listing.clear)
+        listing.numberFiles = len(image_data)
 
-    return listing
+    return listing, image_data
 
-def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]], listing_data: str) -> None:
+def get_text_from_image(listing_id: str) -> List[Dict[str, Column[str]]]:
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        rows = session.query(ImageData).filter(and_(ImageData.listing_id == listing_id, ImageData.listed == False)).all()
+        image_data = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
+
+        session.commit()
+
+    return image_data
+
+def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]], listing_data: Dict) -> None:
     Session = sessionmaker(bind=engine)
     unique_listing_id = str(uuid.uuid4())
     date = datetime.now().strftime('%d.%m.%Y')
@@ -211,18 +214,7 @@ def post_text_from_image(user_key: str, text_from_images: List[Dict[str, str]], 
             
         session.commit()
 
-    return unique_listing_id
-
-def get_text_from_image(listing_id: str) -> List[Dict[str, Column[str]]]:
-    Session = sessionmaker(bind=engine)
-
-    with Session() as session:
-        rows = session.query(ImageData).filter_by(listing_id=listing_id, listed=False).order_by(ImageData.id).all()
-        data_image = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
-
-        session.commit()
-
-    return data_image
+    return get_text_from_image(unique_listing_id)
 
 def delete_image_data(listing_id: str) -> None:
     Session = sessionmaker(bind=engine)

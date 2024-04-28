@@ -402,7 +402,7 @@ export default {
       this.loading.flag = true;
       this.loading.message = this.$t("loading.loadData");
       this.currentIndex += this.numberImages;
-
+      
       if (this.currentIndex >= this.numberFiles) {
         this.loading.message = "";
         if (this.activeRequests == this.numberFiles / this.numberImages) {
@@ -416,17 +416,17 @@ export default {
               typeRecord: this.typeRecord,
               index: this.currentIndex,
               numberImages: this.numberImages,
-              listingId: this.listingId
+              image_data: this.imageData
             },
             { headers: { "Content-Type": "application/json" } }
           ).then((response) => {
-            this.discogsData = response.data.output;
+              this.discogsData = response.data.output; 
 
-            for (let i = 0; i < this.numberImages; i++) {
-              this.offerImages.push(this.discogsData[i].url);
-            }
-
-            this.offerImages.reverse();
+              for (let i = 0; i < this.numberImages; i++) {
+                this.offerImages.push(this.discogsData[i].url);
+              }
+              
+              this.offerImages.reverse();
           }).catch((error) => {
             console.error("Error:", error);
           }).finally(() => {
@@ -511,16 +511,23 @@ export default {
     }
   },
   async beforeMount() {
-    this.loading.flag = true;
-    this.loading.message = this.$t("loading.loadData");
-    await axios.post(`${baseUrl}/discogs-information-image`, {
-          userKey: this.userKey,
-          typeRecord: this.typeRecord,
-          index: 0,
-          numberImages: this.numberImages,
-          listingId: this.listingId
-        },
-        { headers: { "Content-Type": "application/json" } }
+    if (this.currentIndex >= this.numberFiles) {
+        this.loading.message = "";
+        this.loading.flag = false;
+        this.failedFlag = true;
+    }
+    else{
+
+      this.loading.flag = true;
+      this.loading.message = this.$t("loading.loadData");
+      await axios.post(`${baseUrl}/discogs-information-image`, {
+        userKey: this.userKey,
+        typeRecord: this.typeRecord,
+        index: 0,
+        numberImages: this.numberImages,
+        image_data: this.imageData
+      },
+      { headers: { "Content-Type": "application/json" } }
       ).then((response) => {
         this.discogsData = response.data.output;
         for (let i = 0; i < this.numberImages; i++) {
@@ -537,6 +544,7 @@ export default {
         this.loading.message = "";
         this.loading.flag = false;
       }); 
+    }
   },
   props: {
     typeRecord: {
@@ -569,8 +577,8 @@ export default {
       type: Array,
       required: false,
     },
-    listingId: {
-      type: String,
+    imageData: {
+      type: Array,
       required: true,
     },
     carton: {

@@ -28,3 +28,4 @@ coverage
 *.sw?
 __pycache__
 temp
+.env

@@ -195,8 +195,8 @@ export default {
       toLong: "Title length must be less than 50",
       offersFailed: "Load offers - failed",
       paymentsFailed: "Load sales - failed",
-      validFile:
-        'The file should contain only these conditions: "-M", "M", "EX", "VG+", "VG", "G", "F" separated by a newline',
+      validFile: 'The file should contain only these conditions: "-M", "M", "EX", "VG+", "VG", "G", "F" separated by a newline',
+      refresh: "Failed refresh token - log out and log in"
     },
     loading: {
       loadData: "Loading data...",
@@ -401,8 +401,8 @@ export default {
       toLong: "Długość tytułu musi być mniejsza niż 50",
       offersFailed: "Wczytanie ofert - niepowodzenie",
       paymentsFailed: "Wczytanie sprzedaży - niepowodzenie",
-      validFile:
-        'Plik powinien zawierać tylko te stany: "-M", "M", "EX", "VG+", "VG", "G", "F" oddzielone nową linią',
+      validFile:'Plik powinien zawierać tylko te stany: "-M", "M", "EX", "VG+", "VG", "G", "F" oddzielone nową linią',
+      refresh: "Błąd przy odświeżaniu tokenu - wyloguj się i zaloguj"
     },
     loading: {
       loadData: "Wczytywanie danych...",

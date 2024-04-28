@@ -19,7 +19,7 @@ class DiscogsInfoImageRequest(BaseModel):
     index: int
     numberImages: int
     typeRecord: str
-    listingId: str
+    image_data: list
 
 class NewSearchRequest(BaseModel):
     userKey: str
