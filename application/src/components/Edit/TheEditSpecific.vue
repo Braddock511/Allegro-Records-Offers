@@ -14,6 +14,10 @@
             <input type="checkbox" v-model="editDescription" checked="checked" class="checkbox h-5 w-5 checkbox-primary bg-gray-600"/>
           </label>
           <label class="label cursor-pointer gap-1">
+            <span class="label-text text-base"> {{ $t("editSpecific.editCoverImage") }}</span>
+            <input type="checkbox" v-model="editCoverImage" checked="checked" class="checkbox h-5 w-5 checkbox-primary bg-gray-600"/>
+          </label>
+          <label class="label cursor-pointer gap-1">
             <span class="label-text text-base tracking-tight"> {{ $t("editSpecific.toBuy") }}</span>
             <input type="checkbox" v-model="toBuy" checked="checked" class="checkbox h-5 w-5 checkbox-primary bg-gray-600"/>
           </label>
@@ -66,18 +70,18 @@
               <td><button class="btn btn-primary w-full" type="type" style="   max-height: 2rem !important;   min-height: 2rem !important; " @click="   listing_similar = true;   editOffer({}); " >{{ $t("table.send") }}</button></td>
             </tr>
             <tr v-for="(data, index) in discogsData.output[0].information" v-if="discogsData && discogsData.output" class="mapping odd:bg-dark-gray even:bg-lighter-gray">
-              <th class="number-css">{{ index + 1 }}</th>
-              <td>
-                <span v-if="data.label !== '-'">{{ data.label }}</span>
-                <input v-else type="text" name="label" placeholder="Label" class="h-8 rounded-md placeholder:text-center bg-oceans px-1 font-semibold hover:bg-opacity-0" v-model="label" />
+              <th class="number-css"><img @click="toggleEditing(index)" src="@/assets/edit.png" alt="edit" style="width: 40px; min-width: 40px; cursor: pointer;"></th>
+              <td :class="data.label === '-' ? 'border-solid border-2 border-red-500' : ''">
+                <span v-if="editingIndex !== index"><a :href="data.uri" target="_blank">{{ data.label }}</a></span>
+                <input v-else v-model="editedLabel" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td>
-                <span v-if="data.country !== '-'">{{ data.country }}</span>
-                <input v-else type="text" name="country" placeholder="Country" v-model="country" class="h-8 rounded-md placeholder:text-center bg-oceans px-1 font-semibold hover:bg-opacity-0" />
+                <span v-if="editingIndex !== index">{{ data.country }}</span>
+                <input v-else v-model="editedCountry" @keyup.enter="saveChanges" class="input-field"/>
               </td>
-              <td>
-                <span v-if="data.year !== '-'">{{ data.year }}</span>
-                <input v-else type="text" name="year" placeholder="Year" v-model="year" class="h-8 rounded-md placeholder:text-center bg-oceans px-1 font-semibold hover:bg-opacity-0" />
+              <td :class="data.year === '-' ? 'border-solid border-2 border-red-500' : ''">
+                <span v-if="editingIndex !== index">{{ data.year }}</span>
+                <input v-else v-model="editedYear" @keyup.enter="saveChanges" class="input-field"/>
               </td>
               <td v-if="editPrice && data.price[condition == 'Excellent (EX)' ? 'Very Good Plus (VG+)' : condition] !== undefined">
                 <div class="relative">
@@ -152,9 +156,16 @@ export default {
       listing_similar: false,
       alert: {},
       userKey: this.$cookies.get("allegro-cred").userKey,
-      editPrice: false,
-      editDescription: false,
+      editPrice: true,
+      editDescription: true,
+      editCoverImage: true,
       toBuy: false,
+      editingIndex: null,
+      editedTitle: '',
+      editedLabel: '',
+      editedCountry: '',
+      editedYear: '',
+      editedBarcode: '',
     };
   },
   methods: {
@@ -201,6 +212,7 @@ export default {
         country: data.country != "-" ? data.country : this.country,
         year: data.year != "-" ? data.year : this.year,
         price: this.price,
+        cover_image: this.editCoverImage == true ? data.cover_image : ""
       };
 
       if (selectedData.id === undefined) {
@@ -210,6 +222,7 @@ export default {
           country: this.country ? this.country : "-",
           year: this.year ? this.year : "-",
           price: this.price,
+          cover_image: ""
         };
       }
       // Edit offer
@@ -245,6 +258,7 @@ export default {
             this.country = "";
             this.year = "";
             this.price = "";
+            this.condition = "Near Mint (NM or M-)";
           }
           this.loading = false;
         })
@@ -299,12 +313,47 @@ export default {
     roundedPrice(price) {
       let finalValue;
       if (price) {
-        const roundedValue = Math.round((price.value * 3) / 10) * 10 - 0.01;
-        finalValue = roundedValue < 19.99 ? 19.99 : roundedValue;
+        const roundedValue = Math.round((price.value * 4) / 10) * 10 - 0.01;
+        finalValue = roundedValue < 24.99 ? 24.99 : roundedValue;
       } else {
         finalValue = 0;
       }
       return finalValue;
+    },
+    toggleEditing(index) {
+      if (this.editingIndex === index) {
+        this.saveChanges();
+      } else {
+        this.startEditing(index);
+      }
+    },
+    startEditing(index) {
+      const info = this.discogsData.output[0].information[index];
+      this.editingIndex = index;
+      this.editedTitle = info.title;
+      this.editedLabel = info.label;
+      this.editedCountry = info.country;
+      this.editedYear = info.year;
+      this.editedBarcode = info.barcode;
+    },
+    saveChanges() {
+      const info = this.discogsData.output[0].information[this.editingIndex];
+      if (info) {
+        info.title = this.editedTitle;
+        info.label = this.editedLabel;
+        info.country = this.editedCountry;
+        info.year = this.editedYear;
+        info.barcode = this.editedBarcode;
+      }
+      this.cancelEditing();
+    },
+    cancelEditing() {
+      this.editingIndex = null;
+      this.editedTitle = '';
+      this.editedLabel = '';
+      this.editedCountry = '';
+      this.editedYear = '';
+      this.editedBarcode = '';
     },
     async search() {
       this.loading = true;

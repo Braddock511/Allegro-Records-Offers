@@ -1,3 +1,4 @@
+from typing import List, Optional
 from pydantic import BaseModel
 
 class ImagesRequest(BaseModel):
@@ -19,7 +20,7 @@ class DiscogsInfoImageRequest(BaseModel):
     index: int
     numberImages: int
     typeRecord: str
-    image_data: list
+    image_data: Optional[List]
 
 class NewSearchRequest(BaseModel):
     userKey: str

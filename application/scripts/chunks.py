@@ -8,10 +8,12 @@ def valid_label(label: str, catno: str) -> str:
         return f"{corrected_label.get(label.lower(), label)} | {catno}"
     return "-"
 
-def valid_barcode(barcode: str) -> str:
-    if barcode:
+def valid_barcode(barcodes: List[str]) -> str:
+    try:
+        barcode = barcodes[0]
         return barcode.replace(" ", "")
-    return "-"
+    except IndexError:
+        return "-"
 
 def valid_year(year: str) -> str:
     if year:
@@ -73,10 +75,9 @@ def get_discogs_data(text: str, type_record: str, discogs_token: str) -> Dict[st
             Dict[str, str]: A dictionary containing discogs data.
     """
     discogs_data = {}
-
     if type_record in {"Vinyl", "Winyl"}:
         discogs_data = get_vinyl(text, discogs_token)
-    elif type_record == "CD":
+    else:
         discogs_data = get_cd(text, discogs_token)
 
     return discogs_data
@@ -124,17 +125,15 @@ def search_data(chunk: List[str], discogs_token: str, type_record: str, image_da
 
     for text in chunk:
         if 5 < len(text) < 50:
-            if not image_data:
+            if image_data:
+                text = remove_unwanted_characters(text)
+            else:
                 text = remove_text_in_parentheses(text)
+            
+            discogs_data = get_discogs_data(text, type_record, discogs_token)
 
-            if contains_only_ascii_and_not_punctuation(text):
-                if image_data:
-                    text = remove_unwanted_characters(text)
-                
-                discogs_data = get_discogs_data(text, type_record, discogs_token)
-
-                if 'results' in discogs_data.keys():
-                    discogs_data_output.extend(filter_discogs_data(discogs_data['results'], text, image_data))
+            if 'results' in discogs_data.keys():
+                discogs_data_output.extend(filter_discogs_data(discogs_data['results'], text, image_data))
                     
     return discogs_data_output
 
@@ -169,10 +168,10 @@ def preprocess_data(chunk: list, discogs_token: str) -> list:
         Returns:
             list: A list of discogs information dictionaries.
     """
-    record_id, label, country, year, uri, genre, title, price, barcode = '-', '-', '-', '-', '-', '-', '-', '-', '-'
+    record_id, label, country, year, uri, genre, title, price, barcode, cover_image = '-', '-', '-', '-', '-', '-', '-', '-', '-', ""
     community_want_have = {}
     discogs_information = []
-    information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have}
+    information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have, "cover_image": ""}
 
     for result in chunk:
         if isinstance(result, dict):
@@ -183,12 +182,12 @@ def preprocess_data(chunk: list, discogs_token: str) -> list:
             title = remove_not_allowed_characters(result['title'])
             country = result.get('country', '-')
             year = valid_year(result.get('year', result.get('released', '')))
-            barcode = valid_barcode(result.get("barcode", "")[0])
+            barcode = valid_barcode(result.get("barcode"))
             label = valid_label(result.get("label", "")[0], result.get("catno", "-"))
             community_want_have = result['community']
-
-        information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, 
-        "community": community_want_have}
+            cover_image = result["cover_image"]
+        
+        information = {"id": record_id, "label": label, "country": country, "year": year, "uri": f"https://www.discogs.com{uri}", "genre": genre, "title": title, "price": price, "barcode": barcode, "community": community_want_have, "cover_image": cover_image}
         discogs_information.append(information)
 
     return discogs_information

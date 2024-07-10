@@ -29,7 +29,7 @@ services:
 
   database: 
     container_name: db 
-    image: postgres 
+    image: postgres:alpine 
     environment: 
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes: 

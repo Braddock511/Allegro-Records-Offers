@@ -458,7 +458,7 @@ export default {
       let finalValue;
       if (price) {
         const roundedValue = Math.round((price.value * 4) / 10) * 10 - 0.01;
-        finalValue = roundedValue < 19.99 ? 19.99 : roundedValue;
+        finalValue = roundedValue < 24.99 ? 24.99 : roundedValue;
       } else {
         finalValue = 0;
       }

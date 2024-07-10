@@ -26,7 +26,7 @@ def annual_sale_barplot(credentials: dict, sales: list) -> str:
         sale = json.loads(sale)
         if sale['group'] == "INCOME":
             date = datetime.strptime(sale['occurredAt'][:7], '%Y-%m')
-            price = float(sale['value']['amount'])
+            price = round(float(sale['value']['amount']))
 
             if date not in dates:
                 dates.append(date)
@@ -37,7 +37,7 @@ def annual_sale_barplot(credentials: dict, sales: list) -> str:
 
     df = pd.DataFrame({"date": dates, "price": prices})
     df["date"] = df["date"].dt.strftime('%Y-%m')  
-    df = df.sort_values(by="date").tail(12).reset_index(drop=True)
+    df = df.sort_values(by="date").tail(37).reset_index(drop=True)
 
     sns.set_style("whitegrid")
     sns.set_palette("pastel")
@@ -49,10 +49,12 @@ def annual_sale_barplot(credentials: dict, sales: list) -> str:
     plt.xlabel("Months", fontsize=14)
     plt.ylabel("Income in PLN", fontsize=14)
 
-    # Add price above each bar
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    plt.locator_params(axis='x')
+
     for i, bar in enumerate(plot.containers):
         price = df["price"][i]
-        plot.bar_label(bar, label=f"{price:.2f}", label_type="edge", fontsize=14)
+        plot.bar_label(bar, label=f"{price}", label_type="edge", fontsize=10)
 
     # Upload plot to imagekit
     if not os.path.exists("temp"):

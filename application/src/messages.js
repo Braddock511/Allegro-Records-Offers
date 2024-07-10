@@ -44,6 +44,7 @@ export default {
       name: "Name (Click to go to the offer)",
       visitors: "Visitors",
       watchers: "Watchers",
+      search: "Search by title"
     },
     listingView: {
       upload: "Upload images",
@@ -86,6 +87,7 @@ export default {
       clearImage: "Clear image",
       editPrice: "Edit price",
       editDescription: "Edit description",
+      editCoverImage: "Edit cover image",
       toBuy: "Offers will be changed to Buy Now",
     },
     editImages: {
@@ -250,6 +252,7 @@ export default {
       name: "Nazwa (Kliknij, aby przejść do oferty)",
       visitors: "Wizyty",
       watchers: "Obserwacje",
+      search: "Szukaj po tytule"
     },
     listingView: {
       upload: "Prześlij zdjęcia",
@@ -289,8 +292,9 @@ export default {
       listingSimilar: "Wystaw podobną",
       editOffer: "Edytuj ofertę",
       clearImage: "Wyczyść tło",
-      editPrice: "Edit cenę",
+      editPrice: "Edytuj cenę",
       editDescription: "Edytuj opis",
+      editCoverImage: "Edytuj okładkę oferty",
       toBuy: "Oferty zostaną zmienione na Kup teraz",
     },
     editImages: {

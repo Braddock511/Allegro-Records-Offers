@@ -17,9 +17,14 @@ def search_data_parallel(text_from_image: List[str], discogs_token: str, type_re
     """
     # Split the text_from_image list into chunks
     num_chunks = multiprocessing.cpu_count()
-    chunk_size = len(text_from_image) // num_chunks
-    if chunk_size == 0:
+    chunk_size = None
+
+    if text_from_image:
+        chunk_size = len(text_from_image) // num_chunks
+    
+    if not chunk_size:
         chunk_size = 1
+        
     chunks = [text_from_image[i:i+chunk_size] for i in range(0, len(text_from_image), chunk_size)]
 
     with multiprocessing.Pool() as pool:

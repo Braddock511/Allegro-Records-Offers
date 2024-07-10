@@ -9,7 +9,7 @@ from typing import Dict
 from rembg import remove
 from imageKit_api import upload_file_imageKit
 
-def resize_image(image_url: str, max_size_kb: int = 768) -> bytes:
+def resize_image(image_url: str, max_size_kb: int = 668) -> bytes:
     try:
         response = requests.get(image_url)
         image_bytes = response.content        

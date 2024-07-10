@@ -1,7 +1,8 @@
 <template>
     <span v-if="!loading">
-        <div className="overflow-x-auto w-full custom-scrollbar">
-            <table v-if="visitors_viewers" class="table table-sm">
+        <input type="text" v-model="searchQuery" :placeholder="$t('statistics.search')" class="mb-4 p-2 border rounded font-bold" />
+        <div class="overflow-x-auto w-full custom-scrollbar">
+            <table v-if="filteredVisitorsViewers.length" class="table table-sm">
                 <thead class="thead-css h-14 text-base">
                     <tr>
                         <th>{{ $t("statistics.name") }}</th>
@@ -10,12 +11,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                <tr v-for="index in 60" :key="index" v-if="visitors_viewers[0]"   class="mapping odd:bg-dark-gray even:bg-lighter-gray h-10">
-                    <td class="text-slate-200 text-base hover:underline cursor-pointer"><a :href="getUrl(visitors_viewers[index-1]?.id, visitors_viewers[index-1]?.name)" target="_blank" >{{ visitors_viewers[index-1]?.name}}</a></td>
-                    <td class="text-slate-200 text-base">{{ visitors_viewers[index-1]?.stats.visitsCount }}</td>
-                    <td class="text-slate-200 text-base">{{ visitors_viewers[index-1]?.stats.watchersCount }}</td>
-                </tr>
-            </tbody>
+                    <tr v-for="(viewer, index) in filteredVisitorsViewers.slice(0, 60)" :key="viewer.id" class="mapping odd:bg-dark-gray even:bg-lighter-gray h-10">
+                        <td class="text-slate-200 text-base hover:underline cursor-pointer">
+                            <a :href="getUrl(viewer.id, viewer.name)" target="_blank">{{ viewer.name }}</a>
+                        </td>
+                        <td class="text-slate-200 text-base">{{ viewer.stats.visitsCount }}</td>
+                        <td class="text-slate-200 text-base">{{ viewer.stats.watchersCount }}</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </span>
@@ -30,41 +33,48 @@
     import axios from 'axios'
 
     export default {
-        data(){
-            return{
-                visitors_viewers: "",
+        data() {
+            return {
+                visitors_viewers: [],
                 loading: false,
-                alert: {}
+                alert: {},
+                searchQuery: ''
             }
         },
-        methods:{
-            getUrl(id, name){
+        computed: {
+            filteredVisitorsViewers() {
+                return this.visitors_viewers.filter(viewer =>
+                    viewer.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+            }
+        },
+        methods: {
+            getUrl(id, name) {
                 let formattedName = name.replace(/[^a-zA-Z0-9\s.]/g, "")
                 formattedName = formattedName.replace(/\s+/g, "-").toLowerCase()
                 formattedName = `${formattedName}-${id}`
                 return "https://allegro.pl/oferta/" + formattedName
             },
-            sortVisitors(){
+            sortVisitors() {
                 this.visitors_viewers = this.visitors_viewers.sort((a, b) => b.stats.visitsCount - a.stats.visitsCount)
             },
-            sortWatchers(){
+            sortWatchers() {
                 this.visitors_viewers = this.visitors_viewers.sort((a, b) => b.stats.watchersCount - a.stats.watchersCount)
             },
         },
-        async beforeMount(){
+        async beforeMount() {
             this.loading = true
             const userKey = this.$cookies.get('allegro-cred').userKey;
-            const response = (await axios.post(`${baseUrl}/allegro-visitors-viewers`, {userKey: userKey})).data
-            if (response.error || response.errors){
-                this.alert = {variant: "danger", message: this.$t("alerts.someWrong")}
-            }
-            else{
+            const response = (await axios.post(`${baseUrl}/allegro-visitors-viewers`, { userKey: userKey })).data
+            if (response.error || response.errors) {
+                this.alert = { variant: "danger", message: this.$t("alerts.someWrong") }
+            } else {
                 this.visitors_viewers = response.output
-                this.alert = {variant: "success", message: this.$t("alerts.statistics")}
-            } 
+                this.alert = { variant: "success", message: this.$t("alerts.statistics") }
+            }
             this.loading = false
         },
-        components:{
+        components: {
             TheAlert
         }
     }

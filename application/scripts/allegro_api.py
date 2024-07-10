@@ -2,6 +2,7 @@ import requests
 import urllib3
 import json
 import re
+from typing import List
 from collections import Counter
 from time import sleep
 from database import get_allegro_offers
@@ -76,6 +77,65 @@ def get_offer_info(credentials: dict, offer_id: int) -> dict:
     result = requests.get(f"https://api.allegro.pl/sale/product-offers/{offer_id}", headers=headers, verify=False).json()
     return result
 
+def get_description(images: List[str], condition: str, label_name: str, series: str, country: str, released: str, tracklist: str, carton: str):
+    return {
+            'sections': [
+                        {
+                            'items': [
+                                {'type': 'IMAGE', 'url': images[0]},
+                                {'type': 'TEXT', 'content': f"""
+                                 <p><b>Stan płyt/y:</b> {condition}</p>
+                                 <p><b>Wytwórnia:</b> {label_name.replace("&", "&amp;")}</p>
+                                 <p><b>Numer katalogowy:</b> {series}</p>
+                                 <p><b>Kraj pochodzenia:</b> {country.replace("&", "&amp;")}</p>
+                                 <p><b>Rok wydania:</b> {released}</p>
+                                 <p><b>Karton:</b> {carton}</p>
+                                 """}
+                            ]
+                        },
+                        {
+                            'items': [
+                                {'type': 'TEXT', 'content': """
+                                 <p><b>Jak oceniamy płyty:</b></p>
+                                 <ul>
+                                 <li><b>Idealny (M) 🏆: </b>Płyta nowa, bez najmniejszych śladów użycia.</li>
+                                 <li><b>Niemalże Idealny (M-) ✨: </b> Praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li>
+                                 <li><b>Doskonały (EX) 🌟: </b> Odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li>
+                                 <li><b>Bardzo Dobry z Plusem (VG+) 👌: </b> Bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li>
+                                 <li><b>Bardzo Dobry (VG) 👍: </b> Nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li>
+                                 <li><b>Dobry (G) 😐: </b> Grana bardzo często, może posiadać widoczne głębsze rysy.</li>
+                                 <li><b>Zły (F) ⚠️: </b> Poważniejsze rysy.</li>
+                                 </ul>
+                                 """}
+                            ],
+                        },
+                        {
+                            'items': [
+                                {'type': 'IMAGE', 'url': images[-1]}, 
+                                {'type': 'TEXT', 'content': f"""
+                                 <p><b>Dlaczego warto kupić?</b></p>
+                                 <p><b>✨ Gwarancja satysfakcji: </b>Ponad 10 lat doświadczenia na rynku, co zapewnia wysoką jakość obsługi.</p>
+                                 <p><b>🔒 Bezpieczeństwo: </b>Starannie zabezpieczamy płyty na czas wysyłki, aby dotarły do Ciebie w nienaruszonym stanie.</p>
+                                 <p><b>🚀 Szybka dostawa: </b>Przesyłka w 1-2 dni robocze - ciesz się swoją muzyką już wkrótce!</p>
+                                 """}
+                            ]
+                        },
+                        {
+                            'items': [
+                                {'type': 'TEXT', 'content': tracklist}
+                            ]
+                        },
+                        {
+                            'items': [
+                                {'type': 'TEXT', 'content': """
+                                <p><b>Dodatkowe informacje:</b> Jeżeli masz pytania dotyczące stanu płyty czy jakichkolwiek innych szczegółów, śmiało zapytaj! Jesteśmy tu, aby pomóc i udzielić wszystkich niezbędnych informacji. 💬</p>
+                                 <p><b>Co oznacza karton w opisie:</b> Jest to oznaczenie kartonu, w którym znajduje się płyta, co ułatwia identyfikację i organizację.</p>
+                                 <p><b>Podziel się swoją opinią po zakupie i dołącz do grona zadowolonych klientów! 🌟</b></p>"""}
+                            ]
+                        }
+                    ]
+            }
+
 def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
     """
     Handles errors returned by the Allegro API during product offers processing.
@@ -148,7 +208,7 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
     return result
 
 def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: str, type_offer: str, duration: str, clear: bool) -> dict:
-    conditions = {"Near Mint (NM or M-)": "-M", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
+    conditions = {"Near Mint (NM or M-)": "M-", "Mint (M)": "M", "Excellent (EX)": "EX", "Very Good Plus (VG+)": "VG+", "Very Good (VG)": "VG", "Good (G)": "G", "Fair (F)": "F"}
 
     # Discogs data
     record_id = offer_data['id']
@@ -194,6 +254,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
         full_name.replace(",", "") # Remove unwanted comma
     
     allegro_condition = ["Nowy", "11323_1"] if condition == "M" else ["Używany", "11323_2"]
+    label_name, series = label.split(" | ")
     
     if type_offer == "AUCTION":
         duration_offer = duration
@@ -256,7 +317,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
 
             "images": images,
 
-            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label.replace("&", "&amp;")}</b></p><p><b>KRAJ POCHODZENIA: {country.replace("&", "&amp;")}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
+            'description': get_description(images, condition, label_name, series, country, released, tracklist, carton),
 
             "stock": {"available": 1},
 
@@ -313,7 +374,7 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
 
             "images": images,
 
-            'description': {'sections': [{'items': [{'type': 'IMAGE', 'url': images[0]}, {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label.replace("&", "&amp;")}</b></p><p><b>KRAJ POCHODZENIA: {country.replace("&", "&amp;")}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': tracklist}]}, {'items': [{'type': 'IMAGE', 'url': images[1]}, {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>.{carton} OZNACZA ETYKIETĘ KARTONU</b></p>'}]}, {'items': [{'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}]}]},
+            'description': get_description(images, condition, label_name, series, country, released, tracklist, carton),
 
             "stock": {"available": 1},
 
@@ -322,7 +383,6 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
             'delivery': delivery
         }
 
-    label_name, series = label.split(" | ")
     parameters = data['productSet'][0]['product']['parameters']
     
     # If year release is empty add new
@@ -352,38 +412,47 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
     product = requests.get(url, headers={'Authorization': f'Bearer {allegro_token}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}).json()
 
     description = product['description']
+
+    # Find the carton
+    carton_pattern = re.compile(r'<b>Karton:</b>\s*(.*?)</p>')
+    carton_match = carton_pattern.search(str(description))
     try:
-        carton = re.findall(r'KARTON: .*', str(description))[0]
-        carton = carton.split("KARTON: ")[-1]
-        carton = re.sub(r"<.*", '', carton)
-    except IndexError:
+        if carton_result := carton_match.group(1):
+            carton = carton_result
+    except AttributeError:
         name = product['name']
         carton = f'.{name.split(".")[-1]}'
         if len(carton) > 4:
             carton = f'.{name.split(")")[-1]}'
 
+            if len(carton) > 5:
+                carton = "-"
+
+    carton = carton.rsplit(".", 1)[-1]
+
+    if not carton:
+        raise
+
+    # Find the condition
     conditions = ['M', 'MINT', '-M', 'M-', 'MINT-', '-MINT', 'MINT-.', '  MINT-', 'MINT, FOLIA',
                 'EX', 'EX+', 'EX++', 'EX-', 'EX.', 'EXCELLENT', 
                 'VG', 'VG+', 'VG++','VG-', 'VERY GOOD', 'BARDZO DOBRY', 'BARDZO DOBRY.',
                 'G', 'GOOD', 'GOOD+', 'DOBRY', "F", 'MINT-.DO UMYCIA', "MINT. NOWA ZAFOLIOWANA",
                 'BARDZO DOBRY.PŁYTA DO UMYCIA', 'BARDZO DOBRY.DROBNE RYSKI', 'BARDZO DOBRY.DO UMYCIA']
 
-    # Find the condition of the product in the description
-    condition = re.findall(r'STAN .{1,10}: .*', str(description))
+    conditions.sort(key=len, reverse=True)
     
-    if condition == []:
-        condition = re.findall(r'PŁYTA W STANIE .*', str(description))
+    escaped_conditions = [re.escape(condition) for condition in conditions]
 
-    try:
-        # Remove any html tags
-        condition = re.sub(r"<.*", '', condition[0])
-    except IndexError:
-        return ("", "")
+    condition_pattern = re.compile(r'(?<!\w)(' + '|'.join(escaped_conditions) + r')(?!\w)')
 
-    # Get the actual condition
-    condition = condition.split(": ")[-1]
+    condition_match = condition_pattern.search(str(description))
+    if condition_result := condition_match.group(0):
+        condition = condition_result
+    else:
+        raise
 
-    return ("", "") if condition.upper() not in conditions else (condition, carton)
+    return (condition, carton)
 
 def edit_offer(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_price: bool, edit_description: bool, to_buy: bool) -> dict:
     record_id = new_information['id']
@@ -391,20 +460,19 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
     country = new_information['country']
     released = new_information['year']
     price = new_information.get('price', "")
+    cover_image = new_information["cover_image"]
     offer = get_offer_info(credentials, offer_id)
     parameters = offer['productSet'][0]['product']['parameters']
     
-    for x in parameters:
-        if x['name'] == 'Nośnik':
-            type_record = x['values'][0]
+    type_record = [parameter['values'][0] for parameter in parameters if parameter['name'] == 'Nośnik'][0]
     
     label_name, series = label.split(" | ")
-
+    
     if type_record != "płyta DVD":
         if not "Rok wydania" in [parameter['name'] for parameter in parameters] and released != "-":
             parameters.append({"name": "Rok wydania", "values": [released]})
 
-        if not "Wytwórnia" in [parameter['name'] for parameter in parameters] and label != "-":
+        if not "Wytwórnia" in [parameter['name'] for parameter in parameters] and label_name != "-":
             parameters.append({"name": "Wytwórnia", "values": [label_name]})
 
         if not "Seria" in [parameter['name'] for parameter in parameters] and series != "-": 
@@ -416,38 +484,26 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
         if not condition_carton:
             return {}
 
+        if cover_image:
+            images.insert(0, cover_image)
+
         condition, carton = condition_carton
-    
-        offer['description'] = {
-            'sections': [
-                        {
-                            'items': [
-                                {'type': 'IMAGE', 'url': images[0]},
-                                {'type': 'TEXT', 'content': f'<p><b>STAN PŁYT/Y: {condition}</b></p><p><b>WYTWÓRNIA: {label.replace("&", "&amp;")}</b></p><p><b>KRAJ POCHODZENIA: {country.replace("&", "&amp;")}</b></p><p><b>ROK WYDANIA: {released}</b></p>'}
-                            ]
-                        },
-                        {
-                            'items': [
-                                {'type': 'TEXT', 'content': get_tracklist(record_id, credentials["api_discogs_token"])}
-                            ]
-                        },
-                        {
-                            'items': [
-                                {'type': 'IMAGE', 'url': images[1]}, 
-                                {'type': 'TEXT', 'content': f'<p><b>WSZYSTKIE PŁYTY OCENIANE SĄ WIZUALNIE - BEZ ICH ODTWARZANIA.</b></p><p><b>PŁYTY SĄ SOLIDNIE ZABEZPIECZONE PODCZAS WYSYŁKI</b></p><p><b>PODZIEL SIĘ SWOJĄ OPINIĄ PO ZAKUPIE</b></p><p><b>{carton.replace("&", "")} OZNACZA ETYKIETĘ KARTONU</b></p>'}
-                            ]
-                        },
-                        {
-                            'items': [
-                                {'type': 'TEXT', 'content': '<p><b>JAK OCENIAMY PŁYTY:</b></p><ul><li><b>IDEALNY (M)</b> -&nbsp;płyta nowa lub nie odtwarzana, bez najmniejszych śladów użycia.</li><li><b>NIEMALŻE IDEALNY (M-)</b> - praktycznie idealna, jednak odtwarzana raz lub kilka razy.</li><li><b>DOSKONAŁY (EX)</b> - odtwarzana, z widoczną niewielką ilością delikatnych rysek lub inną bardzo drobną wadą nie wpływającą na jakość dźwięku.</li><li><b>BARDZO DOBRY Z PLUSEM (VG+)</b> - bardzo dobry stan, może mieć drobne ryski. Odtwarzana wiele razy, jednak z dużą dbałością.</li><li><b>BARDZO DOBRY (VG) </b> - nadal całkiem dobry stan, może mieć więcej drobnych rysek, lub może posiadać głębszą rysę. Odtwarzana wiele razy.</li><li><b>DOBRY</b> <b>(G)</b> - grana bardzo często, może posiadać widoczne głębsze rysy.</li><li><b>ZŁY</b> <b>(F)</b> - poważniejsze rysy.</li></ul>'}
-                            ]
-                        }
-                    ]
-                }
+        tracklist = get_tracklist(record_id, credentials["api_discogs_token"])
+        description = get_description(images, condition, label_name, series, country, released, tracklist, carton)
+
+        offer['description'] = description
+        # DO usunięcia
+        title_without_carton = offer["name"].rsplit(".", 1)[0] 
+        title_without_carton = title_without_carton.replace("–", "-")
+        
+        if released:
+            offer["name"] = f"{title_without_carton} ({released}, {type_record})"
+        else:
+            offer["name"] = f"{title_without_carton} ({type_record})"
 
     offer['productSet'][0]['product']['images'] = images
     price = price.replace(",", ".") if isinstance(price, str) else price
-    
+
     if edit_price:
         offer['sellingMode']['price'] = {"amount": price, "currency": "PLN"}
     elif offer['sellingMode'].get('startingPrice', ""):
@@ -469,6 +525,12 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
     else:
         url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
         result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
+
+    if cover_image:
+        offer = get_offer_info(credentials, offer_id)
+        edited_offer_images = offer['images']
+        sort_images = [edited_offer_images[-1], *edited_offer_images[:-1]]
+        edit_images(credentials, offer_id, sort_images)
 
     return result.json()
 

@@ -1,7 +1,7 @@
 import json
 import uuid
 from datetime import datetime
-from sqlalchemy import create_engine, Column, String, Integer, Boolean, ForeignKey, and_
+from sqlalchemy import DateTime, create_engine, Column, String, Integer, Boolean, ForeignKey, and_, desc
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from os import environ
@@ -62,6 +62,7 @@ class Listing(Base):
     numberFiles = Column(String)
     conditions = Column(String)
     date = Column(String)
+    created_at = Column(DateTime, default=datetime.now())
     images = relationship("ImageData", back_populates="listing")
 
 class AllegroOffers(Base):
@@ -154,9 +155,10 @@ def get_listing_ids(user_key: str) -> List[str]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        rows = session.query(ImageData.listing_id, Listing.carton, Listing.date, Listing.numberFiles)\
+        rows = session.query(ImageData.listing_id, Listing.carton, Listing.date, Listing.numberFiles, Listing.created_at)\
                       .join(Listing, ImageData.listing_id == Listing.id)\
-                      .filter(ImageData.credentials_folder == KEYS[user_key]).all()
+                      .filter(ImageData.credentials_folder == KEYS[user_key])\
+                      .order_by(Listing.created_at).all()
 
         listing_ids = {(row.listing_id, row.carton, row.date) for row in rows}
 
@@ -176,12 +178,18 @@ def get_listing(listing_id: str) -> List[Dict[str, Column[str]]]:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        rows = session.query(ImageData).filter(and_(ImageData.listing_id == listing_id, ImageData.listed == False)).all()
-        image_data = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in rows]
+        listned_rows = session.query(ImageData).filter(and_(ImageData.listing_id == listing_id, ImageData.listed == False)).all()
+        image_data = [{"text_from_image": row.text_from_image, "url": row.url, "listing_id": row.listing_id, "listed": row.listed} for row in listned_rows]
 
+        all_rows = session.query(ImageData).filter(and_(ImageData.listing_id == listing_id)).all()
         listing = session.query(Listing).filter_by(id=listing_id).first()
-        listing.conditions = [item.strip() for item in listing.conditions.replace("{", "").replace("}", "").split(',')] # Convert psql list string to really list
-        listing.numberImages = int(listing.numberImages)
+        number_of_images = int(listing.numberImages)
+        listned = [row.listed for row in all_rows[::-number_of_images]]
+
+        conditions = [item.strip() for item in listing.conditions.replace("{", "").replace("}", "").split(',')] # Convert psql list string to really list
+        listing.conditions = [conditions[i] for i, value in enumerate(listned) if not value]
+        
+        listing.numberImages = number_of_images
         listing.numberFiles = len(image_data)
 
     return listing, image_data
