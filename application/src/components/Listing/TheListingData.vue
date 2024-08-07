@@ -2,28 +2,27 @@
 <div class="w-full">
     <div v-if="!failedFlag && !loading.flag">
       <div class="flex flex-col items-center mb-16">
+        <div class="flex">
         <TheSlider :images="offerImages"></TheSlider>
-        <span class="text-xl mt-5 mb-5">{{ $t("table.condition") }}: {{ conditions[currentIndex / numberImages] }}</span>
-        <div class="w-full flex justify-center">
-          <button class="btn btn-primary w-1/2 p-2 text-xl" type="submit" 
-          @click="
-              activeRequests += 1;
-              failed.push({
-                id: '',
-                title: '-',
-                label: '-',
-                country: '-',
-                year: '-',
-                genre: '-',
-                price: '-',
-                barcode: '-',
-                condition: this.condition,
-                images: this.offerImages,
-                error: '',
-                isHidden: false,
-              });
-              next();">{{ $t("table.next") }}</button>
+        <div class="flex flex-col gap-5 ml-5">
+          <label class="label cursor-pointer gap-1">
+            <span class="text-xl mt-5 mb-5">{{ $t("table.condition") }}</span>
+            <span class="text-xl mt-5 mb-5">{{ conditions[currentIndex / numberImages] || '-' }}</span>
+          </label>
+
+          <label class="label cursor-pointer gap-1">
+            <span class="text-xl label-text text-base"> {{ $t("editSpecific.editCoverImage") }}</span>
+            <input type="checkbox" v-model="editCoverImage" checked="checked" class="checkbox h-5 w-5 checkbox-primary bg-gray-600"/>
+
+          </label>
+    
+          <label class="label cursor-pointer gap-5">
+            <span class="text-xl label-text text-base">Liczba nośników w wydaniu</span>
+            <input v-model="recordsNumber" type="text" class="input input-bordered w-20 h-8 text-center" placeholder="" />
+          </label>
         </div>
+      </div>
+          
       </div>
       <div class="overflow-x-auto w-full custom-scrollbar">
         <table class="table table-sm">
@@ -189,7 +188,28 @@
       <div class="flex flex-col justify-center items-center mt-10 gap-3">
         <label for="searcher" class="text-[1.5rem] font-bold leading-tight tracking-tight text-center" >{{ $t("table.notFound") }}</label>
         <input type="text" id="searcher" class="h-8 rounded-md placeholder:text-center border-none bg-lighter-black px-1 font-semibold" v-model="newSearch" placeholder="-" />
-        <button class="btn btn-primary" type="submit" @click="search">{{ $t("table.search") }}</button>
+        <div class="flex gap-10">
+
+          <button class="btn btn-primary" type="submit" @click="search">{{ $t("table.search") }}</button>
+          <button class="btn btn-primary" type="submit" 
+          @click="
+              activeRequests += 1;
+              failed.push({
+                id: '',
+                title: '-',
+                label: '-',
+                country: '-',
+                year: '-',
+                genre: '-',
+                price: '-',
+                barcode: '-',
+                condition: this.condition,
+                images: this.offerImages,
+                error: '',
+                isHidden: false,
+              });
+              next();">{{ $t("table.next") }}</button>
+        </div>
       </div>
     </div>
     <div id="loading" v-if="loading.flag">
@@ -208,8 +228,8 @@
 </template>
 
 <script>
-import TheSlider from "@/components/Global/TheSlider.vue"; 
 import TheAlert from "@/components/Global/TheAlert.vue";
+import TheSlider from "@/components/Global/TheSlider.vue";
 import TheFailed from "@/components/Listing/TheFailed.vue";
 import axios from "axios";
 export default {
@@ -225,6 +245,8 @@ export default {
       genre: "rock",
       barcode: "",
       price: "",
+      editCoverImage: true,
+      recordsNumber: "1",
       currentIndex: 0,
       recordIndex: this.typeRecord == "Vinyl" ? 0 : 1,
       offerImages: [],
@@ -253,6 +275,7 @@ export default {
       this.price = "";
       this.barcode = "";
       this.condition = "Near Mint (NM or M-)";
+      this.recordsNumber = "1"
     },
     async listingOfferDiscogs(data) {
       if (this.price === "") {
@@ -319,7 +342,7 @@ export default {
       }
 
       if (!data.title) {
-        if (this.title.length + 3 >= 75) {
+        if (this.title.length >= 75) {
           this.alert = {
             variant: "warning",
             message: this.$t("alerts.toLong"),
@@ -338,10 +361,20 @@ export default {
           barcode: this.barcode || "-",
           images: this.offerImages,
           condition: this.condition,
+          recordsNumber: this.recordsNumber,
+          coverImage: "",
           error: "",
           isHidden: false,
         };
       } else {
+        if (data.title.length >= 75) {
+          this.alert = {
+            variant: "warning",
+            message: this.$t("alerts.toLong"),
+          };
+          return;
+        }
+        
         selectedData = {
           id: data.id,
           title: data.title,
@@ -353,6 +386,8 @@ export default {
           barcode: data.barcode,
           images: this.offerImages,
           condition: this.condition,
+          coverImage: this.editCoverImage ? data.cover_image : "",
+          recordsNumber: this.recordsNumber,
           error: "",
           isHidden: false,
         };

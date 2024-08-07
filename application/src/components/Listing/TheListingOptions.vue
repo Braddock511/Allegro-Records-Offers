@@ -80,8 +80,8 @@
 
 <script>
 import TheListingData from "@/components/Listing/TheListingData.vue";
-import VueCookies from "vue-cookies";
 import axios from "axios";
+import VueCookies from "vue-cookies";
 export default {
   data() {
     return {

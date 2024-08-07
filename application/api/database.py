@@ -4,7 +4,6 @@ from datetime import datetime
 from sqlalchemy import DateTime, create_engine, Column, String, Integer, Boolean, ForeignKey, and_, desc
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from os import environ
 from typing import List, Dict
 from settings import get_settings
 
@@ -170,7 +169,8 @@ def offer_listend(images_url: List[str]) -> None:
     with Session() as session:
         for image_url in images_url:
             image_data = session.query(ImageData).filter_by(url=image_url).first()
-            image_data.listed = True
+            if image_data:
+                image_data.listed = True
 
         session.commit()
 

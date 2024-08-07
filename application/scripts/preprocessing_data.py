@@ -46,22 +46,26 @@ def preprocess_data_parallel(text_from_image: str|list, credentials: dict, type_
         Returns:
             List[Dict[str, str]]: The preprocessed data as a list of dictionaries.
     """
-    discogs_token = credentials["api_discogs_token"]
+    try:
+        discogs_token = credentials["api_discogs_token"]
 
-    # Clean up the input string
-    if isinstance(text_from_image, str):
-        text_from_image = text_from_image.replace("{", "").replace("}", "").split(",")
+        # Clean up the input string
+        if isinstance(text_from_image, str):
+            text_from_image = text_from_image.replace("{", "").replace("}", "").split(",")
 
-    # Search the Discogs API for vinyl records matching the input texts
-    results = search_data_parallel(text_from_image, discogs_token, type_record, image_data)
+        # Search the Discogs API for vinyl records matching the input texts
+        results = search_data_parallel(text_from_image, discogs_token, type_record, image_data)
 
-    # Split the results list into chunks
-    num_chunks = multiprocessing.cpu_count()
-    chunk_size = len(results) // num_chunks
-    if chunk_size == 0:
-        chunk_size = 1
-    chunks = [results[i:i+chunk_size] for i in range(0, len(results), chunk_size)]
-    with multiprocessing.Pool() as pool:
-        discogs_information = pool.starmap(preprocess_data, [(chunk, discogs_token) for chunk in chunks])
+        # Split the results list into chunks
+        num_chunks = multiprocessing.cpu_count()
+        chunk_size = len(results) // num_chunks
+        if chunk_size == 0:
+            chunk_size = 1
+        chunks = [results[i:i+chunk_size] for i in range(0, len(results), chunk_size)]
+        with multiprocessing.Pool() as pool:
+            discogs_information = pool.starmap(preprocess_data, [(chunk, discogs_token) for chunk in chunks])
 
-    return [item for sublist in discogs_information for item in sublist]
+        return [item for sublist in discogs_information for item in sublist]
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []

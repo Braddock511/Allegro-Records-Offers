@@ -1,16 +1,16 @@
 import { createApp } from "vue";
-import router from "./router";
-import App from "./App.vue";
 import VueCookies from "vue-cookies";
 import { createI18n } from "vue-i18n";
-import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
+import "vuetify/styles";
+import App from "./App.vue";
 import messages from "./messages.js";
+import router from "./router";
 
 const i18n = createI18n({
-  locale: "en",
+  locale: "pl",
   messages,
 });
 

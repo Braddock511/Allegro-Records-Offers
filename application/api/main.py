@@ -1,7 +1,8 @@
+import json
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import json
+from fastapi.middleware.gzip import GZipMiddleware
 import database as db
 import models as models
 import allegro_api as allegro
@@ -11,6 +12,8 @@ from   plots import annual_sale_barplot, create_genres_barplot
 from   discogs_api import create_offer
 
 app = FastAPI()
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # CORS middleware to allow requests from a specific origin
 app.add_middleware(
@@ -161,7 +164,6 @@ async def image_data(request: models.DiscogsInfoImageRequest):
         for data in image_data:
             text_from_image = data['text_from_image'] 
             url = data['url']
-            
             if text_from_image == "{}":
                 discogs_data.append({"input_data": text_from_image, "information": "", "url": url})
             else:
@@ -178,25 +180,29 @@ async def image_data(request: models.DiscogsInfoImageRequest):
         return {"status": 500, "error": f"Exception in image_data: {str(e)}"}
 
 @app.post("/discogs-information-new-search")
-async def image_data(request: models.NewSearchRequest):
-    user_key = request.userKey
-    new_search = request.newSearch
-    type_record = request.typeRecord
-    
-    if not type_record:
-        allegro_data = request.allegroData
-        parameters = allegro_data['productSet'][0]['product']['parameters']
-        for x in parameters:
-            if x['name'] == 'Nośnik':
-                type_record = x['values'][0]
-                
-    credentials = db.get_credentials(user_key)
-    information = preprocess_data_parallel(new_search, credentials, type_record, False)
-    
-    discogs_data = [{"input_data": new_search, "information": information, "url": ""} for _ in range(3)]
+async def new_search(request: models.NewSearchRequest):
+    try:
+        user_key = request.userKey
+        new_search = request.newSearch
+        type_record = request.typeRecord
 
-    return {"status": 200, "output": discogs_data}
-       
+        if not type_record:
+            allegro_data = request.allegroData
+            parameters = allegro_data['productSet'][0]['product']['parameters']
+            for x in parameters:
+                if x['name'] == 'Nośnik':
+                    type_record = x['values'][0]
+
+        credentials = db.get_credentials(user_key)
+        try:
+            information = preprocess_data_parallel(new_search, credentials, type_record, False)
+        except:
+            return {"status": 500, "error": "No information found"}
+        discogs_data = [{"input_data": new_search, "information": information, "url": ""} for _ in range(3)]
+
+        return {"status": 200, "output": discogs_data}
+    except Exception as e:
+        return {"status": 500, "error": f"Exception in new_search: {str(e)}"}
     
 @app.post("/clear-image-data")
 async def clear_image_data(request: models.Listing):
@@ -500,9 +506,10 @@ async def get_orders(request: models.UserKeyRequest):
 
         for order in orders:
             items = order["lineItems"]
-            status = order["fulfillment"]["status"]
+            fulfillment_status = order["fulfillment"]["status"]
+            payment_status = order["status"]
 
-            if status == "NEW":
+            if fulfillment_status == "NEW" and not payment_status == "CANCELLED":
                 if delivery := order["delivery"]:
                     if pickup_point := delivery.get("pickupPoint", ""):
                         order_details.append({"items": [allegro.get_offer_info(credentials, item["offer"]["id"]) for item in items], "pickup_point": pickup_point})

@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "application"
+version = "0.1.0"
+description = ""
+authors = ["Rafał <wruku1212@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+rembg = {version = "^2.0.56", optional = false, python = "<3.13"}
+fastapi = "0.94.1"
+imagekitio = "3.0.1"
+numpy = "1.24.2"
+pillow = "9.4.0"
+pyzbar = "0.1.8"
+requests = "2.31.0"
+uvicorn = "0.20.0"
+sqlalchemy = "2.0.4"
+psycopg2-binary = "2.9.5"
+urllib3 = "1.26.7"
+matplotlib = "3.6.1"
+seaborn = "0.11.2"
+python-dotenv = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

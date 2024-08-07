@@ -37,9 +37,6 @@
                 <div class="flex gap-3 text-icon hover:text-blue-600 font-semibold leading-tight items-center p-2 rounded-lg cursor-pointer border-2 border-transparent hover:bg-gray-800 hover:border-slate-700 hover:border-3 transition-colors text-[0.9rem] truncate" @click="option = 'specific'" :class="isOpen === false ? 'w-fit' : 'w-full'" >
                   <span class="truncate text-slate-300" :class="isOpen === false ? 'hidden ' : 'block'" >{{ $t("editView.specific") }}</span>
                 </div>
-                <div class="flex gap-3 text-icon hover:text-blue-600 font-semibold leading-tight items-center p-2 rounded-lg cursor-pointer border-2 border-transparent hover:bg-gray-800 hover:border-slate-700 transition-colors hover:border-3 text-[0.9rem]" @click="option = 'swap'" :class="isOpen === false ? 'w-fit' : 'w-full'" >
-                  <span class="truncate text-slate-300" :class="isOpen === false ? 'hidden' : 'block'" >{{ $t("editView.swap") }}</span>
-                </div>
               </div>
             </div>
             <div class="group">
@@ -93,7 +90,6 @@
         <TheListingOptions v-if="option == 'listing'" />
         <TheListingHistory v-if="option == 'history'" />
         <TheEditSpecific v-if="option == 'specific'" />
-        <TheSwap v-if="option == 'swap'" />
         <TheVisitors v-if="option == 'visitors'" />
         <TheSales v-if="option == 'sales'" />
         <TheOrders v-if="option == 'orders'"/>
@@ -107,15 +103,15 @@
 </template>
 
 <script>
-import axios from "axios";
-import TheAlert from "@/components/Global/TheAlert.vue";
-import TheListingOptions from "@/components/Listing/TheListingOptions.vue";
-import TheListingHistory from "@/components/Listing/TheListingHistory.vue";
 import TheEditSpecific from "@/components/Edit/TheEditSpecific.vue";
 import TheSwap from "@/components/Edit/TheSwap.vue";
-import TheVisitors from "@/components/Stats/TheVisitors.vue";
-import TheSales from "@/components/Stats/TheSales.vue";
+import TheAlert from "@/components/Global/TheAlert.vue";
+import TheListingHistory from "@/components/Listing/TheListingHistory.vue";
+import TheListingOptions from "@/components/Listing/TheListingOptions.vue";
 import TheOrders from "@/components/Orders/TheOrders.vue";
+import TheSales from "@/components/Stats/TheSales.vue";
+import TheVisitors from "@/components/Stats/TheVisitors.vue";
+import axios from "axios";
 
 export default {
   data() {

@@ -113,10 +113,9 @@ def get_description(images: List[str], condition: str, label_name: str, series: 
                             'items': [
                                 {'type': 'IMAGE', 'url': images[-1]}, 
                                 {'type': 'TEXT', 'content': f"""
-                                 <p><b>Dlaczego warto kupić?</b></p>
-                                 <p><b>✨ Gwarancja satysfakcji: </b>Ponad 10 lat doświadczenia na rynku, co zapewnia wysoką jakość obsługi.</p>
-                                 <p><b>🔒 Bezpieczeństwo: </b>Starannie zabezpieczamy płyty na czas wysyłki, aby dotarły do Ciebie w nienaruszonym stanie.</p>
-                                 <p><b>🚀 Szybka dostawa: </b>Przesyłka w 1-2 dni robocze - ciesz się swoją muzyką już wkrótce!</p>
+                                    <p><b>Co sprawia, że warto wybrać naszą ofertę?</b></p>
+                                    <p><b>✨ Gwarancja satysfakcji: </b>Ponad 10 lat doświadczenia na rynku, co zapewnia wysoką jakość obsługi.</p>
+                                    <p><b>🔒 Bezpieczeństwo: </b>Starannie zabezpieczamy płyty na czas wysyłki, aby dotarły do Ciebie w nienaruszonym stanie.</p>
                                  """}
                             ]
                         },
@@ -157,26 +156,49 @@ def handle_allegro_errors(data: dict, result: dict, credentials: dict) -> dict:
         
         error_messages = [error['message'] for error in result['errors']]
         user_messages = [error['userMessage'] for error in result['errors']]
-
+    
         if 'Request Timeout' not in error_messages:
             for msg in error_messages:
+                parameters = data['productSet'][0]['product']['parameters']
+
                 if "Wykonawca" in msg:
                     artist = re.findall(r"parameter value .*", msg)[0]
                     new_artist = re.sub(r'\((.*?)\)', r'\1', artist.replace("parameter value", "")).strip()
-                    data['productSet'][0]['product']['parameters'][0]['values'] = [new_artist]
+
+                    data['productSet'][0]['product']['parameters'] = [parameter for parameter in parameters if parameter['name'] != "Wykonawca"]
+                    data['productSet'][0]['product']['parameters'].append(
+                            {
+                            "name": "Wykonawca",
+                            "values": [new_artist]
+                        },
+                    )
                     errors.append("Artist")
 
                 elif "Tytuł" in msg:
                     title = re.findall(r"parameter value .*", msg)[0]
                     new_title = re.sub(r'\((.*?)\)', r'\1', title.replace("parameter value", "")).strip()       
-                    data['productSet'][0]['product']['parameters'][1]['values'] = [new_title]
+
+                    data['productSet'][0]['product']['parameters'] = [parameter for parameter in parameters if parameter['name'] != "Tytuł"]
+                    data['productSet'][0]['product']['parameters'].append(
+                            {
+                            "name": "Tytuł",
+                            "values": [new_title]
+                        },
+                    )
                     errors.append("Title")
 
                 elif "Invalid GTIN" in msg:
                     new_barcode = msg.split(" - ")[1].split(" in ")[0]
                     if len(new_barcode) not in [8, 10, 12, 13, 14]:
                         new_barcode = f"0{new_barcode}"
-                    data['productSet'][0]['product']['parameters'][3]['values'] = [new_barcode.strip()]
+                    
+                    data['productSet'][0]['product']['parameters'] = [parameter for parameter in parameters if parameter['name'] != 'EAN (GTIN)']
+                    data['productSet'][0]['product']['parameters'].append(
+                            {
+                            "name": 'EAN (GTIN)',
+                            "values": [new_barcode.strip()]
+                        },
+                    )
                     errors.append("EAN")
                     
                 else:
@@ -218,6 +240,8 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     released = offer_data['year']
     genre = offer_data['genre']
     price = offer_data['price']
+    cover_image = offer_data["coverImage"]
+    records_number = offer_data.get("recordsNumber", "")
     price = price.replace(",", ".") if isinstance(price, str) else price
     images = offer_data['images']
     condition = offer_data['condition']
@@ -246,12 +270,17 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
         name = ""
         
     # Combine author, name, and carton
-    full_name = (f'{author} - {name}.{carton}' if len(f'{author} - {name}.{carton}') <= 75 and name != "" else f'{author}.{carton}').strip()
+    if type_record == "Vinyl":
+        type_record = "Winyl"
 
-    # If the length is still greater than 50, truncate the author name
+    basic_name = f'{author} - {name}'
+    full_name = f'{basic_name} ({released}, {type_record})'
+
+    if len(full_name) > 75 or released == "-":
+        full_name = f'{basic_name} ({type_record})'
+
     if len(full_name) > 75:
-        full_name = (f'{full_name.split(" ")[0]}.{carton}').strip()
-        full_name.replace(",", "") # Remove unwanted comma
+        full_name = basic_name
     
     allegro_condition = ["Nowy", "11323_1"] if condition == "M" else ["Używany", "11323_2"]
     label_name, series = label.split(" | ")
@@ -272,119 +301,66 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
         clear_first_image = remove_background(first_image, credentials)
         images = [clear_first_image, *list(images[1:])]
 
+    if cover_image:
+        images.insert(0, cover_image)
 
-    if type_record == "Vinyl":
-        data = {
-            "name": full_name,
+    data = {
+        "name": full_name,
 
-            "productSet": [{
-                "product": {
-                    "name": title,
-                    "category": {
-                        "id": 1
-                    },
-                    "parameters": [
-                        {
-                            "name": "Wykonawca",
-                            "values": [author]
-                        },
-                        {
-                            "name": "Tytuł",
-                            "values": [name]
-                        },
-                        {
-                            "name": "Nośnik",
-                            "values": ["Winyl"]
-                        },
-                        {
-                            "name": "Gatunek",
-                            "values": [genre]
-                        },
-                    ],
-
-                    "images": images,
+        "productSet": [{
+            "product": {
+                "name": title,
+                "category": {
+                    "id": 1
                 },
-            }],
+                "parameters": [
+                    {
+                        "name": "Wykonawca",
+                        "values": [author]
+                    },
+                    {
+                        "name": "Tytuł",
+                        "values": [name]
+                    },
+                    {
+                        "name": "Nośnik",
+                        "values": [type_record]
+                    },
+                    {
+                        "name": "Gatunek",
+                        "values": [genre]
+                    },
+                ],
 
-            "parameters": [{'id': '11323', 'name': 'Stan', 'values': [allegro_condition[0]], 'valuesIds': [allegro_condition[1]], 'rangeValue': None}],
-            
-            "sellingMode": selling,
-
-            "publication": {
-                "republish": republish,
-                "duration": duration_offer
+                "images": images,
             },
+        }],
 
-            "images": images,
+        "parameters": [{'id': '11323', 'name': 'Stan', 'values': [allegro_condition[0]], 'valuesIds': [allegro_condition[1]], 'rangeValue': None}],
+        
+        "sellingMode": selling,
 
-            'description': get_description(images, condition, label_name, series, country, released, tracklist, carton),
+        "publication": {
+            "republish": republish,
+            "duration": duration_offer
+        },
 
-            "stock": {"available": 1},
+        "images": images,
 
-            "payments": payments,
-            'location': location,
-            'delivery': delivery
+        'description': get_description(images, condition, label_name, series, country, released, tracklist, carton),
+
+        "stock": {"available": 1},
+
+        "payments": payments,
+        'location': location,
+        'delivery': delivery
     }
     
-    elif type_record == "CD":
-        data = {
-            "name": full_name,
-
-            "productSet": [{
-                "product": {
-                    "name": title,
-                    "category": {
-                        "id": 1
-                    },
-                    "parameters": [
-                        {
-                            "name": "Wykonawca",
-                            "values": [author]
-                        },
-                        {
-                            "name": "Tytuł",
-                            "values": [name]
-                        },
-                        {
-                            "name": "Nośnik",
-                            "values": ["CD"]
-                        },
-                        {
-                            'name': 'EAN (GTIN)',
-                            'values': [barcode]
-                        },
-                        {
-                            "name": "Gatunek",
-                            "values": [genre]
-                        },
-                    ],
-
-                    "images": images,
-                },
-            }],
-
-            "parameters": [{'id': '11323', 'name': 'Stan', 'values': [allegro_condition[0]], 'valuesIds': [allegro_condition[1]], 'rangeValue': None}],
-            
-            "sellingMode": selling,
-
-            "publication": {
-                "republish": republish,
-                "duration": duration_offer
-            },
-
-            "images": images,
-
-            'description': get_description(images, condition, label_name, series, country, released, tracklist, carton),
-
-            "stock": {"available": 1},
-
-            "payments": payments,
-            'location': location,
-            'delivery': delivery
-        }
-
     parameters = data['productSet'][0]['product']['parameters']
     
+    if type_record == "CD" and barcode:
+        parameters.append({'name': 'EAN (GTIN)', 'values': [barcode]})
+        
     # If year release is empty add new
     if not "Rok wydania" in [parameter['name'] for parameter in parameters] and released != "-": 
         parameters.append({"name": "Rok wydania", "values": [released]})
@@ -396,6 +372,9 @@ def create_offer(credentials: dict, offer_data: dict, carton: str, type_record: 
     # If series is empty add new
     if not "Seria" in [parameter['name'] for parameter in parameters] and series != "-": 
         parameters.append({"name": "Seria", "values": [series]})
+
+    if records_number and not "Liczba nośników w wydaniu" in [parameter['name'] for parameter in parameters]:
+        parameters.append({"name": "Liczba nośników w wydaniu", "values": [records_number]})
 
     url = 'https://api.allegro.pl/sale/product-offers'
     result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=data, verify=False).json()

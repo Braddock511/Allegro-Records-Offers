@@ -51,11 +51,10 @@ export default {
       images: "Images",
       vinyl: "Vinyl",
       clearFirstImage: "Clear first image background",
+      coverImage: "Set cover image from discogs in offer",
       numberImages: "Number images in one offer",
-      imageOrder:
-        "The images must be in the following order: 1. Disc 2. Back cover",
-      paymentLocationDelivery:
-        "Payment, location and delivery settings are taken from the last offer",
+      imageOrder: "The images must be in the following order: 1. Disc 2. Back cover",
+      paymentLocationDelivery: "Payment, location and delivery settings are taken from the last offer",
       description: "Description is in polish language",
       sendImages: "Send images",
       buyNow: "Buy now",
@@ -66,7 +65,7 @@ export default {
     editView: {
       many: "Edit many offers",
       specific: "Edit offer",
-      swap: "Swap carton labels",
+      renew: "Renew offers",
     },
     editMany: {
       offerType: "Offer Types",
@@ -146,7 +145,7 @@ export default {
       inputFile: "Select file",
       price: "Price",
       search: "Search",
-      notFound: "Not found? You can search by barcode or code on lp",
+      notFound: "Not found? You can search by barcode or code on lp or go to next record",
     },
     genre_options: {
       all: "All",
@@ -194,7 +193,7 @@ export default {
       clearFailed: "Clear image failed",
       descSuccess: "Edit description success",
       descFailed: "Edit description failed",
-      toLong: "Title length must be less than 50",
+      toLong: "Title length must be less than 75",
       offersFailed: "Load offers - failed",
       paymentsFailed: "Load sales - failed",
       validFile: 'The file should contain only these conditions: "-M", "M", "EX", "VG+", "VG", "G", "F" separated by a newline',
@@ -258,11 +257,10 @@ export default {
       upload: "Prześlij zdjęcia",
       images: "Zdjęcia",
       clearFirstImage: "Wyczyść tło pierwszego zdjęcia",
+      coverImage: "Ustaw okładkę z discogsa w ofercie",
       numberImages: "Liczba zdjęć w jednej ofercie",
-      imageOrder:
-        "Zdjęcia muszą być w następującej kolejności: 1. Płyta 2. Okładka tylna",
-      paymentLocationDelivery:
-        "Ustawienia płatności, lokalizacji i dostawy zostaną pobrane z ostatniej oferty",
+      imageOrder: "Zdjęcia muszą być w następującej kolejności: 1. Płyta 2. Okładka tylna",
+      paymentLocationDelivery: "Ustawienia płatności, lokalizacji i dostawy zostaną pobrane z ostatniej oferty",
       description: "Opis jest w języku polskim",
       sendImages: "Wyślij zdjęcia",
       buyNow: "Kup teraz",
@@ -273,7 +271,7 @@ export default {
     editView: {
       many: "Edytuj wiele ofert",
       specific: "Edytuj ofertę",
-      swap: "Oznaczenie kartonów",
+      renew: "Odnów oferty",
     },
     editMany: {
       offerType: "Rodzaje ofert",
@@ -353,8 +351,7 @@ export default {
       inputFile: "Wybierz plik",
       price: "Cena",
       search: "Szukaj",
-      notFound:
-        "Nie znaleziono? Możesz szukać według kodu kreskowego lub kodu na lp",
+      notFound: "Nie znaleziono? Możesz szukać według kodu kreskowego lub kodu na lp albo przejść do następnej płyty",
     },
     genre_options: {
       all: "Wszystkie",
@@ -402,7 +399,7 @@ export default {
       clearFailed: "Wyczyszczenie tła - niepowodzenie",
       descSuccess: "Edycja opisu - sukces",
       descFailed: "Edycja opisu - niepowodzenie",
-      toLong: "Długość tytułu musi być mniejsza niż 50",
+      toLong: "Długość tytułu musi być mniejsza niż 75",
       offersFailed: "Wczytanie ofert - niepowodzenie",
       paymentsFailed: "Wczytanie sprzedaży - niepowodzenie",
       validFile:'Plik powinien zawierać tylko te stany: "-M", "M", "EX", "VG+", "VG", "G", "F" oddzielone nową linią',
