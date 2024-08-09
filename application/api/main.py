@@ -3,6 +3,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+
 import database as db
 import models as models
 import allegro_api as allegro
@@ -126,7 +127,7 @@ async def discogs_info(request: models.DiscogsInfoRequest):
             if x['name'] == 'EAN (GTIN)':
                 offer_input_data = x['values'][0]                
                 
-        if type_record in {"Vinyl", "Winyl"}:
+        if not offer_input_data:
             name = offer_info['name']
             name = name.split(".")[0]
             name = name.split("(CD)")[0]

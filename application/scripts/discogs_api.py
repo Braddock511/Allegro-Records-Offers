@@ -1,28 +1,22 @@
 import requests
 from typing import Dict
 
-def get_vinyl(query: str, discogs_token: str) -> Dict[str, str]:
+def get_by_query(query: str, type_record: str, discogs_token: str) -> Dict[str, str]:
+    type_record = type_record.replace("W", "V") # Convert Winyl to Vinyl
+
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
-    url = f"https://api.discogs.com/database/search?query={query}&type=release"
+    url = f"https://api.discogs.com/database/search?query={query}&type=release&per_page=15&format={type_record}"
 
     response = requests.get(url, headers=headers)
 
     return response.json()
 
-
-def get_cd(barcode: str, discogs_token: str) -> Dict[str, str]:
+def get_by_barcode(barcode: str, discogs_token: str) -> Dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}
-    url = f"https://api.discogs.com/database/search?barcode={barcode}&type=release"
+    url = f"https://api.discogs.com/database/search?barcode={barcode}&type=release&per_page=15"
 
     response = requests.get(url, headers=headers)
-    results = response.json()
-
-    if not results["results"]:
-        url = f"https://api.discogs.com/database/search?query={barcode}&type=release"
-        response = requests.get(url, headers=headers)
-        results = response.json()
-
-    return results
+    return response.json()
 
 def get_price(id: str, discogs_token: str) -> Dict[str, str]:
     headers = {"Authorization": f"Discogs token={discogs_token}", "Content-Type": "application/json"}

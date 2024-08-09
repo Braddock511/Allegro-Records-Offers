@@ -433,6 +433,12 @@ def get_condition_and_carton(credentials: dict, offer_id: str) -> tuple[str, str
 
     return (condition, carton)
 
+def end_offer(credentials: dict, offer_id: int):
+    url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
+    result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json={'publication': {"status": "ENDED"}}, verify=False)
+    
+    return result
+
 def edit_offer(credentials: dict, offer_id: str, images: list, new_information: dict, listing_similar: bool, edit_price: bool, edit_description: bool, to_buy: bool) -> dict:
     record_id = new_information['id']
     label = new_information['label']
@@ -487,7 +493,7 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
         offer['sellingMode']['price'] = {"amount": price, "currency": "PLN"}
     elif offer['sellingMode'].get('startingPrice', ""):
         offer['sellingMode']['price'] = {"amount": offer['sellingMode']['startingPrice']['amount'], "currency": "PLN"}
-        
+    
     if to_buy:
         offer['sellingMode']['format'] = "BUY_NOW"
         
@@ -497,19 +503,23 @@ def edit_offer(credentials: dict, offer_id: str, images: list, new_information: 
         offer['publication']['republish'] = False
     
     if listing_similar:
+        end_offer(credentials, offer["id"])
         offer['publication']['status'] = "ACTIVE"
-                
+
+        if cover_image:
+            offer["images"] = images
+
         url = "https://api.allegro.pl/sale/product-offers"
         result = requests.post(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
     else:
         url = f"https://api.allegro.pl/sale/product-offers/{offer_id}"
         result = requests.patch(url, headers={'Authorization': f'Bearer {credentials["api_allegro_token"]}', 'Accept': "application/vnd.allegro.public.v1+json", "Content-Type":'application/vnd.allegro.public.v1+json'}, json=offer, verify=False)
 
-    if cover_image:
-        offer = get_offer_info(credentials, offer_id)
-        edited_offer_images = offer['images']
-        sort_images = [edited_offer_images[-1], *edited_offer_images[:-1]]
-        edit_images(credentials, offer_id, sort_images)
+        if cover_image:
+            offer = get_offer_info(credentials, offer_id)
+            edited_offer_images = offer['images']
+            sort_images = [edited_offer_images[-1], *edited_offer_images[:-1]]
+            edit_images(credentials, offer_id, sort_images)
 
     return result.json()
 

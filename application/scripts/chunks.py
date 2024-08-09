@@ -1,6 +1,6 @@
 import re
 from typing import List, Dict
-from discogs_api import get_vinyl, get_cd, get_price
+from discogs_api import get_by_barcode, get_by_query, get_price
 
 def valid_label(label: str, catno: str) -> str:
     if label:
@@ -75,10 +75,11 @@ def get_discogs_data(text: str, type_record: str, discogs_token: str) -> Dict[st
             Dict[str, str]: A dictionary containing discogs data.
     """
     discogs_data = {}
-    if type_record in {"Vinyl", "Winyl"}:
-        discogs_data = get_vinyl(text, discogs_token)
-    else:
-        discogs_data = get_cd(text, discogs_token)
+    try:
+        barcode = int(text)
+        discogs_data = get_by_barcode(barcode, discogs_token)
+    except ValueError:
+        discogs_data = get_by_query(text, type_record, discogs_token)
 
     return discogs_data
 
